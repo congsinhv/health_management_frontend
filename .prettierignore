@@ -1,0 +1,32 @@
+# Dependencies
+node_modules/
+bun.lockb
+package-lock.json
+yarn.lock
+
+# Build outputs
+.next/
+out/
+build/
+dist/
+
+# Cache and logs
+.cache/
+*.log
+
+# Environment files
+.env*
+
+# Generated files
+*.d.ts
+next-env.d.ts
+
+# Public assets
+public/
+
+# Config files that should not be formatted
+*.min.js
+*.min.css
+
+# Lock files
+*.lock

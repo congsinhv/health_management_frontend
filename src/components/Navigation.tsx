@@ -1,0 +1,82 @@
+'use client';
+
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import { useAuth } from '@/contexts/AuthContext';
+
+export function Navigation() {
+  const pathname = usePathname();
+  const { user, logout } = useAuth();
+
+  const isActive = (path: string) => pathname === path;
+
+  const handleLogout = () => {
+    logout();
+    // Redirect to home page after logout
+    window.location.href = '/';
+  };
+
+  return (
+    <header className='border-b bg-white dark:bg-gray-800'>
+      <div className='container mx-auto flex h-16 items-center justify-between px-4'>
+        <Link href='/dashboard' className='flex items-center space-x-2'>
+          <div className='h-8 w-8 rounded-full bg-gradient-to-r from-blue-500 to-emerald-500'></div>
+          <span className='text-xl font-bold'>Health Management</span>
+        </Link>
+        <nav className='hidden space-x-6 md:flex'>
+          <Link
+            href='/dashboard'
+            className={
+              isActive('/dashboard')
+                ? 'text-blue-600 hover:text-blue-800 dark:text-blue-400'
+                : 'text-gray-600 hover:text-gray-800 dark:text-gray-300 dark:hover:text-gray-100'
+            }
+          >
+            Dashboard
+          </Link>
+          <Link
+            href='/health-tracking'
+            className={
+              isActive('/health-tracking')
+                ? 'text-blue-600 hover:text-blue-800 dark:text-blue-400'
+                : 'text-gray-600 hover:text-gray-800 dark:text-gray-300 dark:hover:text-gray-100'
+            }
+          >
+            Health Tracking
+          </Link>
+          <Link
+            href='/profile'
+            className={
+              isActive('/profile')
+                ? 'text-blue-600 hover:text-blue-800 dark:text-blue-400'
+                : 'text-gray-600 hover:text-gray-800 dark:text-gray-300 dark:hover:text-gray-100'
+            }
+          >
+            Profile
+          </Link>
+          <Link
+            href='/settings'
+            className={
+              isActive('/settings')
+                ? 'text-blue-600 hover:text-blue-800 dark:text-blue-400'
+                : 'text-gray-600 hover:text-gray-800 dark:text-gray-300 dark:hover:text-gray-100'
+            }
+          >
+            Settings
+          </Link>
+        </nav>
+        <div className='flex items-center space-x-4'>
+          {user && (
+            <span className='text-sm text-gray-600 dark:text-gray-300'>
+              Welcome, {user.firstName}!
+            </span>
+          )}
+          <Button variant='outline' size='sm' onClick={handleLogout}>
+            Logout
+          </Button>
+        </div>
+      </div>
+    </header>
+  );
+}
