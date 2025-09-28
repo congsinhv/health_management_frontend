@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useReducer } from 'react';
+import { toast } from 'sonner';
 import {
   AuthContextType,
   AuthState,
@@ -8,6 +9,8 @@ import {
   RegisterCredentials,
   User,
 } from '@/types/auth';
+import { api, tokenStorage } from '@/lib/api';
+import { logger } from '@/lib/logger';
 
 // Auth reducer actions
 type AuthAction =
@@ -81,187 +84,318 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(authReducer, initialState);
 
-  // Simulate API calls - replace with actual API endpoints
-  const API_BASE_URL =
-    process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
-
   // Check for existing session on mount
   useEffect(() => {
     checkAuthStatus();
   }, []);
 
-  const checkAuthStatus = async () => {
+  const checkAuthStatus = async (): Promise<void> => {
+    dispatch({ type: 'AUTH_START' });
+
     try {
-      const token = localStorage.getItem('auth_token');
-      if (!token) {
-        // No token found - user is not authenticated (not an error)
-        dispatch({ type: 'LOGOUT' });
+      // Check if we have a valid token first
+      if (!tokenStorage.hasValidToken()) {
+        dispatch({ type: 'AUTH_ERROR', payload: 'Chưa đăng nhập' });
         return;
       }
 
-      // In a real app, verify token with backend
-      // For now, we'll simulate with localStorage data
-      const userData = localStorage.getItem('user_data');
-      if (userData) {
-        const user = JSON.parse(userData);
-        dispatch({ type: 'AUTH_SUCCESS', payload: user });
-      } else {
-        // Token exists but no user data - clear everything
-        localStorage.removeItem('auth_token');
-        localStorage.removeItem('refresh_token');
-        dispatch({ type: 'LOGOUT' });
-      }
+      logger.debug('Kiểm tra trạng thái xác thực với token từ localStorage');
+
+      // Try to get user info with the stored token
+      const userData = await api.auth.me();
+
+      logger.debug('Trạng thái xác thực hợp lệ', {
+        userId: userData.id,
+        email: userData.email,
+      });
+
+      // Convert API response to User type
+      const user: User = {
+        id: userData.id?.toString() || '',
+        email: userData.email || '',
+        firstName: userData.first_name || '',
+        lastName: userData.last_name || '',
+        profilePicture: userData.avatar_url || undefined,
+        phoneNumber: userData.phone_number || undefined,
+        createdAt: userData.created_at || new Date().toISOString(),
+        updatedAt: userData.updated_at || new Date().toISOString(),
+      };
+
+      dispatch({ type: 'AUTH_SUCCESS', payload: user });
     } catch (error) {
-      // Only dispatch error for actual failures, not missing tokens
-      console.error('Failed to check auth status:', error);
+      logger.authError(
+        'Kiểm tra trạng thái xác thực thất bại',
+        error instanceof Error ? error : new Error('Auth status check failed')
+      );
+
+      // Clear invalid tokens
+      tokenStorage.clearTokens();
+      dispatch({ type: 'AUTH_ERROR', payload: 'Phiên đăng nhập đã hết hạn' });
+    }
+  };
+
+  const login = async (credentials: LoginCredentials): Promise<void> => {
+    dispatch({ type: 'AUTH_START' });
+
+    try {
+      logger.debug('Đăng nhập với email', { email: credentials.email });
+
+      const response = await api.auth.login(credentials);
+
+      logger.debug('Đăng nhập thành công');
+
+      // Store tokens in localStorage
+      tokenStorage.setToken(response.access_token);
+      tokenStorage.setRefreshToken(response.refresh_token);
+
+      // Get user data
+      const userData = await api.auth.me();
+
+      // Convert API response to User type
+      const user: User = {
+        id: userData.id?.toString() || '',
+        email: userData.email || '',
+        firstName: userData.first_name || '',
+        lastName: userData.last_name || '',
+        profilePicture: userData.avatar_url || undefined,
+        phoneNumber: userData.phone_number || undefined,
+        createdAt: userData.created_at || new Date().toISOString(),
+        updatedAt: userData.updated_at || new Date().toISOString(),
+      };
+
+      dispatch({ type: 'AUTH_SUCCESS', payload: user });
+
+      toast.success('Đăng nhập thành công!');
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error && error.message === 'Invalid credentials'
+          ? 'Email hoặc mật khẩu không chính xác'
+          : 'Đăng nhập thất bại';
+
+      logger.authError(
+        'Đăng nhập thất bại',
+        error instanceof Error ? error : new Error(errorMessage)
+      );
+
+      dispatch({ type: 'AUTH_ERROR', payload: errorMessage });
+      toast.error(errorMessage);
+      throw error;
+    }
+  };
+
+  const register = async (userData: RegisterCredentials): Promise<void> => {
+    dispatch({ type: 'AUTH_START' });
+
+    try {
+      logger.debug('Đăng ký tài khoản mới', { email: userData.email });
+
+      const response = await api.auth.register({
+        email: userData.email,
+        first_name: userData.firstName,
+        last_name: userData.lastName,
+        password: userData.password,
+      });
+
+      logger.debug('Đăng ký thành công');
+
+      // Login
+      const loginResponse = await api.auth.login({
+        email: userData.email,
+        password: userData.password,
+      });
+
+      // Store tokens in localStorage
+      tokenStorage.setToken(loginResponse.access_token);
+      tokenStorage.setRefreshToken(loginResponse.refresh_token);
+
+      // Get user data
+      const userDataResponse = await api.auth.me();
+
+      // Convert API response to User type
+      const user: User = {
+        id: userData.id?.toString() || '',
+        email: userDataResponse.email || '',
+        firstName: userDataResponse.first_name || '',
+        lastName: userDataResponse.last_name || '',
+        profilePicture: userDataResponse.avatar_url || undefined,
+        phoneNumber: userDataResponse.phone_number || undefined,
+        createdAt: userDataResponse.created_at || new Date().toISOString(),
+        updatedAt: userDataResponse.updated_at || new Date().toISOString(),
+      };
+
+      dispatch({ type: 'AUTH_SUCCESS', payload: user });
+
+      toast.success('Đăng ký thành công!');
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error &&
+        error.message === 'User with this email already exists'
+          ? 'Email đã tồn tại'
+          : 'Đăng ký thất bại';
+
+      logger.authError(
+        'Đăng ký thất bại',
+        error instanceof Error ? error : new Error(errorMessage)
+      );
+
+      dispatch({ type: 'AUTH_ERROR', payload: errorMessage });
+      toast.error(errorMessage);
+      throw error;
+    }
+  };
+
+  const loginWithGoogle = async () => {
+    dispatch({ type: 'AUTH_START' });
+
+    try {
+      logger.debug('Bắt đầu đăng nhập với Google');
+
+      // Get Google OAuth URL
+      const { authorization_url, state } = await api.auth.googleLogin();
+
+      // Store state in sessionStorage for CSRF protection (not sensitive data)
+      sessionStorage.setItem('google_oauth_state', state);
+
+      logger.debug('Chuyển hướng đến Google OAuth', {
+        hasAuthUrl: !!authorization_url,
+        hasState: !!state,
+      });
+
+      // Redirect to Google OAuth
+      window.location.href = authorization_url;
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error && error.message === 'Invalid state'
+          ? 'Đăng nhập Google thất bại'
+          : 'Đăng nhập Google thất bại';
+      dispatch({ type: 'AUTH_ERROR', payload: errorMessage });
+
+      logger.authError(
+        'Đăng nhập Google thất bại',
+        error instanceof Error ? error : new Error(errorMessage)
+      );
+
+      // Show error toast
+      toast.error('Đăng nhập Google thất bại', {
+        description: errorMessage,
+      });
+      throw error;
+    }
+  };
+
+  const logout = async (): Promise<void> => {
+    try {
+      logger.debug('Đăng xuất');
+
+      // Call logout API (optional - to invalidate server-side sessions)
+      try {
+        await api.auth.logout();
+      } catch (error) {
+        // Ignore logout API errors - we'll clear local tokens anyway
+        logger.debug('Logout API failed, continuing with local cleanup', {
+          error: error instanceof Error ? error.message : 'Unknown error',
+        });
+      }
+
+      // Clear tokens from localStorage
+      tokenStorage.clearTokens();
+
+      dispatch({ type: 'LOGOUT' });
+      toast.success('Đã đăng xuất');
+
+      logger.debug('Đăng xuất thành công');
+    } catch (error) {
+      logger.authError(
+        'Đăng xuất thất bại',
+        error instanceof Error ? error : new Error('Logout failed')
+      );
+
+      // Even if logout API fails, clear local tokens
+      tokenStorage.clearTokens();
       dispatch({ type: 'LOGOUT' });
     }
   };
 
-  const login = async (credentials: LoginCredentials) => {
-    dispatch({ type: 'AUTH_START' });
-
-    try {
-      // Simulate API call - replace with actual endpoint
-      // const response = await fetch(`${API_BASE_URL}/auth/login`, {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(credentials),
-      // });
-
-      // For demo purposes, simulate successful login
-      if (credentials.email && credentials.password) {
-        const mockUser: User = {
-          id: '1',
-          email: credentials.email,
-          firstName: 'John',
-          lastName: 'Doe',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        };
-
-        // Store auth data in localStorage (in production, use secure storage)
-        localStorage.setItem('auth_token', 'mock_jwt_token');
-        localStorage.setItem('refresh_token', 'mock_refresh_token');
-        localStorage.setItem('user_data', JSON.stringify(mockUser));
-
-        dispatch({ type: 'AUTH_SUCCESS', payload: mockUser });
-      } else {
-        throw new Error('Invalid credentials');
-      }
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : 'Login failed';
-      dispatch({ type: 'AUTH_ERROR', payload: errorMessage });
-      throw error;
-    }
-  };
-
-  const register = async (credentials: RegisterCredentials) => {
-    dispatch({ type: 'AUTH_START' });
-
-    try {
-      // Validate password confirmation
-      if (credentials.password !== credentials.confirmPassword) {
-        throw new Error('Passwords do not match');
-      }
-
-      // Simulate API call - replace with actual endpoint
-      // const response = await fetch(`${API_BASE_URL}/auth/register`, {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({
-      //     firstName: credentials.firstName,
-      //     lastName: credentials.lastName,
-      //     email: credentials.email,
-      //     password: credentials.password,
-      //   }),
-      // });
-
-      // For demo purposes, simulate successful registration
-      const mockUser: User = {
-        id: Date.now().toString(),
-        email: credentials.email,
-        firstName: credentials.firstName,
-        lastName: credentials.lastName,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-
-      // Store auth data in localStorage
-      localStorage.setItem('auth_token', 'mock_jwt_token');
-      localStorage.setItem('refresh_token', 'mock_refresh_token');
-      localStorage.setItem('user_data', JSON.stringify(mockUser));
-
-      dispatch({ type: 'AUTH_SUCCESS', payload: mockUser });
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : 'Registration failed';
-      dispatch({ type: 'AUTH_ERROR', payload: errorMessage });
-      throw error;
-    }
-  };
-
-  const logout = () => {
-    // Clear stored auth data
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('refresh_token');
-    localStorage.removeItem('user_data');
-
-    dispatch({ type: 'LOGOUT' });
-  };
-
   const updateProfile = async (userData: Partial<User>) => {
     try {
-      // Simulate API call - replace with actual endpoint
-      // const response = await fetch(`${API_BASE_URL}/user/profile`, {
-      //   method: 'PATCH',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //     'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
-      //   },
-      //   body: JSON.stringify(userData),
-      // });
+      logger.debug('Bắt đầu cập nhật thông tin cá nhân', {
+        userId: state.user?.id,
+        fields: Object.keys(userData),
+      });
 
-      // For demo purposes, update user data in localStorage
-      if (state.user) {
-        const updatedUser = {
-          ...state.user,
-          ...userData,
-          updatedAt: new Date().toISOString(),
-        };
-        localStorage.setItem('user_data', JSON.stringify(updatedUser));
-        dispatch({ type: 'UPDATE_USER', payload: userData });
-      }
+      // Map frontend user fields to backend format
+      const backendUserData: Record<string, string> = {};
+      if (userData.firstName) backendUserData.first_name = userData.firstName;
+      if (userData.lastName) backendUserData.last_name = userData.lastName;
+      if (userData.email) backendUserData.email = userData.email;
+      if (userData.phoneNumber)
+        backendUserData.phone_number = userData.phoneNumber;
+
+      const updatedUser = await api.users.updateProfile(backendUserData);
+
+      const user: User = {
+        id: updatedUser.id?.toString() || '',
+        email: updatedUser.email || '',
+        firstName: updatedUser.first_name || '',
+        lastName: updatedUser.last_name || '',
+        profilePicture: updatedUser.avatar_url || undefined,
+        phoneNumber: updatedUser.phone_number || undefined,
+        createdAt: updatedUser.created_at || new Date().toISOString(),
+        updatedAt: updatedUser.updated_at || new Date().toISOString(),
+      };
+
+      dispatch({ type: 'UPDATE_USER', payload: user });
+
+      logger.authSuccess('Cập nhật thông tin cá nhân thành công', {
+        userId: user.id,
+      });
+
+      // Show success toast
+      toast.success('Thông tin tài khoản đã được cập nhật thành công', {
+        description: 'Thông tin cá nhân của bạn đã được cập nhật.',
+      });
     } catch (error) {
       const errorMessage =
-        error instanceof Error ? error.message : 'Failed to update profile';
+        error instanceof Error
+          ? error.message
+          : 'Cập nhật thông tin tài khoản thất bại';
       dispatch({ type: 'AUTH_ERROR', payload: errorMessage });
+
+      logger.authError(
+        'Cập nhật thông tin cá nhân thất bại',
+        error instanceof Error ? error : new Error(errorMessage),
+        {
+          userId: state.user?.id,
+        }
+      );
+
+      // Show error toast
+      toast.error('Cập nhật thông tin tài khoản thất bại', {
+        description: errorMessage,
+      });
       throw error;
     }
   };
 
   const refreshAuth = async () => {
     try {
-      const refreshToken = localStorage.getItem('refresh_token');
-      if (!refreshToken) {
-        throw new Error('No refresh token found');
-      }
+      logger.debug('Bắt đầu làm mới phiên đăng nhập');
 
-      // Simulate API call - replace with actual endpoint
-      // const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ refreshToken }),
-      // });
+      // Refresh tokens - httpOnly cookies will be updated by server
+      await api.auth.refresh();
 
-      // For demo purposes, just check existing auth status
+      // Verify the new session and get user data
       await checkAuthStatus();
+
+      logger.authSuccess('Làm mới phiên đăng nhập thành công');
     } catch (error) {
-      dispatch({
-        type: 'AUTH_ERROR',
-        payload: 'Failed to refresh authentication',
-      });
+      logger.authError(
+        'Làm mới phiên đăng nhập thất bại',
+        error instanceof Error ? error : new Error('Refresh failed')
+      );
+
+      // Refresh failed, logout user
+      await logout();
       throw error;
     }
   };
@@ -274,9 +408,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     ...state,
     login,
     register,
+    loginWithGoogle,
     logout,
     updateProfile,
     refreshAuth,
+    checkAuthStatus,
     clearError,
   };
 
@@ -304,16 +440,17 @@ export function withAuth<P extends object>(
     if (isLoading) {
       return (
         <div className='flex min-h-screen items-center justify-center'>
-          <div className='text-lg'>Loading...</div>
+          <div className='text-lg'>Đang tải...</div>
         </div>
       );
     }
 
     if (!isAuthenticated) {
-      // In a real app, redirect to login page
       return (
         <div className='flex min-h-screen items-center justify-center'>
-          <div className='text-lg'>Please log in to access this page.</div>
+          <div className='text-lg'>
+            Vui lòng đăng nhập để truy cập trang này.
+          </div>
         </div>
       );
     }

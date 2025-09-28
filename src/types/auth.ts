@@ -21,6 +21,7 @@ export interface AuthState {
 export interface LoginCredentials {
   email: string;
   password: string;
+  [key: string]: unknown;
 }
 
 export interface RegisterCredentials {
@@ -29,6 +30,7 @@ export interface RegisterCredentials {
   email: string;
   password: string;
   confirmPassword: string;
+  [key: string]: unknown;
 }
 
 export interface AuthResponse {
@@ -37,12 +39,24 @@ export interface AuthResponse {
   refreshToken: string;
 }
 
+export interface GoogleAuthResponse {
+  authorization_url: string;
+  state: string;
+}
+
+export interface GoogleCallbackRequest {
+  code: string;
+  state?: string;
+}
+
 export interface AuthContextType extends AuthState {
   login: (credentials: LoginCredentials) => Promise<void>;
   register: (credentials: RegisterCredentials) => Promise<void>;
+  loginWithGoogle: () => Promise<void>;
   logout: () => void;
   updateProfile: (userData: Partial<User>) => Promise<void>;
   refreshAuth: () => Promise<void>;
+  checkAuthStatus: () => Promise<void>;
   clearError: () => void;
 }
 
