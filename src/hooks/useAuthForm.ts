@@ -3,13 +3,13 @@
 import { useState, useEffect } from 'react';
 import { LoginCredentials, RegisterCredentials } from '@/types/auth';
 
-interface UseAuthFormProps<T> {
+interface UseAuthFormProps<T extends Record<string, unknown>> {
   initialValues: T;
   validate?: (values: T) => Partial<Record<keyof T, string>>;
   onSubmit: (values: T) => Promise<void>;
 }
 
-interface FormState<T> {
+interface FormState<T extends Record<string, unknown>> {
   values: T;
   errors: Partial<Record<keyof T, string>>;
   touched: Partial<Record<keyof T, boolean>>;
@@ -17,7 +17,7 @@ interface FormState<T> {
   isValid: boolean;
 }
 
-export function useAuthForm<T extends Record<string, any>>({
+export function useAuthForm<T extends Record<string, unknown>>({
   initialValues,
   validate,
   onSubmit,
@@ -41,7 +41,7 @@ export function useAuthForm<T extends Record<string, any>>({
     }
   }, [state.values, validate]);
 
-  const handleChange = (name: keyof T, value: any) => {
+  const handleChange = (name: keyof T, value: unknown) => {
     setState(prev => ({
       ...prev,
       values: { ...prev.values, [name]: value },
@@ -111,15 +111,15 @@ export const validateLogin = (
   const errors: Partial<Record<keyof LoginCredentials, string>> = {};
 
   if (!values.email) {
-    errors.email = 'Email is required';
+    errors.email = 'Email là bắt buộc';
   } else if (!/\S+@\S+\.\S+/.test(values.email)) {
-    errors.email = 'Email is invalid';
+    errors.email = 'Email không hợp lệ';
   }
 
   if (!values.password) {
-    errors.password = 'Password is required';
+    errors.password = 'Mật khẩu là bắt buộc';
   } else if (values.password.length < 6) {
-    errors.password = 'Password must be at least 6 characters';
+    errors.password = 'Mật khẩu phải có ít nhất 6 ký tự';
   }
 
   return errors;
@@ -131,36 +131,36 @@ export const validateRegister = (
   const errors: Partial<Record<keyof RegisterCredentials, string>> = {};
 
   if (!values.firstName) {
-    errors.firstName = 'First name is required';
+    errors.firstName = 'Tên là bắt buộc';
   } else if (values.firstName.length < 2) {
-    errors.firstName = 'First name must be at least 2 characters';
+    errors.firstName = 'Tên phải có ít nhất 2 ký tự';
   }
 
   if (!values.lastName) {
-    errors.lastName = 'Last name is required';
+    errors.lastName = 'Họ là bắt buộc';
   } else if (values.lastName.length < 2) {
-    errors.lastName = 'Last name must be at least 2 characters';
+    errors.lastName = 'Họ phải có ít nhất 2 ký tự';
   }
 
   if (!values.email) {
-    errors.email = 'Email is required';
+    errors.email = 'Email là bắt buộc';
   } else if (!/\S+@\S+\.\S+/.test(values.email)) {
-    errors.email = 'Email is invalid';
+    errors.email = 'Email không hợp lệ';
   }
 
   if (!values.password) {
-    errors.password = 'Password is required';
+    errors.password = 'Mật khẩu là bắt buộc';
   } else if (values.password.length < 8) {
-    errors.password = 'Password must be at least 8 characters';
+    errors.password = 'Mật khẩu phải có ít nhất 8 ký tự';
   } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(values.password)) {
     errors.password =
-      'Password must contain at least one uppercase letter, one lowercase letter, and one number';
+      'Mật khẩu phải chứa ít nhất một chữ hoa, một chữ thường và một số';
   }
 
   if (!values.confirmPassword) {
-    errors.confirmPassword = 'Please confirm your password';
+    errors.confirmPassword = 'Vui lòng xác nhận mật khẩu';
   } else if (values.password !== values.confirmPassword) {
-    errors.confirmPassword = 'Passwords do not match';
+    errors.confirmPassword = 'Mật khẩu xác nhận không khớp';
   }
 
   return errors;
