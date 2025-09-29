@@ -26,7 +26,7 @@ export function Navigation() {
               <div className='from-health-500 to-health-600 h-2 w-2 rounded-full bg-gradient-to-r'></div>
             </div>
           </div>
-          <span className='from-health-600 to-health-700 bg-gradient-to-r bg-clip-text text-xl font-bold text-transparent'>
+          <span className='from-health-600 to-health-700 font-gilroy bg-gradient-to-r bg-clip-text text-xl font-bold text-transparent'>
             Khealth
           </span>
         </Link>
