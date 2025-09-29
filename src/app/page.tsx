@@ -68,9 +68,28 @@ export default function LandingPage() {
             />
           ))}
           <div className={styles.custom_block}>
-            <h3>Custom Content Block</h3>
-            <p>This is a custom content block in the third position</p>
-            <button>Custom Action</button>
+            <div className={styles.custom_block_content}>
+              <h3>Lorem Ipsum is simply </h3>
+              <p>
+                Lorem Ipsum is simply dummy text of the printing and typesetting
+                industry
+              </p>
+              <div className={styles.custom_block_content_decorates}>
+                <img src='/icons/Decorate1.svg' alt='Custom Content Block 1' />
+                <img src='/icons/Decorate2.svg' alt='Custom Content Block 2' />
+              </div>
+            </div>
+            <div className='flex w-full flex-row justify-between'>
+              <div className={styles.custom_block_icons}>
+                <img src='/Avatar1.png' alt='Custom Content Block 4' />
+                <img src='/Avatar2.png' alt='Custom Content Block 5' />
+              </div>
+              <img
+                className={styles.custom_block_icons_feedback}
+                src='/icons/Feedback.svg'
+                alt='Custom Content Block 6'
+              />
+            </div>
           </div>
           {/* Fourth position - Last item from gridData */}
           <Card

@@ -17,11 +17,10 @@ const Card = ({ description, image, index }: CardProps) => {
         <p className={styles.card_header_description}>{description}</p>
       )}
       <img src={image} alt={description} className={styles.card_image} />
-      {index !== 1 && (
-        <div
-          className={`${styles.overlay} ${index === 0 ? styles.custom_block : ''}`}
-        ></div>
-      )}
+
+      <div
+        className={`${styles.overlay} ${index === 0 ? styles.custom_block : ''}`}
+      ></div>
     </div>
   );
 };
