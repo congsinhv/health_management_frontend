@@ -24,7 +24,7 @@
 
 .nav {
   display: flex;
-  gap: 1.5rem;
+  gap: 2rem;
   align-items: center;
 }
 
@@ -40,12 +40,16 @@
   a {
     text-decoration: none;
     color: #000;
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     font-weight: 500;
     font-family: var(--font-gilroy); // Using Gilroy font for navigation
-  }
-
-  &:hover {
-    color: #000;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    &:hover {
+      transform: scale(1.2);
+      color: #000;
+      font-weight: 600;
+      font-family: var(--font-gilroy);
+    }
   }
 }
