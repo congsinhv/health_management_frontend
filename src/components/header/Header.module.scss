@@ -1,0 +1,51 @@
+.header {
+  background-color: white;
+  width: 100%;
+  padding-inline: 48px;
+}
+
+.container {
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  padding-block: 0.25rem;
+  justify-content: space-between;
+  align-items: center;
+}
+.logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  img {
+    width: 120px !important;
+  }
+}
+
+.nav {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+}
+
+.chat {
+  cursor: pointer;
+  transition: all 0.3s ease;
+  &:hover {
+    transform: scale(1.2);
+  }
+}
+
+.nav__item {
+  a {
+    text-decoration: none;
+    color: #000;
+    font-size: 0.85rem;
+    font-weight: 500;
+    font-family: var(--font-gilroy); // Using Gilroy font for navigation
+  }
+
+  &:hover {
+    color: #000;
+  }
+}
