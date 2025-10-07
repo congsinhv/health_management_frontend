@@ -139,7 +139,7 @@ resource "google_cloud_run_service_iam_member" "public_access" {
 # Artifact Registry Repository
 resource "google_artifact_registry_repository" "docker_repo" {
   location      = var.region
-  repository_id = "health-management-${var.environment}"
+  repository_id = "health-management-frontend-${var.environment}"
   description   = "Docker repository for health management frontend - ${var.environment}"
   format        = "DOCKER"
   project       = var.project_id

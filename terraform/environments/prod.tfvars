@@ -17,7 +17,7 @@ max_instances = "10"
 allow_unauthenticated = true
 
 # Image Configuration (will be overridden by Jenkins)
-image_url = "asia-southeast1-docker.pkg.dev/vhealth-prod/health-management-prod/health-frontend:latest"
+image_url = "asia-southeast1-docker.pkg.dev/vhealth-prod/health-management-frontend-prod/health-frontend:latest"
 
 # Environment Variables
 environment_variables = {

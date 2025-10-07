@@ -20,7 +20,7 @@ pipeline {
         GCP_PROJECT_ID = "${params.ENVIRONMENT == 'prod' ? 'vhealth-prod' : 'vhealth-dev'}"
         TF_BACKEND_BUCKET = "${GCP_PROJECT_ID}-tfstate"
 
-        ARTIFACT_REGISTRY_REPO = "health-management-${params.ENVIRONMENT}"
+        ARTIFACT_REGISTRY_REPO = "health-management-frontend-${params.ENVIRONMENT}"
         IMAGE_NAME = "health-frontend"
         IMAGE_TAG = "${env.BUILD_NUMBER}-${env.GIT_COMMIT.take(7)}"
         IMAGE_FULL = "${GCP_REGION}-docker.pkg.dev/${GCP_PROJECT_ID}/${ARTIFACT_REGISTRY_REPO}/${IMAGE_NAME}:${IMAGE_TAG}"
@@ -207,6 +207,35 @@ pipeline {
             }
         }
 
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    echo "Building Docker image: ${IMAGE_FULL}"
+                    sh """
+                        docker build \
+                            --build-arg BUILD_DATE=\$(date -u +"%Y-%m-%dT%H:%M:%SZ") \
+                            --build-arg VERSION=${IMAGE_TAG} \
+                            --build-arg GIT_COMMIT=${GIT_COMMIT} \
+                            -t ${IMAGE_FULL} \
+                            -t ${IMAGE_LATEST} \
+                            .
+                    """
+                }
+            }
+        }
+
+        stage('Push to Artifact Registry') {
+            steps {
+                script {
+                    echo 'Pushing image to Artifact Registry...'
+                    sh """
+                        docker push ${IMAGE_FULL}
+                        docker push ${IMAGE_LATEST}
+                    """
+                }
+            }
+        }
+
         stage('Terraform Plan') {
             steps {
                 dir('terraform') {
@@ -249,35 +278,6 @@ pipeline {
                             cat terraform_outputs.json
                         '''
                     }
-                }
-            }
-        }
-
-        stage('Build Docker Image') {
-            steps {
-                script {
-                    echo "Building Docker image: ${IMAGE_FULL}"
-                    sh """
-                        docker build \
-                            --build-arg BUILD_DATE=\$(date -u +"%Y-%m-%dT%H:%M:%SZ") \
-                            --build-arg VERSION=${IMAGE_TAG} \
-                            --build-arg GIT_COMMIT=${GIT_COMMIT} \
-                            -t ${IMAGE_FULL} \
-                            -t ${IMAGE_LATEST} \
-                            .
-                    """
-                }
-            }
-        }
-
-        stage('Push to Artifact Registry') {
-            steps {
-                script {
-                    echo 'Pushing image to Artifact Registry...'
-                    sh """
-                        docker push ${IMAGE_FULL}
-                        docker push ${IMAGE_LATEST}
-                    """
                 }
             }
         }
