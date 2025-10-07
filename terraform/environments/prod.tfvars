@@ -29,9 +29,9 @@ environment_variables = {
 
 # Secret Environment Variables (from GCP Secret Manager)
 secret_environment_variables = {
-  NEXT_PUBLIC_API_URL            = "next-public-api-url-prod"
-  NEXT_PUBLIC_GOOGLE_CLIENT_ID   = "next-public-google-client-id-prod"
-  NEXT_PUBLIC_GOOGLE_SECRET      = "next-public-google-secret-prod"
-  NEXT_PUBLIC_GOOGLE_REDIRECT_URI = "next-public-google-redirect-uri-prod"
+  NEXT_PUBLIC_API_URL            = "prod-api-url"
+  NEXT_PUBLIC_GOOGLE_CLIENT_ID   = "prod-google-client-id"
+  NEXT_PUBLIC_GOOGLE_SECRET      = "prod-google-secret"
+  NEXT_PUBLIC_GOOGLE_REDIRECT_URI = "prod-google-redirect-uri"
 }
 
