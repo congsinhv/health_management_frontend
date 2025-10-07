@@ -1,0 +1,44 @@
+# GCP Project Configuration
+project_id = "your-gcp-project-id"
+region     = "us-central1"
+
+# Environment Configuration
+environment = "dev" # or "prod"
+
+# Container Image
+image_url = "gcr.io/your-gcp-project-id/health-management-frontend:latest"
+
+# Resource Limits
+cpu_limit    = "1"
+memory_limit = "1Gi"
+
+# Scaling Configuration
+min_instances = "0"
+max_instances = "10"
+
+# Access Control
+allow_unauthenticated = true
+
+# Environment Variables (non-sensitive)
+environment_variables = {
+  NODE_ENV                = "production"
+  NEXT_TELEMETRY_DISABLED = "1"
+}
+
+# Secret Environment Variables (from GCP Secret Manager)
+# Format: ENV_VAR_NAME = "secret-name-in-gcp"
+secret_environment_variables = {
+  NEXT_PUBLIC_API_URL            = "next-public-api-url-prod"
+  NEXT_PUBLIC_GOOGLE_CLIENT_ID   = "next-public-google-client-id-prod"
+  NEXT_PUBLIC_GOOGLE_SECRET      = "next-public-google-secret-prod"
+  NEXT_PUBLIC_GOOGLE_REDIRECT_URI = "next-public-google-redirect-uri-prod"
+}
+
+# Cloud Build (optional)
+enable_cloud_build_trigger = false
+github_owner               = "your-github-username"
+github_repo                = "health_management_frontend"
+
+# Registry Type
+use_artifact_registry = false
+
