@@ -38,14 +38,14 @@ variable "memory_limit" {
 
 variable "min_instances" {
   description = "Minimum number of instances"
-  type        = number
-  default     = 0
+  type        = string
+  default     = "0"
 }
 
 variable "max_instances" {
   description = "Maximum number of instances"
-  type        = number
-  default     = 10
+  type        = string
+  default     = "10"
 }
 
 variable "allow_unauthenticated" {
@@ -61,7 +61,7 @@ variable "environment_variables" {
 }
 
 variable "secret_environment_variables" {
-  description = "Secret environment variables from GCP Secret Manager (format: key=secret-name:version)"
+  description = "Secret environment variables from GCP Secret Manager (format: SECRET_NAME:VERSION)"
   type        = map(string)
   default     = {}
 }
