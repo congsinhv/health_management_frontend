@@ -160,7 +160,7 @@ pipeline {
                         sh """
                             terraform init \
                                 -backend-config="bucket=${TF_BACKEND_BUCKET}" \
-                                -backend-config="prefix=terraform/state/${params.ENVIRONMENT}" \
+                                -backend-config="prefix=terraform/state/frontend-${params.ENVIRONMENT}" \
                                 -reconfigure \
                                 -no-color
                         """
