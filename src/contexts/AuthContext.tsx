@@ -1,7 +1,7 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useReducer } from 'react';
-import { toast } from 'sonner';
+import { api, tokenStorage } from '@/lib/api';
+import { logger } from '@/lib/logger';
 import {
   AuthContextType,
   AuthState,
@@ -9,8 +9,8 @@ import {
   RegisterCredentials,
   User,
 } from '@/types/auth';
-import { api, tokenStorage } from '@/lib/api';
-import { logger } from '@/lib/logger';
+import React, { createContext, useContext, useEffect, useReducer } from 'react';
+import { toast } from 'sonner';
 
 // Auth reducer actions
 type AuthAction =
@@ -189,7 +189,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       logger.debug('Đăng ký tài khoản mới', { email: userData.email });
 
-      const response = await api.auth.register({
+      await api.auth.register({
         email: userData.email,
         first_name: userData.firstName,
         last_name: userData.lastName,

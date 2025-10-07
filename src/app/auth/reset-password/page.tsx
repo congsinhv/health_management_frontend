@@ -1,19 +1,18 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
-import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { PasswordStrength } from '@/components/ui/password-strength';
 import { api } from '@/lib/api';
 import { logger } from '@/lib/logger';
-import { Lock, ArrowLeft, CheckCircle, AlertTriangle } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, CheckCircle, Lock } from 'lucide-react';
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
+import { Suspense, useEffect, useState } from 'react';
 
 function ResetPasswordContent() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
 

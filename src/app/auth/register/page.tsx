@@ -1,8 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { Google } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -16,7 +14,9 @@ import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAuthForm, validateRegister } from '@/hooks/useAuthForm';
 import { RegisterCredentials } from '@/types/auth';
-import { Google } from '@/components/icons';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -33,7 +33,7 @@ export default function RegisterPage() {
     if (error) {
       clearError();
     }
-  }, []);
+  });
 
   // Redirect to dashboard if already authenticated
   useEffect(() => {

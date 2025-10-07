@@ -1,8 +1,6 @@
 'use client';
 
-import { useEffect, useState, Suspense } from 'react';
-import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { Google } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -16,7 +14,9 @@ import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAuthForm, validateLogin } from '@/hooks/useAuthForm';
 import { LoginCredentials } from '@/types/auth';
-import { Google } from '@/components/icons';
+import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense, useEffect, useState } from 'react';
 
 function LoginContent() {
   const router = useRouter();
@@ -34,7 +34,7 @@ function LoginContent() {
     if (error) {
       clearError();
     }
-  }, []);
+  });
 
   // State for URL-based messages
   const [urlError, setUrlError] = useState<string | null>(null);
