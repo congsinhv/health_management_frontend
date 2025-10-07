@@ -12,11 +12,6 @@ pipeline {
             defaultValue: 'develop',
             description: 'Git branch to deploy'
         )
-        booleanParam(
-            name: 'SKIP_DOCKER_BUILD',
-            defaultValue: false,
-            description: 'Skip Docker build and deployment (infrastructure setup only)'
-        )
     }
 
     environment {
@@ -56,20 +51,10 @@ pipeline {
                     echo '=========================================='
                     echo "Environment: ${params.ENVIRONMENT}"
                     echo "Branch: ${params.BRANCH_NAME}"
-                    echo "Build Number: ${env.BUILD_NUMBER}"
                     echo "GCP Project: ${GCP_PROJECT_ID}"
                     echo "GCP Region: ${GCP_REGION}"
                     echo "Terraform State Bucket: ${TF_BACKEND_BUCKET}"
-
-                    if (params.SKIP_DOCKER_BUILD) {
-                        echo ''
-                        echo 'WARNING: INFRASTRUCTURE INIT MODE'
-                        echo 'Will create infrastructure without deploying application'
-                        echo ''
-                    } else {
-                        echo "Image: ${IMAGE_FULL}"
-                    }
-
+                    echo "Image: ${IMAGE_FULL}"
                     echo '=========================================='
                 }
             }
@@ -88,6 +73,24 @@ pipeline {
             }
         }
 
+        stage('Setup Bun') {
+            steps {
+                script {
+                    echo 'Setting up Bun...'
+                    sh '''
+                        if ! command -v bun &> /dev/null; then
+                            echo "Installing Bun..."
+                            curl -fsSL https://bun.sh/install | bash
+                            export PATH="$HOME/.bun/bin:$PATH"
+                        else
+                            echo "Bun is already installed"
+                        fi
+                        bun --version
+                    '''
+                }
+            }
+        }
+
         stage('Authenticate to GCP') {
             steps {
                 script {
@@ -101,48 +104,37 @@ pipeline {
             }
         }
 
-        stage('Build and Test Application') {
-            when {
-                expression { return !params.SKIP_DOCKER_BUILD }
-            }
+        stage('Install Dependencies') {
             steps {
                 script {
-                    echo '=========================================='
-                    echo 'Building Application'
-                    echo '=========================================='
-
-                    // Setup Bun
-                    echo '1. Setting up Bun...'
-                    sh '''
-                        if ! command -v bun &> /dev/null; then
-                            echo "Installing Bun..."
-                            curl -fsSL https://bun.sh/install | bash
-                            export PATH="$HOME/.bun/bin:$PATH"
-                        else
-                            echo "Bun is already installed"
-                        fi
-                        bun --version
-                    '''
-
-                    // Install Dependencies
-                    echo '2. Installing project dependencies...'
+                    echo 'Installing project dependencies...'
                     sh '''
                         export PATH="$HOME/.bun/bin:$PATH"
                         bun install --frozen-lockfile
                         echo "Dependencies installed successfully"
                     '''
+                }
+            }
+        }
 
-                    // Lint and Format Check
-                    echo '3. Running linting and format checks...'
+        stage('Lint and Format Check') {
+            steps {
+                script {
+                    echo 'Running linting and format checks...'
                     sh '''
                         export PATH="$HOME/.bun/bin:$PATH"
                         bun run lint
                         bun run format:check
                         echo "Code quality checks passed"
                     '''
+                }
+            }
+        }
 
-                    // Build Application
-                    echo '4. Building Next.js application...'
+        stage('Build Application') {
+            steps {
+                script {
+                    echo 'Building Next.js application...'
                     sh '''
                         export PATH="$HOME/.bun/bin:$PATH"
                         bun run build
@@ -155,10 +147,6 @@ pipeline {
                             exit 1
                         fi
                     '''
-
-                    echo '=========================================='
-                    echo 'Application Build Complete'
-                    echo '=========================================='
                 }
             }
         }
@@ -234,24 +222,51 @@ pipeline {
             }
         }
 
-        stage('Build and Push Docker Image') {
+        stage('Approve Terraform Apply') {
             when {
-                expression { return !params.SKIP_DOCKER_BUILD }
+                expression { return params.ENVIRONMENT == 'prod' }
             }
             steps {
                 script {
-                    echo '=========================================='
-                    echo 'Docker Build and Push'
-                    echo '=========================================='
+                    echo 'Production deployment detected. Manual approval required.'
+                    input message: 'Apply Terraform changes to PRODUCTION?',
+                          ok: 'Deploy',
+                          submitter: 'admin'
+                }
+            }
+        }
 
-                    // Configure Docker
-                    echo '1. Configuring Docker authentication for Artifact Registry...'
+        stage('Terraform Apply') {
+            steps {
+                dir('terraform') {
+                    script {
+                        echo 'Applying Terraform changes...'
+                        sh 'terraform apply -auto-approve -no-color tfplan'
+
+                        sh '''
+                            terraform output -json > terraform_outputs.json
+                            cat terraform_outputs.json
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage('Configure Docker for Artifact Registry') {
+            steps {
+                script {
+                    echo 'Configuring Docker authentication for Artifact Registry...'
                     sh """
                         gcloud auth configure-docker ${GCP_REGION}-docker.pkg.dev --quiet
                     """
+                }
+            }
+        }
 
-                    // Build Docker Image
-                    echo "2. Building Docker image: ${IMAGE_FULL}"
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    echo "Building Docker image: ${IMAGE_FULL}"
                     sh """
                         docker build \
                             --build-arg BUILD_DATE=\$(date -u +"%Y-%m-%dT%H:%M:%SZ") \
@@ -261,30 +276,31 @@ pipeline {
                             -t ${IMAGE_LATEST} \
                             .
                     """
-
-                    // Push to Registry
-                    echo '3. Pushing image to Artifact Registry...'
-                    sh """
-                        docker push ${IMAGE_FULL}
-                        docker push ${IMAGE_LATEST}
-                    """
-
-                    echo '=========================================='
-                    echo 'Docker Build and Push Complete'
-                    echo '=========================================='
                 }
             }
         }
 
-        stage('Approve Deployment') {
+        stage('Push to Artifact Registry') {
+            steps {
+                script {
+                    echo 'Pushing image to Artifact Registry...'
+                    sh """
+                        docker push ${IMAGE_FULL}
+                        docker push ${IMAGE_LATEST}
+                    """
+                }
+            }
+        }
+
+        stage('Approve Cloud Run Deployment') {
             when {
                 expression { return params.ENVIRONMENT == 'prod' }
             }
             steps {
                 script {
                     echo 'Production deployment detected. Manual approval required.'
-                    input message: 'Deploy to PRODUCTION Cloud Run?',
-                          ok: 'Deploy to Production',
+                    input message: 'Deploy to Cloud Run PRODUCTION?',
+                          ok: 'Deploy',
                           submitter: 'admin'
                 }
             }
@@ -294,47 +310,42 @@ pipeline {
             steps {
                 dir('terraform') {
                     script {
-                        if (params.SKIP_DOCKER_BUILD) {
-                            echo 'Infrastructure initialization - creating infrastructure without Docker image...'
-                            echo 'Note: Cloud Run service will use placeholder image from terraform/main.tf'
+                        echo 'Deploying to Cloud Run with new Docker image via Terraform...'
 
-                            sh """
-                                terraform apply \
-                                    -var-file=environments/${params.ENVIRONMENT}.tfvars \
-                                    -auto-approve \
-                                    -no-color
-                            """
+                        sh """
+                            terraform apply \
+                                -var-file=environments/${params.ENVIRONMENT}.tfvars \
+                                -var="image_url=${IMAGE_FULL}" \
+                                -auto-approve \
+                                -no-color
+                        """
 
-                            echo "=========================================="
-                            echo "Infrastructure created successfully!"
-                            echo "=========================================="
-                        } else {
-                            echo 'Deploying to Cloud Run with new Docker image via Terraform...'
+                        def serviceUrl = sh(
+                            script: 'terraform output -raw cloud_run_url',
+                            returnStdout: true
+                        ).trim()
 
-                            // Untaint the Cloud Run service if it was previously tainted
-                            sh """
-                                terraform untaint google_cloud_run_service.frontend || true
-                            """
+                        echo "=========================================="
+                        echo "Cloud Run service deployed successfully via Terraform!"
+                        echo "Service URL: ${serviceUrl}"
+                        echo "Image: ${IMAGE_FULL}"
+                        echo "=========================================="
+                    }
+                }
+            }
+        }
 
-                            sh """
-                                terraform apply \
-                                    -var-file=environments/${params.ENVIRONMENT}.tfvars \
-                                    -var="image_url=${IMAGE_FULL}" \
-                                    -auto-approve \
-                                    -no-color
-                            """
+        stage('Terraform Outputs') {
+            steps {
+                dir('terraform') {
+                    script {
+                        echo 'Running smoke tests...'
 
-                            def serviceUrl = sh(
-                                script: 'terraform output -raw cloud_run_url',
-                                returnStdout: true
-                            ).trim()
+                        def serviceUrl = sh(
+                            script: 'terraform output -raw cloud_run_url',
+                            returnStdout: true
+                        ).trim()
 
-                            echo "=========================================="
-                            echo "Cloud Run service deployed successfully!"
-                            echo "Service URL: ${serviceUrl}"
-                            echo "Image: ${IMAGE_FULL}"
-                            echo "=========================================="
-                        }
                     }
                 }
             }
@@ -343,31 +354,16 @@ pipeline {
 
     post {
         success {
-            script {
-                echo '=========================================='
-                if (params.SKIP_DOCKER_BUILD) {
-                    echo 'Infrastructure initialization completed!'
-                    echo "Environment: ${params.ENVIRONMENT}"
-                    echo ''
-                    echo 'Next Steps:'
-                    echo '1. Run the pipeline again with SKIP_DOCKER_BUILD = false'
-                    echo '2. This will build and deploy your application'
-                    echo '3. Your application will then be live!'
-                } else {
-                    echo 'Deployment completed successfully!'
-                    echo "Environment: ${params.ENVIRONMENT}"
-                    echo "Image: ${IMAGE_FULL}"
-                    echo ''
-                    echo 'Application is now live and tested!'
-                }
-                echo '=========================================='
-            }
+            echo '=========================================='
+            echo 'Deployment completed successfully!'
+            echo "Environment: ${params.ENVIRONMENT}"
+            echo "Image: ${IMAGE_FULL}"
+            echo '=========================================='
         }
         failure {
             echo '=========================================='
             echo 'Deployment failed!'
             echo "Environment: ${params.ENVIRONMENT}"
-            echo "Build Number: ${env.BUILD_NUMBER}"
             echo 'Please check the logs for details.'
             echo '=========================================='
         }
