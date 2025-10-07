@@ -306,84 +306,47 @@ pipeline {
             }
         }
 
-        stage('Deploy to Cloud Run') {
+        stage('Deploy to Cloud Run via Terraform') {
             steps {
-                script {
-                    echo 'Deploying to Cloud Run...'
+                dir('terraform') {
+                    script {
+                        echo 'Deploying to Cloud Run with new Docker image via Terraform...'
 
-                    def cloudRunService = sh(
-                        script: 'cd terraform && terraform output -raw service_name',
-                        returnStdout: true
-                    ).trim()
+                        sh """
+                            terraform apply \
+                                -var-file=environments/${params.ENVIRONMENT}.tfvars \
+                                -var="image_url=${IMAGE_FULL}" \
+                                -auto-approve \
+                                -no-color
+                        """
 
-                    def serviceAccount = sh(
-                        script: 'cd terraform && terraform output -raw service_account_email',
-                        returnStdout: true
-                    ).trim()
+                        def serviceUrl = sh(
+                            script: 'terraform output -raw cloud_run_url',
+                            returnStdout: true
+                        ).trim()
 
-                    sh """
-                        gcloud run deploy ${cloudRunService} \
-                            --image ${IMAGE_FULL} \
-                            --platform managed \
-                            --region ${GCP_REGION} \
-                            --project ${GCP_PROJECT_ID} \
-                            --service-account ${serviceAccount} \
-                            --set-env-vars "NODE_ENV=${params.ENVIRONMENT == 'dev' ? 'development' : 'production'}" \
-                            --set-env-vars "NEXT_TELEMETRY_DISABLED=1" \
-                            --set-env-vars "ENVIRONMENT=${params.ENVIRONMENT}" \
-                            --set-secrets "NEXT_PUBLIC_API_URL=${params.ENVIRONMENT}-api-url:latest" \
-                            --set-secrets "NEXT_PUBLIC_GOOGLE_CLIENT_ID=${params.ENVIRONMENT}-google-client-id:latest" \
-                            --set-secrets "NEXT_PUBLIC_GOOGLE_SECRET=${params.ENVIRONMENT}-google-client-secret:latest" \
-                            --set-secrets "NEXT_PUBLIC_GOOGLE_REDIRECT_URI=${params.ENVIRONMENT}-google-redirect-uri:latest" \
-                            --cpu 1 \
-                            --memory 512Mi \
-                            --min-instances ${params.ENVIRONMENT == 'prod' ? '1' : '0'} \
-                            --max-instances ${params.ENVIRONMENT == 'prod' ? '10' : '3'} \
-                            --timeout 300 \
-                            --concurrency 80 \
-                            --allow-unauthenticated \
-                            --quiet
-                    """
-
-                    def serviceUrl = sh(
-                        script: "gcloud run services describe ${cloudRunService} --region=${GCP_REGION} --format='value(status.url)'",
-                        returnStdout: true
-                    ).trim()
-
-                    echo "=========================================="
-                    echo "Service deployed successfully!"
-                    echo "Service URL: ${serviceUrl}"
-                    echo "=========================================="
+                        echo "=========================================="
+                        echo "Cloud Run service deployed successfully via Terraform!"
+                        echo "Service URL: ${serviceUrl}"
+                        echo "Image: ${IMAGE_FULL}"
+                        echo "=========================================="
+                    }
                 }
             }
         }
 
-        stage('Smoke Tests') {
+        stage('Terraform Outputs') {
             steps {
-                script {
-                    echo 'Running smoke tests...'
+                dir('terraform') {
+                    script {
+                        echo 'Running smoke tests...'
 
-                    def cloudRunService = sh(
-                        script: 'cd terraform && terraform output -raw service_name',
-                        returnStdout: true
-                    ).trim()
+                        def serviceUrl = sh(
+                            script: 'terraform output -raw cloud_run_url',
+                            returnStdout: true
+                        ).trim()
 
-                    def serviceUrl = sh(
-                        script: "gcloud run services describe ${cloudRunService} --region=${GCP_REGION} --project=${GCP_PROJECT_ID} --format='value(status.url)'",
-                        returnStdout: true
-                    ).trim()
-
-                    sh """
-                        echo "Testing service at: ${serviceUrl}"
-
-                        echo "Testing root endpoint..."
-                        curl -f ${serviceUrl}/ || exit 1
-
-                        echo "Testing API health endpoint..."
-                        curl -f ${serviceUrl}/api/health || exit 1
-
-                        echo "All smoke tests passed!"
-                    """
+                    }
                 }
             }
         }

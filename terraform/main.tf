@@ -63,12 +63,10 @@ resource "google_cloud_run_service" "frontend" {
 
   template {
     spec {
+      service_account_name = google_service_account.cloud_run_sa.email
+
       containers {
         image = var.image_url
-
-        ports {
-          container_port = 3000
-        }
 
         resources {
           limits = {
@@ -77,11 +75,7 @@ resource "google_cloud_run_service" "frontend" {
           }
         }
 
-        env {
-          name  = "NODE_ENV"
-          value = var.environment == "prod" ? "production" : "development"
-        }
-
+        # Regular environment variables
         dynamic "env" {
           for_each = var.environment_variables
           content {
@@ -90,27 +84,26 @@ resource "google_cloud_run_service" "frontend" {
           }
         }
 
+        # Secret environment variables from Secret Manager
         dynamic "env" {
           for_each = var.secret_environment_variables
           content {
             name = env.key
             value_from {
               secret_key_ref {
-                name = env.value
-                key  = "latest"
+                name = split(":", env.value)[0]
+                key  = length(split(":", env.value)) > 1 ? split(":", env.value)[1] : "latest"
               }
             }
           }
         }
       }
-
-      service_account_name = google_service_account.cloud_run_sa.email
     }
 
     metadata {
       annotations = {
-        "autoscaling.knative.dev/minScale" = var.min_instances
-        "autoscaling.knative.dev/maxScale" = var.max_instances
+        "autoscaling.knative.dev/minScale" = tostring(var.min_instances)
+        "autoscaling.knative.dev/maxScale" = tostring(var.max_instances)
       }
     }
   }
@@ -120,12 +113,22 @@ resource "google_cloud_run_service" "frontend" {
     latest_revision = true
   }
 
-  autogenerate_revision_name = true
+  depends_on = [
+    google_project_service.required_apis,
+    google_service_account.cloud_run_sa,
+    google_project_iam_member.cloud_run_sa_roles
+  ]
 
-  depends_on = [google_project_service.required_apis]
+  lifecycle {
+    ignore_changes = [
+      template[0].spec[0].containers[0].image,
+      template[0].metadata[0].annotations["run.googleapis.com/client-name"],
+      template[0].metadata[0].annotations["run.googleapis.com/client-version"],
+    ]
+  }
 }
 
-# IAM policy for public access
+# IAM policy to allow public access (if enabled)
 resource "google_cloud_run_service_iam_member" "public_access" {
   count = var.allow_unauthenticated ? 1 : 0
 

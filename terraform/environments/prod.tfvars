@@ -10,13 +10,13 @@ cpu_limit    = "2"
 memory_limit = "1Gi"
 
 # Scaling Configuration (production scale)
-min_instances = "1"
-max_instances = "10"
+min_instances = 1
+max_instances = 10
 
 # Access Control
 allow_unauthenticated = true
 
-# Image Configuration (will be overridden by Jenkins)
+# Image Configuration (will be updated by Jenkins after docker build)
 image_url = "asia-southeast1-docker.pkg.dev/vhealth-prod/health-management-frontend-prod/health-frontend:latest"
 
 # Environment Variables
@@ -27,9 +27,9 @@ environment_variables = {
 
 # Secret Environment Variables (from GCP Secret Manager)
 secret_environment_variables = {
-  NEXT_PUBLIC_API_URL            = "next-public-api-url-prod"
-  NEXT_PUBLIC_GOOGLE_CLIENT_ID   = "next-public-google-client-id-prod"
-  NEXT_PUBLIC_GOOGLE_SECRET      = "next-public-google-secret-prod"
-  NEXT_PUBLIC_GOOGLE_REDIRECT_URI = "next-public-google-redirect-uri-prod"
+  NEXT_PUBLIC_API_URL             = "prod-api-url:latest"
+  NEXT_PUBLIC_GOOGLE_CLIENT_ID    = "prod-google-client-id:latest"
+  NEXT_PUBLIC_GOOGLE_SECRET       = "prod-google-client-secret:latest"
+  NEXT_PUBLIC_GOOGLE_REDIRECT_URI = "prod-google-redirect-uri:latest"
 }
 
