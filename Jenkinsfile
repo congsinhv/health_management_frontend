@@ -99,7 +99,6 @@ pipeline {
                         gcloud auth activate-service-account --key-file=${GOOGLE_APPLICATION_CREDENTIALS}
                         gcloud config set project ${GCP_PROJECT_ID}
                         gcloud config set compute/region ${GCP_REGION}
-                        gcloud auth configure-docker ${GCP_REGION}-docker.pkg.dev --quiet
                     '''
                 }
             }
@@ -207,35 +206,6 @@ pipeline {
             }
         }
 
-        stage('Build Docker Image') {
-            steps {
-                script {
-                    echo "Building Docker image: ${IMAGE_FULL}"
-                    sh """
-                        docker build \
-                            --build-arg BUILD_DATE=\$(date -u +"%Y-%m-%dT%H:%M:%SZ") \
-                            --build-arg VERSION=${IMAGE_TAG} \
-                            --build-arg GIT_COMMIT=${GIT_COMMIT} \
-                            -t ${IMAGE_FULL} \
-                            -t ${IMAGE_LATEST} \
-                            .
-                    """
-                }
-            }
-        }
-
-        stage('Push to Artifact Registry') {
-            steps {
-                script {
-                    echo 'Pushing image to Artifact Registry...'
-                    sh """
-                        docker push ${IMAGE_FULL}
-                        docker push ${IMAGE_LATEST}
-                    """
-                }
-            }
-        }
-
         stage('Terraform Plan') {
             steps {
                 dir('terraform') {
@@ -282,6 +252,46 @@ pipeline {
             }
         }
 
+        stage('Configure Docker for Artifact Registry') {
+            steps {
+                script {
+                    echo 'Configuring Docker authentication for Artifact Registry...'
+                    sh """
+                        gcloud auth configure-docker ${GCP_REGION}-docker.pkg.dev --quiet
+                    """
+                }
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    echo "Building Docker image: ${IMAGE_FULL}"
+                    sh """
+                        docker build \
+                            --build-arg BUILD_DATE=\$(date -u +"%Y-%m-%dT%H:%M:%SZ") \
+                            --build-arg VERSION=${IMAGE_TAG} \
+                            --build-arg GIT_COMMIT=${GIT_COMMIT} \
+                            -t ${IMAGE_FULL} \
+                            -t ${IMAGE_LATEST} \
+                            .
+                    """
+                }
+            }
+        }
+
+        stage('Push to Artifact Registry') {
+            steps {
+                script {
+                    echo 'Pushing image to Artifact Registry...'
+                    sh """
+                        docker push ${IMAGE_FULL}
+                        docker push ${IMAGE_LATEST}
+                    """
+                }
+            }
+        }
+
         stage('Approve Cloud Run Deployment') {
             when {
                 expression { return params.ENVIRONMENT == 'prod' }
@@ -321,7 +331,7 @@ pipeline {
                             --set-env-vars "NODE_ENV=${params.ENVIRONMENT == 'dev' ? 'development' : 'production'}" \
                             --set-env-vars "NEXT_TELEMETRY_DISABLED=1" \
                             --set-env-vars "ENVIRONMENT=${params.ENVIRONMENT}" \
-                            --set-secrets "NEXT_PUBLIC_API_URL=next-public-api-url-${params.ENVIRONMENT}:latest" \
+                            --set-secrets "NEXT_PUBLIC_API_URL=${params.ENVIRONMENT}-api-url:latest" \
                             --set-secrets "NEXT_PUBLIC_GOOGLE_CLIENT_ID=${params.ENVIRONMENT}-google-client-id:latest" \
                             --set-secrets "NEXT_PUBLIC_GOOGLE_SECRET=${params.ENVIRONMENT}-google-client-secret:latest" \
                             --set-secrets "NEXT_PUBLIC_GOOGLE_REDIRECT_URI=${params.ENVIRONMENT}-google-redirect-uri:latest" \
