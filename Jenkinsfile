@@ -151,6 +151,46 @@ pipeline {
             }
         }
 
+        stage('Configure Docker for Artifact Registry') {
+            steps {
+                script {
+                    echo 'Configuring Docker authentication for Artifact Registry...'
+                    sh """
+                        gcloud auth configure-docker ${GCP_REGION}-docker.pkg.dev --quiet
+                    """
+                }
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    echo "Building Docker image: ${IMAGE_FULL}"
+                    sh """
+                        docker build \
+                            --build-arg BUILD_DATE=\$(date -u +"%Y-%m-%dT%H:%M:%SZ") \
+                            --build-arg VERSION=${IMAGE_TAG} \
+                            --build-arg GIT_COMMIT=${GIT_COMMIT} \
+                            -t ${IMAGE_FULL} \
+                            -t ${IMAGE_LATEST} \
+                            .
+                    """
+                }
+            }
+        }
+
+        stage('Push to Artifact Registry') {
+            steps {
+                script {
+                    echo 'Pushing image to Artifact Registry...'
+                    sh """
+                        docker push ${IMAGE_FULL}
+                        docker push ${IMAGE_LATEST}
+                    """
+                }
+            }
+        }
+
         stage('Terraform Init') {
             steps {
                 dir('terraform') {
@@ -214,6 +254,7 @@ pipeline {
                         sh """
                             terraform plan \
                                 -var-file="environments/${params.ENVIRONMENT}.tfvars" \
+                                -var "image_url=${IMAGE_FULL}" \
                                 -out=tfplan \
                                 -no-color
                         """
@@ -248,46 +289,6 @@ pipeline {
                             cat terraform_outputs.json
                         '''
                     }
-                }
-            }
-        }
-
-        stage('Configure Docker for Artifact Registry') {
-            steps {
-                script {
-                    echo 'Configuring Docker authentication for Artifact Registry...'
-                    sh """
-                        gcloud auth configure-docker ${GCP_REGION}-docker.pkg.dev --quiet
-                    """
-                }
-            }
-        }
-
-        stage('Build Docker Image') {
-            steps {
-                script {
-                    echo "Building Docker image: ${IMAGE_FULL}"
-                    sh """
-                        docker build \
-                            --build-arg BUILD_DATE=\$(date -u +"%Y-%m-%dT%H:%M:%SZ") \
-                            --build-arg VERSION=${IMAGE_TAG} \
-                            --build-arg GIT_COMMIT=${GIT_COMMIT} \
-                            -t ${IMAGE_FULL} \
-                            -t ${IMAGE_LATEST} \
-                            .
-                    """
-                }
-            }
-        }
-
-        stage('Push to Artifact Registry') {
-            steps {
-                script {
-                    echo 'Pushing image to Artifact Registry...'
-                    sh """
-                        docker push ${IMAGE_FULL}
-                        docker push ${IMAGE_LATEST}
-                    """
                 }
             }
         }
@@ -331,10 +332,10 @@ pipeline {
                             --set-env-vars "NODE_ENV=${params.ENVIRONMENT == 'dev' ? 'development' : 'production'}" \
                             --set-env-vars "NEXT_TELEMETRY_DISABLED=1" \
                             --set-env-vars "ENVIRONMENT=${params.ENVIRONMENT}" \
-                            --set-secrets "NEXT_PUBLIC_API_URL=${params.ENVIRONMENT}-api-url:latest" \
-                            --set-secrets "NEXT_PUBLIC_GOOGLE_CLIENT_ID=${params.ENVIRONMENT}-google-client-id:latest" \
-                            --set-secrets "NEXT_PUBLIC_GOOGLE_SECRET=${params.ENVIRONMENT}-google-client-secret:latest" \
-                            --set-secrets "NEXT_PUBLIC_GOOGLE_REDIRECT_URI=${params.ENVIRONMENT}-google-redirect-uri:latest" \
+                            --set-secrets "NEXT_PUBLIC_API_URL=next-public-api-url-${params.ENVIRONMENT}:latest" \
+                            --set-secrets "NEXT_PUBLIC_GOOGLE_CLIENT_ID=next-public-google-client-id-${params.ENVIRONMENT}:latest" \
+                            --set-secrets "NEXT_PUBLIC_GOOGLE_SECRET=next-public-google-secret-${params.ENVIRONMENT}:latest" \
+                            --set-secrets "NEXT_PUBLIC_GOOGLE_REDIRECT_URI=next-public-google-redirect-uri-${params.ENVIRONMENT}:latest" \
                             --cpu 1 \
                             --memory 512Mi \
                             --min-instances ${params.ENVIRONMENT == 'prod' ? '1' : '0'} \

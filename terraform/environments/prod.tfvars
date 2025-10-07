@@ -16,7 +16,9 @@ max_instances = "10"
 # Access Control
 allow_unauthenticated = true
 
-# Image Configuration (will be overridden by Jenkins)
+# Image Configuration
+# NOTE: This is a fallback value. Jenkins pipeline will override this with the specific build-tagged image
+# via: -var "image_url=${IMAGE_FULL}" in terraform plan/apply
 image_url = "asia-southeast1-docker.pkg.dev/vhealth-prod/health-management-frontend-prod/health-frontend:latest"
 
 # Environment Variables
