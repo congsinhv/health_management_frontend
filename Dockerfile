@@ -1,5 +1,5 @@
 # Multi-stage build for Next.js application with Bun
-FROM oven/bun:1.1.0-alpine AS base
+FROM oven/bun:1.2-alpine AS base
 
 # Install dependencies only when needed
 FROM base AS deps
