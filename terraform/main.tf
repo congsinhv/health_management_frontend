@@ -77,9 +77,29 @@ resource "google_cloud_run_service" "frontend" {
           }
         }
 
+        startup_probe {
+          http_get {
+            path = "/"
+          }
+          initial_delay_seconds = 0
+          timeout_seconds       = 1
+          period_seconds        = 3
+          failure_threshold     = 10
+        }
+
         env {
           name  = "NODE_ENV"
           value = var.environment == "prod" ? "production" : "development"
+        }
+
+        env {
+          name  = "PORT"
+          value = "3000"
+        }
+
+        env {
+          name  = "HOSTNAME"
+          value = "0.0.0.0"
         }
 
         dynamic "env" {
