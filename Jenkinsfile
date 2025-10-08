@@ -187,7 +187,7 @@ pipeline {
                                     return sh(
                                         script: """
                                             gcloud secrets versions access latest \
-                                                --secret=${secretName}-${params.ENVIRONMENT} \
+                                                --secret=vhealth-${params.ENVIRONMENT}-${secretName} \
                                                 --project=${GCP_PROJECT_ID} 2>/dev/null \
                                             || echo '${placeholder}'
                                         """,
@@ -199,7 +199,7 @@ pipeline {
                             }
 
                             echo 'Fetching secrets from GCP Secret Manager...'
-                            env.TF_VAR_next_public_api_url = fetchSecret("${params.ENVIRONMENT}-api-url", "https://api.placeholder.com")
+                            env.TF_VAR_next_public_api_url = fetchSecret("api-url", "https://api.placeholder.com")
                             echo 'Secrets fetched!'
                         }
                     }
