@@ -1,32 +1,33 @@
-# Dependencies
-node_modules/
-bun.lockb
-package-lock.json
-yarn.lock
-
 # Build outputs
 .next/
 out/
 build/
 dist/
 
-# Cache and logs
-.cache/
+# Dependencies
+node_modules/
+
+# Terraform
+*.tfvars
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+
+# Docker
+Dockerfile
+.dockerignore
+
+# CI/CD
+Jenkinsfile
+
+# Logs
 *.log
 
-# Environment files
-.env*
+# Environment
+.env
+.env.*
 
-# Generated files
-*.d.ts
-next-env.d.ts
-
-# Public assets
-public/
-
-# Config files that should not be formatted
-*.min.js
-*.min.css
-
-# Lock files
-*.lock
+# IDE
+.vscode/
+.idea/

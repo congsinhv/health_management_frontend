@@ -1,22 +1,14 @@
 'use client';
 
-import { useState } from 'react';
-import Link from 'next/link';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { useForgotPassword } from '@/hooks/useForgotPassword';
 import { useCountdown } from '@/hooks/useCountdown';
-import {
-  Mail,
-  ArrowLeft,
-  CheckCircle,
-  RefreshCw,
-  Clock,
-  Shield,
-  AlertCircle,
-} from 'lucide-react';
+import { useForgotPassword } from '@/hooks/useForgotPassword';
+import { ArrowLeft, CheckCircle, Mail, RefreshCw } from 'lucide-react';
+import Link from 'next/link';
+import { useState } from 'react';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
@@ -48,7 +40,7 @@ export default function ForgotPasswordPage() {
       if (isSuccess) {
         countdown.restart(); // Start countdown when email is successfully sent
       }
-    } catch (err) {
+    } catch {
       // Error is handled by the hook
     }
   };

@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, Suspense } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { api, tokenStorage } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
+import { api, tokenStorage } from '@/lib/api';
 import { logger } from '@/lib/logger';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense, useEffect } from 'react';
 
 function GoogleCallbackContent() {
   const router = useRouter();
@@ -99,7 +99,7 @@ function GoogleCallbackContent() {
     };
 
     handleGoogleCallback();
-  }, [searchParams, router]);
+  }, [searchParams, router, checkAuthStatus]);
 
   return (
     <div className='from-health-100 to-health-200 flex min-h-screen items-center justify-center bg-gradient-to-br'>
