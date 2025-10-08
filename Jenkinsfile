@@ -20,8 +20,8 @@ pipeline {
         GCP_PROJECT_ID = "${params.ENVIRONMENT == 'prod' ? 'vhealth-prod' : 'vhealth-dev'}"
         TF_BACKEND_BUCKET = "${GCP_PROJECT_ID}-frontend-tfstate"
 
-        ARTIFACT_REGISTRY_REPO = "health-management-frontend-${params.ENVIRONMENT}"
-        IMAGE_NAME = "health-frontend"
+        ARTIFACT_REGISTRY_REPO = "vhealth-frontend-${params.ENVIRONMENT}"
+        IMAGE_NAME = "vhealth-frontend"
         IMAGE_TAG = "${env.BUILD_NUMBER}-${env.GIT_COMMIT.take(7)}"
         IMAGE_FULL = "${GCP_REGION}-docker.pkg.dev/${GCP_PROJECT_ID}/${ARTIFACT_REGISTRY_REPO}/${IMAGE_NAME}:${IMAGE_TAG}"
         IMAGE_LATEST = "${GCP_REGION}-docker.pkg.dev/${GCP_PROJECT_ID}/${ARTIFACT_REGISTRY_REPO}/${IMAGE_NAME}:latest"

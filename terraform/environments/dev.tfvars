@@ -19,7 +19,7 @@ allow_unauthenticated = true
 # Image Configuration
 # NOTE: This is a fallback value. Jenkins pipeline will override this with the specific build-tagged image
 # via: -var "image_url=${IMAGE_FULL}" in terraform plan/apply
-image_url = "asia-southeast1-docker.pkg.dev/vhealth-dev/health-management-frontend-dev/health-frontend:latest"
+image_url = "asia-southeast1-docker.pkg.dev/vhealth-dev/vhealth-frontend-dev/vhealth-frontend:latest"
 
 # Environment Variables
 environment_variables = {
@@ -31,7 +31,7 @@ environment_variables = {
 secret_environment_variables = {
   NEXT_PUBLIC_API_URL            = "dev-api-url"
   NEXT_PUBLIC_GOOGLE_CLIENT_ID   = "dev-google-client-id"
-  NEXT_PUBLIC_GOOGLE_SECRET      = "dev-google-secret"
+  NEXT_PUBLIC_GOOGLE_SECRET      = "dev-google-client-secret"
   NEXT_PUBLIC_GOOGLE_REDIRECT_URI = "dev-google-redirect-uri"
 }
 

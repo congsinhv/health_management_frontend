@@ -38,8 +38,8 @@ resource "google_project_service" "required_apis" {
 
 # Service Account for Cloud Run
 resource "google_service_account" "cloud_run_sa" {
-  account_id   = "cloud-run-health-management"
-  display_name = "Cloud Run Service Account for Health Management"
+  account_id   = "vhealth-frontend-${var.environment}"
+  display_name = "Cloud Run Service Account for VHealth Frontend - ${var.environment}"
   project      = var.project_id
 }
 
@@ -57,7 +57,7 @@ resource "google_project_iam_member" "cloud_run_sa_roles" {
 
 # Cloud Run Service
 resource "google_cloud_run_service" "frontend" {
-  name     = "health-management-frontend-${var.environment}"
+  name     = "vhealth-frontend-${var.environment}"
   location = var.region
   project  = var.project_id
 
@@ -139,8 +139,8 @@ resource "google_cloud_run_service_iam_member" "public_access" {
 # Artifact Registry Repository
 resource "google_artifact_registry_repository" "docker_repo" {
   location      = var.region
-  repository_id = "health-management-frontend-${var.environment}"
-  description   = "Docker repository for health management frontend - ${var.environment}"
+  repository_id = "vhealth-frontend-${var.environment}"
+  description   = "Docker repository for VHealth frontend - ${var.environment}"
   format        = "DOCKER"
   project       = var.project_id
 
