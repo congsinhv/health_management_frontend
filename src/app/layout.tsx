@@ -33,9 +33,12 @@ const gilroy = localFont({
 });
 
 export const metadata: Metadata = {
-  title: 'Health Management System',
+  title: 'VHealth',
   description:
     'A comprehensive health management platform for tracking and monitoring your health journey',
+  icons: {
+    icon: '/favicon.svg',
+  },
 };
 
 export default function RootLayout({
