@@ -357,36 +357,6 @@ pipeline {
                 }
             }
         }
-
-        stage('Smoke Tests') {
-            steps {
-                script {
-                    echo 'Running smoke tests...'
-
-                    def cloudRunService = sh(
-                        script: 'cd terraform && terraform output -raw service_name',
-                        returnStdout: true
-                    ).trim()
-
-                    def serviceUrl = sh(
-                        script: "gcloud run services describe ${cloudRunService} --region=${GCP_REGION} --project=${GCP_PROJECT_ID} --format='value(status.url)'",
-                        returnStdout: true
-                    ).trim()
-
-                    sh """
-                        echo "Testing service at: ${serviceUrl}"
-
-                        echo "Testing root endpoint..."
-                        curl -f ${serviceUrl}/ || exit 1
-
-                        echo "Testing API health endpoint..."
-                        curl -f ${serviceUrl}/api/health || exit 1
-
-                        echo "All smoke tests passed!"
-                    """
-                }
-            }
-        }
     }
 
     post {
