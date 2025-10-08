@@ -12,6 +12,11 @@ pipeline {
             defaultValue: 'develop',
             description: 'Git branch to deploy'
         )
+        booleanParam(
+            name: 'SKIP_TESTS',
+            defaultValue: false,
+            description: 'Skip linting and format checks (faster builds)'
+        )
     }
 
     environment {
@@ -30,14 +35,13 @@ pipeline {
         TF_VAR_FILE = "terraform/environments/${params.ENVIRONMENT}.tfvars"
         GOOGLE_APPLICATION_CREDENTIALS = credentials('gcp-service-account-key')
 
-        // Next.js Build Configuration
-        NODE_VERSION = '20'
-        BUN_VERSION = '1.1.0'
+        // Docker BuildKit for better caching
+        DOCKER_BUILDKIT = '1'
     }
 
     options {
         buildDiscarder(logRotator(numToKeepStr: '10'))
-        timeout(time: 60, unit: 'MINUTES')
+        timeout(time: 30, unit: 'MINUTES')
         timestamps()
         disableConcurrentBuilds()
     }
@@ -55,6 +59,7 @@ pipeline {
                     echo "GCP Region: ${GCP_REGION}"
                     echo "Terraform State Bucket: ${TF_BACKEND_BUCKET}"
                     echo "Image: ${IMAGE_FULL}"
+                    echo "Skip Tests: ${params.SKIP_TESTS}"
                     echo '=========================================='
                 }
             }
@@ -73,24 +78,6 @@ pipeline {
             }
         }
 
-        stage('Setup Bun') {
-            steps {
-                script {
-                    echo 'Setting up Bun...'
-                    sh '''
-                        if ! command -v bun &> /dev/null; then
-                            echo "Installing Bun..."
-                            curl -fsSL https://bun.sh/install | bash
-                            export PATH="$HOME/.bun/bin:$PATH"
-                        else
-                            echo "Bun is already installed"
-                        fi
-                        bun --version
-                    '''
-                }
-            }
-        }
-
         stage('Authenticate to GCP') {
             steps {
                 script {
@@ -99,91 +86,62 @@ pipeline {
                         gcloud auth activate-service-account --key-file=${GOOGLE_APPLICATION_CREDENTIALS}
                         gcloud config set project ${GCP_PROJECT_ID}
                         gcloud config set compute/region ${GCP_REGION}
-                    '''
-                }
-            }
-        }
-
-        stage('Install Dependencies') {
-            steps {
-                script {
-                    echo 'Installing project dependencies...'
-                    sh '''
-                        export PATH="$HOME/.bun/bin:$PATH"
-                        bun install --frozen-lockfile
-                        echo "Dependencies installed successfully"
-                    '''
-                }
-            }
-        }
-
-        stage('Lint and Format Check') {
-            steps {
-                script {
-                    echo 'Running linting and format checks...'
-                    sh '''
-                        export PATH="$HOME/.bun/bin:$PATH"
-                        bun run lint
-                        bun run format:check
-                        echo "Code quality checks passed"
-                    '''
-                }
-            }
-        }
-
-        stage('Build Application') {
-            steps {
-                script {
-                    echo 'Building Next.js application...'
-                    sh '''
-                        export PATH="$HOME/.bun/bin:$PATH"
-                        bun run build
-
-                        if [ -d ".next" ]; then
-                            echo "Build completed successfully"
-                            du -sh .next
-                        else
-                            echo "Build failed - .next directory not found"
-                            exit 1
-                        fi
-                    '''
-                }
-            }
-        }
-
-        stage('Configure Docker for Artifact Registry') {
-            steps {
-                script {
-                    echo 'Configuring Docker authentication for Artifact Registry...'
-                    sh """
                         gcloud auth configure-docker ${GCP_REGION}-docker.pkg.dev --quiet
-                    """
+                    '''
                 }
             }
         }
 
-        stage('Build Docker Image') {
+        stage('Quality Checks') {
+            when {
+                expression { return !params.SKIP_TESTS }
+            }
+            parallel {
+                stage('Lint') {
+                    steps {
+                        script {
+                            echo 'Running linting...'
+                            sh '''
+                                if ! command -v bun &> /dev/null; then
+                                    curl -fsSL https://bun.sh/install | bash
+                                    export PATH="$HOME/.bun/bin:$PATH"
+                                fi
+                                bun install --frozen-lockfile
+                                bun run lint
+                            '''
+                        }
+                    }
+                }
+                stage('Format Check') {
+                    steps {
+                        script {
+                            echo 'Checking code format...'
+                            sh '''
+                                export PATH="$HOME/.bun/bin:$PATH"
+                                bun run format:check
+                            '''
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Build & Push Docker Image') {
             steps {
                 script {
-                    echo "Building Docker image: ${IMAGE_FULL}"
+                    echo "Building Docker image with BuildKit: ${IMAGE_FULL}"
                     sh """
                         docker build \
+                            --build-arg BUILDKIT_INLINE_CACHE=1 \
                             --build-arg BUILD_DATE=\$(date -u +"%Y-%m-%dT%H:%M:%SZ") \
                             --build-arg VERSION=${IMAGE_TAG} \
                             --build-arg GIT_COMMIT=${GIT_COMMIT} \
+                            --cache-from ${IMAGE_LATEST} \
                             -t ${IMAGE_FULL} \
                             -t ${IMAGE_LATEST} \
                             .
-                    """
-                }
-            }
-        }
 
-        stage('Push to Artifact Registry') {
-            steps {
-                script {
-                    echo 'Pushing image to Artifact Registry...'
-                    sh """
+                        echo 'Pushing to Artifact Registry...'
                         docker push ${IMAGE_FULL}
                         docker push ${IMAGE_LATEST}
                     """
@@ -191,169 +149,118 @@ pipeline {
             }
         }
 
-        stage('Terraform Init') {
-            steps {
-                dir('terraform') {
-                    script {
-                        echo 'Initializing Terraform...'
-                        sh """
-                            terraform init \
-                                -backend-config="bucket=${TF_BACKEND_BUCKET}" \
-                                -backend-config="prefix=terraform/state/frontend-${params.ENVIRONMENT}" \
-                                -reconfigure \
-                                -no-color
-                        """
-                    }
-                }
-            }
-        }
-
-        stage('Terraform Validate') {
-            steps {
-                dir('terraform') {
-                    script {
-                        echo 'Validating Terraform configuration...'
-                        sh 'terraform validate -no-color'
-                    }
-                }
-            }
-        }
-
-        stage('Fetch Secrets from GCP Secret Manager') {
-            steps {
-                script {
-                    def fetchSecret = { secretName, placeholder ->
-                        try {
-                            return sh(
-                                script: """
-                                    gcloud secrets versions access latest \
-                                        --secret=${secretName}-${params.ENVIRONMENT} \
-                                        --project=${GCP_PROJECT_ID} 2>/dev/null \
-                                    || echo '${placeholder}'
-                                """,
-                                returnStdout: true
-                            ).trim()
-                        } catch (Exception e) {
-                            return placeholder
+        stage('Terraform Deployment') {
+            stages {
+                stage('Terraform Init') {
+                    steps {
+                        dir('terraform') {
+                            script {
+                                echo 'Initializing Terraform...'
+                                sh """
+                                    terraform init \
+                                        -backend-config="bucket=${TF_BACKEND_BUCKET}" \
+                                        -backend-config="prefix=terraform/state/frontend-${params.ENVIRONMENT}" \
+                                        -reconfigure \
+                                        -no-color
+                                """
+                            }
                         }
                     }
-
-                    echo 'Fetching secrets from GCP Secret Manager...'
-                    env.TF_VAR_next_public_api_url = fetchSecret("${params.ENVIRONMENT}-api-url", "https://api.placeholder.com")
-                    echo 'Secrets fetched successfully!'
                 }
-            }
-        }
 
-        stage('Terraform Plan') {
-            steps {
-                dir('terraform') {
-                    script {
-                        echo 'Planning Terraform changes...'
-                        sh """
-                            terraform plan \
-                                -var-file="environments/${params.ENVIRONMENT}.tfvars" \
-                                -var "image_url=${IMAGE_FULL}" \
-                                -out=tfplan \
-                                -no-color
-                        """
+                stage('Terraform Validate') {
+                    steps {
+                        dir('terraform') {
+                            script {
+                                echo 'Validating Terraform configuration...'
+                                sh 'terraform validate -no-color'
+                            }
+                        }
                     }
                 }
-            }
-        }
 
-        stage('Approve Terraform Apply') {
-            when {
-                expression { return params.ENVIRONMENT == 'prod' }
-            }
-            steps {
-                script {
-                    echo 'Production deployment detected. Manual approval required.'
-                    input message: 'Apply Terraform changes to PRODUCTION?',
-                          ok: 'Deploy',
-                          submitter: 'admin'
-                }
-            }
-        }
+                stage('Fetch Secrets') {
+                    steps {
+                        script {
+                            def fetchSecret = { secretName, placeholder ->
+                                try {
+                                    return sh(
+                                        script: """
+                                            gcloud secrets versions access latest \
+                                                --secret=${secretName}-${params.ENVIRONMENT} \
+                                                --project=${GCP_PROJECT_ID} 2>/dev/null \
+                                            || echo '${placeholder}'
+                                        """,
+                                        returnStdout: true
+                                    ).trim()
+                                } catch (Exception e) {
+                                    return placeholder
+                                }
+                            }
 
-        stage('Terraform Apply') {
-            steps {
-                dir('terraform') {
-                    script {
-                        echo 'Applying Terraform changes...'
-                        sh 'terraform apply -auto-approve -no-color tfplan'
-
-                        sh '''
-                            terraform output -json > terraform_outputs.json
-                            cat terraform_outputs.json
-                        '''
+                            echo 'Fetching secrets from GCP Secret Manager...'
+                            env.TF_VAR_next_public_api_url = fetchSecret("${params.ENVIRONMENT}-api-url", "https://api.placeholder.com")
+                            echo 'Secrets fetched!'
+                        }
                     }
                 }
-            }
-        }
 
-        stage('Approve Cloud Run Deployment') {
-            when {
-                expression { return params.ENVIRONMENT == 'prod' }
-            }
-            steps {
-                script {
-                    echo 'Production deployment detected. Manual approval required.'
-                    input message: 'Deploy to Cloud Run PRODUCTION?',
-                          ok: 'Deploy',
-                          submitter: 'admin'
+                stage('Terraform Plan') {
+                    steps {
+                        dir('terraform') {
+                            script {
+                                echo 'Planning Terraform changes...'
+                                sh """
+                                    terraform plan \
+                                        -var-file="environments/${params.ENVIRONMENT}.tfvars" \
+                                        -var "image_url=${IMAGE_FULL}" \
+                                        -out=tfplan \
+                                        -no-color
+                                """
+                            }
+                        }
+                    }
                 }
-            }
-        }
 
-        stage('Deploy to Cloud Run') {
-            steps {
-                script {
-                    echo 'Deploying to Cloud Run...'
+                stage('Approve Deployment') {
+                    when {
+                        expression { return params.ENVIRONMENT == 'prod' }
+                    }
+                    steps {
+                        script {
+                            echo 'Production deployment - Manual approval required'
+                            input message: 'Deploy to PRODUCTION?',
+                                  ok: 'Deploy',
+                                  submitter: 'admin'
+                        }
+                    }
+                }
 
-                    def cloudRunService = sh(
-                        script: 'cd terraform && terraform output -raw service_name',
-                        returnStdout: true
-                    ).trim()
+                stage('Terraform Apply') {
+                    steps {
+                        dir('terraform') {
+                            script {
+                                echo 'Deploying to Cloud Run via Terraform...'
+                                sh 'terraform apply -auto-approve -no-color tfplan'
 
-                    def serviceAccount = sh(
-                        script: 'cd terraform && terraform output -raw service_account_email',
-                        returnStdout: true
-                    ).trim()
+                                sh '''
+                                    terraform output -json > terraform_outputs.json
+                                    cat terraform_outputs.json
+                                '''
 
-                    sh """
-                        gcloud run deploy ${cloudRunService} \
-                            --image ${IMAGE_FULL} \
-                            --platform managed \
-                            --region ${GCP_REGION} \
-                            --project ${GCP_PROJECT_ID} \
-                            --service-account ${serviceAccount} \
-                            --set-env-vars "NODE_ENV=${params.ENVIRONMENT == 'dev' ? 'development' : 'production'}" \
-                            --set-env-vars "NEXT_TELEMETRY_DISABLED=1" \
-                            --set-env-vars "ENVIRONMENT=${params.ENVIRONMENT}" \
-                            --set-secrets "NEXT_PUBLIC_API_URL=${params.ENVIRONMENT}-api-url:latest" \
-                            --set-secrets "NEXT_PUBLIC_GOOGLE_CLIENT_ID=${params.ENVIRONMENT}-google-client-id:latest" \
-                            --set-secrets "NEXT_PUBLIC_GOOGLE_SECRET=${params.ENVIRONMENT}-google-client-secret:latest" \
-                            --set-secrets "NEXT_PUBLIC_GOOGLE_REDIRECT_URI=${params.ENVIRONMENT}-google-redirect-uri:latest" \
-                            --cpu 1 \
-                            --memory 512Mi \
-                            --min-instances ${params.ENVIRONMENT == 'prod' ? '1' : '0'} \
-                            --max-instances ${params.ENVIRONMENT == 'prod' ? '10' : '3'} \
-                            --timeout 300 \
-                            --concurrency 80 \
-                            --allow-unauthenticated \
-                            --quiet
-                    """
+                                def serviceUrl = sh(
+                                    script: 'terraform output -raw service_url',
+                                    returnStdout: true
+                                ).trim()
 
-                    def serviceUrl = sh(
-                        script: "gcloud run services describe ${cloudRunService} --region=${GCP_REGION} --format='value(status.url)'",
-                        returnStdout: true
-                    ).trim()
-
-                    echo "=========================================="
-                    echo "Service deployed successfully!"
-                    echo "Service URL: ${serviceUrl}"
-                    echo "=========================================="
+                                echo "=========================================="
+                                echo "Deployment Successful!"
+                                echo "Service URL: ${serviceUrl}"
+                                echo "Image: ${IMAGE_FULL}"
+                                echo "=========================================="
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -371,7 +278,7 @@ pipeline {
             echo '=========================================='
             echo 'Deployment failed!'
             echo "Environment: ${params.ENVIRONMENT}"
-            echo 'Please check the logs for details.'
+            echo 'Check logs for details'
             echo '=========================================='
         }
         always {
