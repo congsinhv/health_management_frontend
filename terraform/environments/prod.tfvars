@@ -29,9 +29,9 @@ environment_variables = {
 
 # Secret Environment Variables (from GCP Secret Manager)
 secret_environment_variables = {
-  NEXT_PUBLIC_API_URL            = "prod-api-url"
-  NEXT_PUBLIC_GOOGLE_CLIENT_ID   = "prod-google-client-id"
-  NEXT_PUBLIC_GOOGLE_SECRET      = "prod-google-client-secret"
-  NEXT_PUBLIC_GOOGLE_REDIRECT_URI = "prod-google-redirect-uri"
+  NEXT_PUBLIC_API_URL            = "vhealth-prod-api-url"
+  NEXT_PUBLIC_GOOGLE_CLIENT_ID   = "vhealth-prod-google-client-id"
+  NEXT_PUBLIC_GOOGLE_SECRET      = "vhealth-prod-google-client-secret"
+  NEXT_PUBLIC_GOOGLE_REDIRECT_URI = "vhealth-prod-google-redirect-uri"
 }
 
