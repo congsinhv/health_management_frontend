@@ -18,7 +18,7 @@ pipeline {
         GCP_REGION = 'asia-southeast1'
         ENV = "${params.ENVIRONMENT}"
         GCP_PROJECT_ID = "${params.ENVIRONMENT == 'prod' ? 'vhealth-prod' : 'vhealth-dev'}"
-        TF_BACKEND_BUCKET = "${GCP_PROJECT_ID}-tfstate"
+        TF_BACKEND_BUCKET = "${GCP_PROJECT_ID}-frontend-tfstate"
 
         ARTIFACT_REGISTRY_REPO = "health-management-frontend-${params.ENVIRONMENT}"
         IMAGE_NAME = "health-frontend"
@@ -239,8 +239,7 @@ pipeline {
                     }
 
                     echo 'Fetching secrets from GCP Secret Manager...'
-                    env.TF_VAR_next_public_api_url = fetchSecret("next-public-api-url", "https://api.placeholder.com")
-                    env.TF_VAR_next_public_app_url = fetchSecret("next-public-app-url", "https://app.placeholder.com")
+                    env.TF_VAR_next_public_api_url = fetchSecret("${params.ENVIRONMENT}-api-url", "https://api.placeholder.com")
                     echo 'Secrets fetched successfully!'
                 }
             }
@@ -332,10 +331,10 @@ pipeline {
                             --set-env-vars "NODE_ENV=${params.ENVIRONMENT == 'dev' ? 'development' : 'production'}" \
                             --set-env-vars "NEXT_TELEMETRY_DISABLED=1" \
                             --set-env-vars "ENVIRONMENT=${params.ENVIRONMENT}" \
-                            --set-secrets "NEXT_PUBLIC_API_URL=next-public-api-url-${params.ENVIRONMENT}:latest" \
-                            --set-secrets "NEXT_PUBLIC_GOOGLE_CLIENT_ID=next-public-google-client-id-${params.ENVIRONMENT}:latest" \
-                            --set-secrets "NEXT_PUBLIC_GOOGLE_SECRET=next-public-google-secret-${params.ENVIRONMENT}:latest" \
-                            --set-secrets "NEXT_PUBLIC_GOOGLE_REDIRECT_URI=next-public-google-redirect-uri-${params.ENVIRONMENT}:latest" \
+                            --set-secrets "NEXT_PUBLIC_API_URL=${params.ENVIRONMENT}-api-url:latest" \
+                            --set-secrets "NEXT_PUBLIC_GOOGLE_CLIENT_ID=${params.ENVIRONMENT}-google-client-id:latest" \
+                            --set-secrets "NEXT_PUBLIC_GOOGLE_SECRET=${params.ENVIRONMENT}-google-client-secret:latest" \
+                            --set-secrets "NEXT_PUBLIC_GOOGLE_REDIRECT_URI=${params.ENVIRONMENT}-google-redirect-uri:latest" \
                             --cpu 1 \
                             --memory 512Mi \
                             --min-instances ${params.ENVIRONMENT == 'prod' ? '1' : '0'} \
