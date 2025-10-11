@@ -45,7 +45,6 @@ export function useAuthForm<T extends Record<string, unknown>>({
     setState(prev => ({
       ...prev,
       values: { ...prev.values, [name]: value },
-      // Don't mark as touched on change - only on submit
     }));
   };
 
@@ -60,7 +59,13 @@ export function useAuthForm<T extends Record<string, unknown>>({
 
     setState(prev => ({ ...prev, touched: allTouched }));
 
-    if (!state.isValid || state.isSubmitting) {
+    // Check if form is valid after marking as touched
+    if (!state.isValid) {
+      // Don't proceed if validation fails
+      return;
+    }
+
+    if (state.isSubmitting) {
       return;
     }
 

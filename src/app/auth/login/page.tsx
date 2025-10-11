@@ -1,14 +1,8 @@
 'use client';
 
 import { Google } from '@/components/icons';
+import { Logo } from '@/components/Logo';
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
@@ -17,6 +11,7 @@ import { LoginCredentials } from '@/types/auth';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
+import Image from 'next/image';
 
 function LoginContent() {
   const router = useRouter();
@@ -116,154 +111,184 @@ function LoginContent() {
   const displayError = error || urlError;
 
   return (
-    <div className='from-health-50 to-health-200 flex min-h-screen items-center justify-center bg-gradient-to-br p-4 dark:from-gray-900 dark:to-gray-800'>
-      <Card className='w-full max-w-md border-0 bg-white shadow-xl backdrop-blur-sm dark:bg-gray-900/80'>
-        <CardHeader className='space-y-1 pb-2 text-center'>
-          <div className='from-health-500 to-health-600 mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-r'>
-            <div className='flex h-8 w-8 items-center justify-center rounded-full bg-white'>
-              <div className='from-health-500 to-health-600 h-4 w-4 rounded-full bg-gradient-to-r'></div>
-            </div>
+    <div className='flex min-h-screen bg-white'>
+      {/* Left Side - Form */}
+      <div className='flex w-full flex-col lg:w-[661px]'>
+        {/* Header */}
+        <div className='flex items-start justify-between px-12 pt-12'>
+          <Logo />
+          <div className='flex items-center gap-3'>
+            <span className='text-xs italic text-[#657282]'>
+              Chưa có tài khoản?
+            </span>
+            <Link href='/auth/register'>
+              <Button
+                variant='outline'
+                size='default'
+                className='h-9 rounded-full px-6'
+              >
+                <span className='mt-[3px] text-xs font-medium italic text-gray-600'>
+                  ĐĂNG KÝ
+                </span>
+              </Button>
+            </Link>
           </div>
-          <CardTitle className='text-2xl font-bold text-gray-900 dark:text-white'>
-            Chào Mừng Trở Lại
-          </CardTitle>
-          <CardDescription className='text-gray-600 dark:text-gray-400'>
-            Đăng nhập vào tài khoản Quản lý Sức khỏe của bạn
-          </CardDescription>
-        </CardHeader>
-        <CardContent className='space-y-4'>
-          {displayError && (
-            <div className='rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-600 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400'>
-              {displayError}
-            </div>
-          )}
+        </div>
 
-          {urlSuccess && (
-            <div className='rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-600 dark:border-green-800 dark:bg-green-900/20 dark:text-green-400'>
-              {urlSuccess}
+        {/* Form Content */}
+        <div className='flex flex-1 items-center justify-center px-12'>
+          <div className='w-full max-w-[26rem] space-y-8'>
+            {/* Title and Description */}
+            <div className='space-y-2'>
+              <h1 className='text-2xl font-medium leading-9 tracking-[0.07px] text-[#101828]'>
+                Chào Mừng Trở Lại
+              </h1>
+              <p className='text-base font-normal leading-6 tracking-tight text-[#6a7282]'>
+                Đăng nhập vào tài khoản của bạn
+              </p>
             </div>
-          )}
 
-          {/* Google Sign In Button */}
-          <Button
-            type='button'
-            variant='outline'
-            className='w-full border-gray-300 hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-800'
-            onClick={() => {
-              setUrlError(null); // Clear any URL errors
-              loginWithGoogle();
-            }}
-            disabled={isFormLoading}
-          >
-            {isFormLoading ? (
-              <>
-                <div className='mr-2 h-4 w-4 animate-spin rounded-full border-2 border-gray-400 border-t-transparent'></div>
-                Đang kết nối...
-              </>
-            ) : (
-              <>
-                <Google className='mr-2 h-4 w-4' />
-                Tiếp tục với Google
-              </>
+            {displayError && (
+              <div className='rounded-md border border-red-200 bg-red-50 p-3 text-xs italic text-red-500'>
+                {displayError}
+              </div>
             )}
-          </Button>
 
-          <div className='relative'>
-            <div className='absolute inset-0 flex items-center'>
-              <span className='w-full border-t border-gray-300 dark:border-gray-600' />
-            </div>
-            <div className='relative flex justify-center text-xs uppercase'>
-              <span className='bg-white px-2 text-gray-500 dark:bg-gray-900 dark:text-gray-400'>
-                Hoặc tiếp tục với
-              </span>
-            </div>
-          </div>
+            {urlSuccess && (
+              <div className='rounded-md border border-green-200 bg-green-50 p-3 text-xs italic text-green-500'>
+                {urlSuccess}
+              </div>
+            )}
 
-          <form onSubmit={handleSubmit} className='space-y-4'>
-            <div className='space-y-2'>
-              <Label htmlFor='email'>Email</Label>
-              <Input
-                id='email'
-                type='email'
-                placeholder='Nhập email của bạn'
-                value={values.email}
-                onChange={e => handleChange('email', e.target.value)}
+            {/* Form */}
+            <form onSubmit={handleSubmit} className='space-y-1'>
+              {/* Email */}
+              <div>
+                <Label htmlFor='email' className='mb-2 block'>
+                  Email
+                </Label>
+                <Input
+                  id='email'
+                  type='email'
+                  placeholder='Nhập email của bạn'
+                  value={values.email}
+                  onChange={e => handleChange('email', e.target.value)}
+                  className={
+                    getFieldError('email')
+                      ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
+                      : ''
+                  }
+                  disabled={isFormLoading}
+                />
+                <div className='mt-1 min-h-[20px]'>
+                  {getFieldError('email') && (
+                    <p className='text-xs italic text-red-500'>
+                      {getFieldError('email')}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Password */}
+              <div>
+                <Label htmlFor='password' className='mb-2 block'>
+                  Mật khẩu
+                </Label>
+                <Input
+                  id='password'
+                  type='password'
+                  placeholder='Nhập mật khẩu của bạn'
+                  value={values.password}
+                  onChange={e => handleChange('password', e.target.value)}
+                  className={
+                    getFieldError('password')
+                      ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
+                      : ''
+                  }
+                  disabled={isFormLoading}
+                />
+                <div className='mt-1 min-h-[20px]'>
+                  {getFieldError('password') && (
+                    <p className='text-xs italic text-red-500'>
+                      {getFieldError('password')}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Forgot Password Link */}
+              <div className='flex justify-end pb-3 pt-1'>
+                <Link
+                  href='/auth/forgot-password'
+                  className={`text-xs italic text-[#657282] hover:text-[#101828] hover:underline ${
+                    isFormLoading ? 'pointer-events-none opacity-50' : ''
+                  }`}
+                >
+                  Quên mật khẩu?
+                </Link>
+              </div>
+
+              {/* Submit Button */}
+              <Button
+                type='submit'
+                variant='gradient'
+                size='lg'
+                className='w-full'
                 disabled={isFormLoading}
-                className={
-                  getFieldError('email')
-                    ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
-                    : 'focus:border-health-500 focus:ring-health-500'
-                }
-              />
-              {getFieldError('email') && (
-                <p className='text-sm text-red-600 dark:text-red-400'>
-                  {getFieldError('email')}
-                </p>
-              )}
-            </div>
+              >
+                {isFormLoading ? (
+                  <>
+                    <div className='mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent'></div>
+                    <span className='font-semibold'>
+                      Đang đăng nhập...
+                    </span>
+                  </>
+                ) : (
+                  <span className='font-semibold'>
+                    Đăng nhập
+                  </span>
+                )}
+              </Button>
+            </form>
 
+            {/* Social Login Section */}
             <div className='space-y-2'>
-              <Label htmlFor='password'>Mật khẩu</Label>
-              <Input
-                id='password'
-                type='password'
-                placeholder='Nhập mật khẩu của bạn'
-                value={values.password}
-                onChange={e => handleChange('password', e.target.value)}
-                disabled={isFormLoading}
-                className={
-                  getFieldError('password')
-                    ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
-                    : 'focus:border-health-500 focus:ring-health-500'
-                }
-              />
-              {getFieldError('password') && (
-                <p className='text-sm text-red-600 dark:text-red-400'>
-                  {getFieldError('password')}
-                </p>
-              )}
+              <div className='text-center'>
+                <span className='text-xs italic text-[#95a1af]'>
+                  Đăng nhập với
+                </span>
+              </div>
+              <div className='flex items-center justify-center'>
+                <Button
+                  type='button'
+                  variant='social'
+                  size='icon-lg'
+                  onClick={() => {
+                    setUrlError(null); // Clear any URL errors
+                    loginWithGoogle();
+                  }}
+                  disabled={isFormLoading}
+                  className='flex items-center justify-center'
+                >
+                  <Google className='h-5 w-5' />
+                </Button>
+              </div>
             </div>
-
-            <Button
-              type='submit'
-              className='from-health-500 to-health-600 hover:from-health-600 hover:to-health-700 w-full transform bg-gradient-to-r text-white shadow-lg transition-all duration-200 hover:scale-[1.02] disabled:hover:scale-100'
-              disabled={!isValid || isFormLoading}
-            >
-              {isFormLoading ? (
-                <>
-                  <div className='mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent'></div>
-                  Đang đăng nhập...
-                </>
-              ) : (
-                'Đăng nhập'
-              )}
-            </Button>
-          </form>
-
-          <div className='mt-4 text-center text-sm'>
-            <Link
-              href='/auth/forgot-password'
-              className={`text-health-600 hover:text-health-700 dark:text-health-400 dark:hover:text-health-300 font-medium hover:underline ${
-                isFormLoading ? 'pointer-events-none opacity-50' : ''
-              }`}
-            >
-              Quên mật khẩu?
-            </Link>
           </div>
+        </div>
+      </div>
 
-          <div className='mt-6 text-center text-sm text-gray-600 dark:text-gray-400'>
-            Chưa có tài khoản?{' '}
-            <Link
-              href='/auth/register'
-              className={`text-health-600 hover:text-health-700 dark:text-health-400 dark:hover:text-health-300 font-medium hover:underline ${
-                isFormLoading ? 'pointer-events-none opacity-50' : ''
-              }`}
-            >
-              Đăng ký
-            </Link>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Right Side - Image */}
+      <div className='relative hidden flex-1 bg-gradient-to-br from-[#e6f9f0] to-[#d1f5e3] lg:block'>
+        <div className='flex h-full items-center justify-center p-12'>
+          <Image
+            src='/images/medical-physician-doctor-man.png'
+            alt='Medical Professional'
+            fill
+            className='object-cover'
+          />
+        </div>
+      </div>
     </div>
   );
 }
