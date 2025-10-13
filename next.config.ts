@@ -1,6 +1,7 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
+<<<<<<< HEAD
   // Enable standalone output for Docker
   output: 'standalone',
 
@@ -15,6 +16,18 @@ const nextConfig: NextConfig = {
   },
 
   // Webpack configuration (fallback for when not using Turbopack)
+=======
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+        port: '',
+        pathname: '/**',
+      },
+    ],
+  },
+>>>>>>> e5c3234 (feat: implement chatbox feature with health management flows)
   webpack(config) {
     // SVG handling with SVGR
     config.module.rules.push({
