@@ -1,0 +1,141 @@
+.message_wrapper {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1.5rem;
+  animation: slideIn 0.3s ease-out;
+
+  &.user {
+    align-items: flex-end;
+  }
+
+  &.assistant {
+    align-items: flex-start;
+  }
+}
+
+.message_container {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.75rem;
+  max-width: 70%;
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.message_content {
+  position: relative;
+
+  // No styling for assistant messages - just text
+  .assistant & {
+    padding: 0;
+    background: none;
+    border: none;
+    box-shadow: none;
+  }
+
+  // Glassmorphism for user messages
+  .user & {
+    padding: 1rem 1.25rem;
+    border-radius: 16px;
+    background: rgba(102, 126, 234, 0.15);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(102, 126, 234, 0.25);
+    box-shadow:
+      0 4px 16px rgba(102, 126, 234, 0.15),
+      inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: #1e1e1e;
+  }
+}
+
+.loading_dots {
+  display: flex;
+  gap: 0.4rem;
+  padding: 0.5rem 0;
+
+  span {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #4fd1c7;
+    animation: bounce 1.4s infinite ease-in-out;
+
+    &:nth-child(1) {
+      animation-delay: -0.32s;
+    }
+
+    &:nth-child(2) {
+      animation-delay: -0.16s;
+    }
+  }
+}
+
+.timestamp {
+  font-size: 0.75rem;
+  color: #999;
+  margin-top: 0.25rem;
+  padding: 0 0.5rem;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes bounce {
+  0%,
+  80%,
+  100% {
+    transform: scale(0);
+  }
+  40% {
+    transform: scale(1);
+  }
+}
+
+@media (max-width: 768px) {
+  .message_container {
+    max-width: 85%;
+  }
+
+  .message_content {
+    padding: 0.875rem 1rem;
+
+    p {
+      font-size: 0.9rem;
+    }
+  }
+
+  .avatar {
+    width: 32px;
+    height: 32px;
+
+    svg {
+      width: 20px;
+      height: 20px;
+    }
+  }
+}

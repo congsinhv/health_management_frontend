@@ -1,13 +1,19 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
-import styles from './Header.module.scss';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import styles from './Header.module.scss';
 
 const Header = () => {
+  const router = useRouter();
   const [LottieComponent, setLottieComponent] = useState<any>(null);
   const [animationData, setAnimationData] = useState<any>(null);
+
+  const handleChat = () => {
+    router.push('/chatbox');
+  };
 
   useEffect(() => {
     // Dynamically import Lottie and animation data only on client side
@@ -49,7 +55,7 @@ const Header = () => {
           <div className={styles.nav__item}>
             <Link href='/'>Liên hệ</Link>
           </div>
-          <div className={styles.chat}>
+          <div className={styles.chat} onClick={handleChat}>
             {LottieComponent && animationData ? (
               <LottieComponent
                 animationData={animationData}
