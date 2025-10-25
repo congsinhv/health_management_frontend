@@ -73,7 +73,6 @@ export function Navigation() {
             Tập luyện
           </Link>
 
-          
           <Link
             href='/settings'
             className={
