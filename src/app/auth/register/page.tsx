@@ -78,14 +78,16 @@ export default function RegisterPage() {
         <div className='flex items-start justify-between px-12 pt-12'>
           <Logo />
           <div className='flex items-center gap-3'>
-            <span className='text-xs italic text-[#657282]'>Đã có tài khoản?</span>
+            <span className='text-xs text-[#657282] italic'>
+              Đã có tài khoản?
+            </span>
             <Link href='/auth/login'>
               <Button
                 variant='outline'
                 size='default'
                 className='h-9 rounded-full px-6'
               >
-                <span className='mt-[3px] text-xs italic font-medium 5ext-gray-600'>
+                <span className='5ext-gray-600 mt-[3px] text-xs font-medium italic'>
                   ĐĂNG NHẬP
                 </span>
               </Button>
@@ -107,7 +109,7 @@ export default function RegisterPage() {
             </div>
 
             {error && (
-              <div className='rounded-md border border-red-200 bg-red-50 p-3 text-xs italic text-red-500'>
+              <div className='rounded-md border border-red-200 bg-red-50 p-3 text-xs text-red-500 italic'>
                 {error}
               </div>
             )}
@@ -135,7 +137,7 @@ export default function RegisterPage() {
                   />
                   <div className='mt-1 min-h-[20px]'>
                     {getFieldError('firstName') && (
-                      <p className='text-xs italic text-red-500'>
+                      <p className='text-xs text-red-500 italic'>
                         {getFieldError('firstName')}
                       </p>
                     )}
@@ -160,7 +162,7 @@ export default function RegisterPage() {
                   />
                   <div className='mt-1 min-h-[20px]'>
                     {getFieldError('lastName') && (
-                      <p className='text-xs italic text-red-500'>
+                      <p className='text-xs text-red-500 italic'>
                         {getFieldError('lastName')}
                       </p>
                     )}
@@ -188,7 +190,7 @@ export default function RegisterPage() {
                 />
                 <div className='mt-1 min-h-[20px]'>
                   {getFieldError('email') && (
-                    <p className='text-xs italic text-red-500'>
+                    <p className='text-xs text-red-500 italic'>
                       {getFieldError('email')}
                     </p>
                   )}
@@ -215,7 +217,7 @@ export default function RegisterPage() {
                 />
                 <div className='mt-1 min-h-[20px]'>
                   {getFieldError('password') && (
-                    <p className='text-xs italic text-red-500'>
+                    <p className='text-xs text-red-500 italic'>
                       {getFieldError('password')}
                     </p>
                   )}
@@ -244,7 +246,7 @@ export default function RegisterPage() {
                 />
                 <div className='mt-1 min-h-[20px]'>
                   {getFieldError('confirmPassword') && (
-                    <p className='text-xs italic text-red-500'>
+                    <p className='text-xs text-red-500 italic'>
                       {getFieldError('confirmPassword')}
                     </p>
                   )}
@@ -262,14 +264,10 @@ export default function RegisterPage() {
                 {isFormLoading ? (
                   <>
                     <div className='mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent'></div>
-                    <span className='font-semibold'>
-                      Đang tạo tài khoản...
-                    </span>
+                    <span className='font-semibold'>Đang tạo tài khoản...</span>
                   </>
                 ) : (
-                  <span className='font-semibold'>
-                    Đăng ký
-                  </span>
+                  <span className='font-semibold'>Đăng ký</span>
                 )}
               </Button>
             </form>
@@ -277,7 +275,7 @@ export default function RegisterPage() {
             {/* Social Login Section */}
             <div className='space-y-2'>
               <div className='text-center'>
-                <span className='text-xs italic text-[#95a1af]'>
+                <span className='text-xs text-[#95a1af] italic'>
                   Tạo tài khoản với
                 </span>
               </div>

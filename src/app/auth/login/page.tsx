@@ -118,7 +118,7 @@ function LoginContent() {
         <div className='flex items-start justify-between px-12 pt-12'>
           <Logo />
           <div className='flex items-center gap-3'>
-            <span className='text-xs italic text-[#657282]'>
+            <span className='text-xs text-[#657282] italic'>
               Chưa có tài khoản?
             </span>
             <Link href='/auth/register'>
@@ -127,7 +127,7 @@ function LoginContent() {
                 size='default'
                 className='h-9 rounded-full px-6'
               >
-                <span className='mt-[3px] text-xs font-medium italic text-gray-600'>
+                <span className='mt-[3px] text-xs font-medium text-gray-600 italic'>
                   ĐĂNG KÝ
                 </span>
               </Button>
@@ -140,22 +140,22 @@ function LoginContent() {
           <div className='w-full max-w-[26rem] space-y-8'>
             {/* Title and Description */}
             <div className='space-y-2'>
-              <h1 className='text-2xl font-medium leading-9 tracking-[0.07px] text-[#101828]'>
+              <h1 className='text-2xl leading-9 font-medium tracking-[0.07px] text-[#101828]'>
                 Chào Mừng Trở Lại
               </h1>
-              <p className='text-base font-normal leading-6 tracking-tight text-[#6a7282]'>
+              <p className='text-base leading-6 font-normal tracking-tight text-[#6a7282]'>
                 Đăng nhập vào tài khoản của bạn
               </p>
             </div>
 
             {displayError && (
-              <div className='rounded-md border border-red-200 bg-red-50 p-3 text-xs italic text-red-500'>
+              <div className='rounded-md border border-red-200 bg-red-50 p-3 text-xs text-red-500 italic'>
                 {displayError}
               </div>
             )}
 
             {urlSuccess && (
-              <div className='rounded-md border border-green-200 bg-green-50 p-3 text-xs italic text-green-500'>
+              <div className='rounded-md border border-green-200 bg-green-50 p-3 text-xs text-green-500 italic'>
                 {urlSuccess}
               </div>
             )}
@@ -182,7 +182,7 @@ function LoginContent() {
                 />
                 <div className='mt-1 min-h-[20px]'>
                   {getFieldError('email') && (
-                    <p className='text-xs italic text-red-500'>
+                    <p className='text-xs text-red-500 italic'>
                       {getFieldError('email')}
                     </p>
                   )}
@@ -209,7 +209,7 @@ function LoginContent() {
                 />
                 <div className='mt-1 min-h-[20px]'>
                   {getFieldError('password') && (
-                    <p className='text-xs italic text-red-500'>
+                    <p className='text-xs text-red-500 italic'>
                       {getFieldError('password')}
                     </p>
                   )}
@@ -217,10 +217,10 @@ function LoginContent() {
               </div>
 
               {/* Forgot Password Link */}
-              <div className='flex justify-end pb-3 pt-1'>
+              <div className='flex justify-end pt-1 pb-3'>
                 <Link
                   href='/auth/forgot-password'
-                  className={`text-xs italic text-[#657282] hover:text-[#101828] hover:underline ${
+                  className={`text-xs text-[#657282] italic hover:text-[#101828] hover:underline ${
                     isFormLoading ? 'pointer-events-none opacity-50' : ''
                   }`}
                 >
@@ -239,14 +239,10 @@ function LoginContent() {
                 {isFormLoading ? (
                   <>
                     <div className='mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent'></div>
-                    <span className='font-semibold'>
-                      Đang đăng nhập...
-                    </span>
+                    <span className='font-semibold'>Đang đăng nhập...</span>
                   </>
                 ) : (
-                  <span className='font-semibold'>
-                    Đăng nhập
-                  </span>
+                  <span className='font-semibold'>Đăng nhập</span>
                 )}
               </Button>
             </form>
@@ -254,7 +250,7 @@ function LoginContent() {
             {/* Social Login Section */}
             <div className='space-y-2'>
               <div className='text-center'>
-                <span className='text-xs italic text-[#95a1af]'>
+                <span className='text-xs text-[#95a1af] italic'>
                   Đăng nhập với
                 </span>
               </div>

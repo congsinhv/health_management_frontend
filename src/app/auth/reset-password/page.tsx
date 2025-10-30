@@ -150,7 +150,7 @@ function ResetPasswordContent() {
           <div className='flex items-start justify-between px-12 pt-12'>
             <Logo />
             <div className='flex items-center gap-3'>
-              <span className='text-xs italic text-[#657282]'>
+              <span className='text-xs text-[#657282] italic'>
                 Nhớ mật khẩu?
               </span>
               <Link href='/auth/login'>
@@ -159,7 +159,7 @@ function ResetPasswordContent() {
                   size='default'
                   className='h-9 rounded-full px-6'
                 >
-                  <span className='mt-[3px] text-xs font-medium italic text-gray-600'>
+                  <span className='mt-[3px] text-xs font-medium text-gray-600 italic'>
                     ĐĂNG NHẬP
                   </span>
                 </Button>
@@ -172,12 +172,12 @@ function ResetPasswordContent() {
             <div className='w-full max-w-[26rem] space-y-8'>
               <div className='text-center'>
                 <AlertTriangle className='mx-auto mb-6 h-16 w-16 text-red-500' />
-                <h1 className='mb-4 text-2xl font-medium leading-9 tracking-[0.07px] text-[#101828]'>
+                <h1 className='mb-4 text-2xl leading-9 font-medium tracking-[0.07px] text-[#101828]'>
                   Liên kết đặt lại không hợp lệ
                 </h1>
-                <p className='text-base font-normal leading-6 tracking-tight text-[#6a7282]'>
-                  Liên kết này không hợp lệ hoặc đã hết hạn. Liên kết đặt lại
-                  có hiệu lực trong 1 giờ.
+                <p className='text-base leading-6 font-normal tracking-tight text-[#6a7282]'>
+                  Liên kết này không hợp lệ hoặc đã hết hạn. Liên kết đặt lại có
+                  hiệu lực trong 1 giờ.
                 </p>
               </div>
 
@@ -223,7 +223,7 @@ function ResetPasswordContent() {
           <div className='flex items-start justify-between px-12 pt-12'>
             <Logo />
             <div className='flex items-center gap-3'>
-              <span className='text-xs italic text-[#657282]'>
+              <span className='text-xs text-[#657282] italic'>
                 Nhớ mật khẩu?
               </span>
               <Link href='/auth/login'>
@@ -232,7 +232,7 @@ function ResetPasswordContent() {
                   size='default'
                   className='h-9 rounded-full px-6'
                 >
-                  <span className='mt-[3px] text-xs font-medium italic text-gray-600'>
+                  <span className='mt-[3px] text-xs font-medium text-gray-600 italic'>
                     ĐĂNG NHẬP
                   </span>
                 </Button>
@@ -245,10 +245,10 @@ function ResetPasswordContent() {
             <div className='w-full max-w-[26rem] space-y-8'>
               <div className='text-center'>
                 <CheckCircle className='mx-auto mb-6 h-16 w-16 text-green-500' />
-                <h1 className='mb-4 text-2xl font-medium leading-9 tracking-[0.07px] text-[#101828]'>
+                <h1 className='mb-4 text-2xl leading-9 font-medium tracking-[0.07px] text-[#101828]'>
                   Mật khẩu đã được cập nhật!
                 </h1>
-                <p className='text-base font-normal leading-6 tracking-tight text-[#6a7282]'>
+                <p className='text-base leading-6 font-normal tracking-tight text-[#6a7282]'>
                   Bây giờ bạn có thể đăng nhập với mật khẩu mới.
                 </p>
               </div>
@@ -286,16 +286,14 @@ function ResetPasswordContent() {
         <div className='flex items-start justify-between px-12 pt-12'>
           <Logo />
           <div className='flex items-center gap-3'>
-            <span className='text-xs italic text-[#657282]'>
-              Nhớ mật khẩu?
-            </span>
+            <span className='text-xs text-[#657282] italic'>Nhớ mật khẩu?</span>
             <Link href='/auth/login'>
               <Button
                 variant='outline'
                 size='default'
                 className='h-9 rounded-full px-6'
               >
-                <span className='mt-[3px] text-xs font-medium italic text-gray-600'>
+                <span className='mt-[3px] text-xs font-medium text-gray-600 italic'>
                   ĐĂNG NHẬP
                 </span>
               </Button>
@@ -308,16 +306,16 @@ function ResetPasswordContent() {
           <div className='w-full max-w-[26rem] space-y-8'>
             {/* Title and Description */}
             <div className='space-y-2'>
-              <h1 className='text-2xl font-medium leading-9 tracking-[0.07px] text-[#101828]'>
+              <h1 className='text-2xl leading-9 font-medium tracking-[0.07px] text-[#101828]'>
                 Đặt mật khẩu mới
               </h1>
-              <p className='text-base font-normal leading-6 tracking-tight text-[#6a7282]'>
+              <p className='text-base leading-6 font-normal tracking-tight text-[#6a7282]'>
                 Vui lòng nhập mật khẩu mới của bạn bên dưới.
               </p>
             </div>
 
             {error && (
-              <div className='rounded-md border border-red-200 bg-red-50 p-3 text-xs italic text-red-500'>
+              <div className='rounded-md border border-red-200 bg-red-50 p-3 text-xs text-red-500 italic'>
                 {error}
               </div>
             )}
@@ -347,7 +345,7 @@ function ResetPasswordContent() {
                 />
                 <div className='mt-1 min-h-[20px]'>
                   {passwordError && (
-                    <p className='text-xs italic text-red-500'>
+                    <p className='text-xs text-red-500 italic'>
                       {passwordError}
                     </p>
                   )}
@@ -371,7 +369,9 @@ function ResetPasswordContent() {
                   type='password'
                   placeholder='Xác nhận mật khẩu mới của bạn'
                   value={confirmPassword}
-                  onChange={e => handleChange('confirmPassword', e.target.value)}
+                  onChange={e =>
+                    handleChange('confirmPassword', e.target.value)
+                  }
                   onBlur={() =>
                     setTouched(prev => ({ ...prev, confirmPassword: true }))
                   }
@@ -384,7 +384,7 @@ function ResetPasswordContent() {
                 />
                 <div className='mt-1 min-h-[20px]'>
                   {confirmPasswordError && (
-                    <p className='text-xs italic text-red-500'>
+                    <p className='text-xs text-red-500 italic'>
                       {confirmPasswordError}
                     </p>
                   )}
