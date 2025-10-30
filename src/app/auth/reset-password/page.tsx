@@ -1,6 +1,6 @@
 'use client';
 
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Logo } from '@/components/Logo';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,6 +11,7 @@ import { AlertTriangle, ArrowLeft, CheckCircle, Lock } from 'lucide-react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
+import Image from 'next/image';
 
 function ResetPasswordContent() {
   const searchParams = useSearchParams();
@@ -131,12 +132,10 @@ function ResetPasswordContent() {
   // Loading state while validating token
   if (tokenValid === null) {
     return (
-      <div className='flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-900'>
+      <div className='flex min-h-screen items-center justify-center bg-white'>
         <div className='text-center'>
-          <div className='border-health-600 mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-b-2'></div>
-          <p className='text-gray-600 dark:text-gray-400'>
-            Đang xác thực mã đặt lại...
-          </p>
+          <div className='mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-b-2 border-[#00bba7]'></div>
+          <p className='text-[#6a7282]'>Đang xác thực mã đặt lại...</p>
         </div>
       </div>
     );
@@ -145,30 +144,70 @@ function ResetPasswordContent() {
   // Invalid token state
   if (tokenValid === false) {
     return (
-      <div className='flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8 dark:bg-gray-900'>
-        <div className='w-full max-w-md space-y-8'>
-          <div className='text-center'>
-            <AlertTriangle className='mx-auto mb-4 h-16 w-16 text-red-500' />
-            <h2 className='text-2xl font-bold text-gray-900 dark:text-white'>
-              Liên kết đặt lại không hợp lệ
-            </h2>
-            <p className='mt-4 text-gray-600 dark:text-gray-400'>
-              Liên kết này không hợp lệ hoặc đã hết hạn. Liên kết đặt lại có
-              hiệu lực trong 1 giờ.
-            </p>
+      <div className='flex min-h-screen bg-white'>
+        <div className='flex w-full flex-col lg:w-[661px]'>
+          {/* Header */}
+          <div className='flex items-start justify-between px-12 pt-12'>
+            <Logo />
+            <div className='flex items-center gap-3'>
+              <span className='text-xs text-[#657282] italic'>
+                Nhớ mật khẩu?
+              </span>
+              <Link href='/auth/login'>
+                <Button
+                  variant='outline'
+                  size='default'
+                  className='h-9 rounded-full px-6'
+                >
+                  <span className='mt-[3px] text-xs font-medium text-gray-600 italic'>
+                    ĐĂNG NHẬP
+                  </span>
+                </Button>
+              </Link>
+            </div>
           </div>
 
-          <div className='flex flex-col space-y-4'>
-            <Link href='/auth/forgot-password'>
-              <Button className='w-full'>Yêu cầu liên kết mới</Button>
-            </Link>
+          {/* Error Content */}
+          <div className='flex flex-1 items-center justify-center px-12'>
+            <div className='w-full max-w-[26rem] space-y-8'>
+              <div className='text-center'>
+                <AlertTriangle className='mx-auto mb-6 h-16 w-16 text-red-500' />
+                <h1 className='mb-4 text-2xl leading-9 font-medium tracking-[0.07px] text-[#101828]'>
+                  Liên kết đặt lại không hợp lệ
+                </h1>
+                <p className='text-base leading-6 font-normal tracking-tight text-[#6a7282]'>
+                  Liên kết này không hợp lệ hoặc đã hết hạn. Liên kết đặt lại có
+                  hiệu lực trong 1 giờ.
+                </p>
+              </div>
 
-            <Link href='/auth/login'>
-              <Button variant='ghost' className='w-full'>
-                <ArrowLeft className='mr-2 h-4 w-4' />
-                Quay lại đăng nhập
-              </Button>
-            </Link>
+              <div className='flex flex-col space-y-3'>
+                <Link href='/auth/forgot-password'>
+                  <Button variant='gradient' size='lg' className='w-full'>
+                    <span className='font-semibold'>Yêu cầu liên kết mới</span>
+                  </Button>
+                </Link>
+
+                <Link href='/auth/login'>
+                  <Button variant='outline' size='lg' className='w-full'>
+                    <ArrowLeft className='mr-2 h-4 w-4' />
+                    <span className='font-medium'>Quay lại đăng nhập</span>
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Side - Image */}
+        <div className='relative hidden flex-1 bg-gradient-to-br from-[#e6f9f0] to-[#d1f5e3] lg:block'>
+          <div className='flex h-full items-center justify-center p-12'>
+            <Image
+              src='/images/medical-physician-doctor-man.png'
+              alt='Medical Professional'
+              fill
+              className='object-cover'
+            />
           </div>
         </div>
       </div>
@@ -178,21 +217,61 @@ function ResetPasswordContent() {
   // Success state
   if (isSuccess) {
     return (
-      <div className='flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8 dark:bg-gray-900'>
-        <div className='w-full max-w-md space-y-8'>
-          <div className='text-center'>
-            <CheckCircle className='mx-auto mb-4 h-16 w-16 text-green-500' />
-            <h2 className='text-2xl font-bold text-gray-900 dark:text-white'>
-              Mật khẩu đã được cập nhật!
-            </h2>
-            <p className='mt-4 text-gray-600 dark:text-gray-400'>
-              Bây giờ bạn có thể đăng nhập với mật khẩu mới.
-            </p>
+      <div className='flex min-h-screen bg-white'>
+        <div className='flex w-full flex-col lg:w-[661px]'>
+          {/* Header */}
+          <div className='flex items-start justify-between px-12 pt-12'>
+            <Logo />
+            <div className='flex items-center gap-3'>
+              <span className='text-xs text-[#657282] italic'>
+                Nhớ mật khẩu?
+              </span>
+              <Link href='/auth/login'>
+                <Button
+                  variant='outline'
+                  size='default'
+                  className='h-9 rounded-full px-6'
+                >
+                  <span className='mt-[3px] text-xs font-medium text-gray-600 italic'>
+                    ĐĂNG NHẬP
+                  </span>
+                </Button>
+              </Link>
+            </div>
           </div>
 
-          <Link href='/auth/login'>
-            <Button className='w-full'>Tiếp tục đăng nhập</Button>
-          </Link>
+          {/* Success Content */}
+          <div className='flex flex-1 items-center justify-center px-12'>
+            <div className='w-full max-w-[26rem] space-y-8'>
+              <div className='text-center'>
+                <CheckCircle className='mx-auto mb-6 h-16 w-16 text-green-500' />
+                <h1 className='mb-4 text-2xl leading-9 font-medium tracking-[0.07px] text-[#101828]'>
+                  Mật khẩu đã được cập nhật!
+                </h1>
+                <p className='text-base leading-6 font-normal tracking-tight text-[#6a7282]'>
+                  Bây giờ bạn có thể đăng nhập với mật khẩu mới.
+                </p>
+              </div>
+
+              <Link href='/auth/login'>
+                <Button variant='gradient' size='lg' className='w-full'>
+                  <span className='font-semibold'>Tiếp tục đăng nhập</span>
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Side - Image */}
+        <div className='relative hidden flex-1 bg-gradient-to-br from-[#e6f9f0] to-[#d1f5e3] lg:block'>
+          <div className='flex h-full items-center justify-center p-12'>
+            <Image
+              src='/images/medical-physician-doctor-man.png'
+              alt='Medical Professional'
+              fill
+              className='object-cover'
+            />
+          </div>
         </div>
       </div>
     );
@@ -200,95 +279,157 @@ function ResetPasswordContent() {
 
   // Reset password form
   return (
-    <div className='flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8 dark:bg-gray-900'>
-      <div className='w-full max-w-md space-y-8'>
-        <div className='text-center'>
-          <h2 className='text-2xl font-bold text-gray-900 dark:text-white'>
-            Đặt mật khẩu mới
-          </h2>
-          <p className='mt-4 text-gray-600 dark:text-gray-400'>
-            Vui lòng nhập mật khẩu mới của bạn bên dưới.
-          </p>
-        </div>
-
-        <form onSubmit={handleSubmit} className='space-y-6'>
-          {error && (
-            <Alert variant='destructive'>
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
-
-          <div className='space-y-2'>
-            <Label htmlFor='password'>Mật khẩu mới</Label>
-            <Input
-              id='password'
-              type='password'
-              placeholder='Nhập mật khẩu mới của bạn'
-              value={password}
-              onChange={e => handleChange('password', e.target.value)}
-              onBlur={() => setTouched(prev => ({ ...prev, password: true }))}
-              disabled={isLoading}
-              className={
-                passwordError ? 'border-red-500 focus:border-red-500' : ''
-              }
-            />
-            {passwordError && (
-              <p className='text-sm text-red-600'>{passwordError}</p>
-            )}
-          </div>
-
-          {password && <PasswordStrength password={password} />}
-
-          <div className='space-y-2'>
-            <Label htmlFor='confirmPassword'>Xác nhận mật khẩu mới</Label>
-            <Input
-              id='confirmPassword'
-              type='password'
-              placeholder='Xác nhận mật khẩu mới của bạn'
-              value={confirmPassword}
-              onChange={e => handleChange('confirmPassword', e.target.value)}
-              onBlur={() =>
-                setTouched(prev => ({ ...prev, confirmPassword: true }))
-              }
-              disabled={isLoading}
-              className={
-                confirmPasswordError
-                  ? 'border-red-500 focus:border-red-500'
-                  : ''
-              }
-            />
-            {confirmPasswordError && (
-              <p className='text-sm text-red-600'>{confirmPasswordError}</p>
-            )}
-          </div>
-
-          <Button
-            type='submit'
-            className='w-full'
-            disabled={!isValid || isLoading}
-          >
-            {isLoading ? (
-              <>
-                <div className='mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent' />
-                Đang cập nhật mật khẩu...
-              </>
-            ) : (
-              <>
-                <Lock className='mr-2 h-4 w-4' />
-                Cập nhật mật khẩu
-              </>
-            )}
-          </Button>
-
-          <div className='text-center'>
+    <div className='flex min-h-screen bg-white'>
+      {/* Left Side - Form */}
+      <div className='flex w-full flex-col lg:w-[661px]'>
+        {/* Header */}
+        <div className='flex items-start justify-between px-12 pt-12'>
+          <Logo />
+          <div className='flex items-center gap-3'>
+            <span className='text-xs text-[#657282] italic'>Nhớ mật khẩu?</span>
             <Link href='/auth/login'>
-              <Button variant='ghost' className='text-sm'>
-                <ArrowLeft className='mr-2 h-4 w-4' />
-                Quay lại đăng nhập
+              <Button
+                variant='outline'
+                size='default'
+                className='h-9 rounded-full px-6'
+              >
+                <span className='mt-[3px] text-xs font-medium text-gray-600 italic'>
+                  ĐĂNG NHẬP
+                </span>
               </Button>
             </Link>
           </div>
-        </form>
+        </div>
+
+        {/* Form Content */}
+        <div className='flex flex-1 items-center justify-center px-12'>
+          <div className='w-full max-w-[26rem] space-y-8'>
+            {/* Title and Description */}
+            <div className='space-y-2'>
+              <h1 className='text-2xl leading-9 font-medium tracking-[0.07px] text-[#101828]'>
+                Đặt mật khẩu mới
+              </h1>
+              <p className='text-base leading-6 font-normal tracking-tight text-[#6a7282]'>
+                Vui lòng nhập mật khẩu mới của bạn bên dưới.
+              </p>
+            </div>
+
+            {error && (
+              <div className='rounded-md border border-red-200 bg-red-50 p-3 text-xs text-red-500 italic'>
+                {error}
+              </div>
+            )}
+
+            {/* Form */}
+            <form onSubmit={handleSubmit} className='space-y-1'>
+              {/* New Password */}
+              <div>
+                <Label htmlFor='password' className='mb-2 block'>
+                  Mật khẩu mới
+                </Label>
+                <Input
+                  id='password'
+                  type='password'
+                  placeholder='Nhập mật khẩu mới của bạn'
+                  value={password}
+                  onChange={e => handleChange('password', e.target.value)}
+                  onBlur={() =>
+                    setTouched(prev => ({ ...prev, password: true }))
+                  }
+                  disabled={isLoading}
+                  className={
+                    passwordError
+                      ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
+                      : ''
+                  }
+                />
+                <div className='mt-1 min-h-[20px]'>
+                  {passwordError && (
+                    <p className='text-xs text-red-500 italic'>
+                      {passwordError}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Password Strength Indicator */}
+              {password && (
+                <div className='py-2'>
+                  <PasswordStrength password={password} />
+                </div>
+              )}
+
+              {/* Confirm Password */}
+              <div>
+                <Label htmlFor='confirmPassword' className='mb-2 block'>
+                  Xác nhận mật khẩu mới
+                </Label>
+                <Input
+                  id='confirmPassword'
+                  type='password'
+                  placeholder='Xác nhận mật khẩu mới của bạn'
+                  value={confirmPassword}
+                  onChange={e =>
+                    handleChange('confirmPassword', e.target.value)
+                  }
+                  onBlur={() =>
+                    setTouched(prev => ({ ...prev, confirmPassword: true }))
+                  }
+                  disabled={isLoading}
+                  className={
+                    confirmPasswordError
+                      ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
+                      : ''
+                  }
+                />
+                <div className='mt-1 min-h-[20px]'>
+                  {confirmPasswordError && (
+                    <p className='text-xs text-red-500 italic'>
+                      {confirmPasswordError}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Submit Button */}
+              <div className='pt-3'>
+                <Button
+                  type='submit'
+                  variant='gradient'
+                  size='lg'
+                  className='w-full'
+                  disabled={!isValid || isLoading}
+                >
+                  {isLoading ? (
+                    <>
+                      <div className='mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent' />
+                      <span className='font-semibold'>
+                        Đang cập nhật mật khẩu...
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <Lock className='mr-2 h-4 w-4' />
+                      <span className='font-semibold'>Cập nhật mật khẩu</span>
+                    </>
+                  )}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      {/* Right Side - Image */}
+      <div className='relative hidden flex-1 bg-gradient-to-br from-[#e6f9f0] to-[#d1f5e3] lg:block'>
+        <div className='flex h-full items-center justify-center p-12'>
+          <Image
+            src='/images/medical-physician-doctor-man.png'
+            alt='Medical Professional'
+            fill
+            className='object-cover'
+          />
+        </div>
       </div>
     </div>
   );
@@ -298,10 +439,10 @@ export default function ResetPasswordPage() {
   return (
     <Suspense
       fallback={
-        <div className='flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-900'>
+        <div className='flex min-h-screen items-center justify-center bg-white'>
           <div className='text-center'>
-            <div className='border-health-600 mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-b-2'></div>
-            <p className='text-gray-600 dark:text-gray-400'>Đang tải...</p>
+            <div className='mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-b-2 border-[#00bba7]'></div>
+            <p className='text-[#6a7282]'>Đang tải...</p>
           </div>
         </div>
       }
