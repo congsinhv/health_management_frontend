@@ -126,6 +126,59 @@ pipeline {
             }
         }
 
+        stage('Fetch Build Secrets') {
+            steps {
+                script {
+                    echo 'Fetching secrets from GCP Secret Manager for build...'
+
+                    // Fetch API URL
+                    env.NEXT_PUBLIC_API_URL = sh(
+                        script: """
+                            gcloud secrets versions access latest \
+                                --secret=vhealth-${params.ENVIRONMENT}-api-url \
+                                --project=${GCP_PROJECT_ID} 2>/dev/null || echo 'http://localhost:8000'
+                        """,
+                        returnStdout: true
+                    ).trim()
+
+                    // Fetch Google OAuth Client ID
+                    env.NEXT_PUBLIC_GOOGLE_CLIENT_ID = sh(
+                        script: """
+                            gcloud secrets versions access latest \
+                                --secret=vhealth-${params.ENVIRONMENT}-google-client-id \
+                                --project=${GCP_PROJECT_ID} 2>/dev/null || echo ''
+                        """,
+                        returnStdout: true
+                    ).trim()
+
+                    // Fetch Google OAuth Client Secret
+                    env.NEXT_PUBLIC_GOOGLE_SECRET = sh(
+                        script: """
+                            gcloud secrets versions access latest \
+                                --secret=vhealth-${params.ENVIRONMENT}-google-client-secret \
+                                --project=${GCP_PROJECT_ID} 2>/dev/null || echo ''
+                        """,
+                        returnStdout: true
+                    ).trim()
+
+                    // Fetch Google OAuth Redirect URI
+                    env.NEXT_PUBLIC_GOOGLE_REDIRECT_URI = sh(
+                        script: """
+                            gcloud secrets versions access latest \
+                                --secret=vhealth-${params.ENVIRONMENT}-google-redirect-uri \
+                                --project=${GCP_PROJECT_ID} 2>/dev/null || echo ''
+                        """,
+                        returnStdout: true
+                    ).trim()
+
+                    echo "✓ API URL: ${env.NEXT_PUBLIC_API_URL}"
+                    echo "✓ Google Client ID: ${env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ? '***' : '(not set)'}"
+                    echo "✓ Google Client Secret: ${env.NEXT_PUBLIC_GOOGLE_SECRET ? '***' : '(not set)'}"
+                    echo "✓ Google Redirect URI: ${env.NEXT_PUBLIC_GOOGLE_REDIRECT_URI}"
+                }
+            }
+        }
+
         stage('Build & Push Docker Image') {
             steps {
                 script {
@@ -136,6 +189,10 @@ pipeline {
                             --build-arg BUILD_DATE=\$(date -u +"%Y-%m-%dT%H:%M:%SZ") \
                             --build-arg VERSION=${IMAGE_TAG} \
                             --build-arg GIT_COMMIT=${GIT_COMMIT} \
+                            --build-arg NEXT_PUBLIC_API_URL='${NEXT_PUBLIC_API_URL}' \
+                            --build-arg NEXT_PUBLIC_GOOGLE_CLIENT_ID='${NEXT_PUBLIC_GOOGLE_CLIENT_ID}' \
+                            --build-arg NEXT_PUBLIC_GOOGLE_SECRET='${NEXT_PUBLIC_GOOGLE_SECRET}' \
+                            --build-arg NEXT_PUBLIC_GOOGLE_REDIRECT_URI='${NEXT_PUBLIC_GOOGLE_REDIRECT_URI}' \
                             --cache-from ${IMAGE_LATEST} \
                             -t ${IMAGE_FULL} \
                             -t ${IMAGE_LATEST} \
