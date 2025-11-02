@@ -100,10 +100,38 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     dispatch({ type: 'AUTH_START' });
 
     try {
-      // Check if we have a valid token first
-      if (!tokenStorage.hasValidToken()) {
+      // Check if we have a refresh token first
+      const refreshToken = tokenStorage.getRefreshToken();
+      const accessToken = tokenStorage.getToken();
+
+      // If no tokens at all, user is not authenticated
+      if (!refreshToken && !accessToken) {
         dispatch({ type: 'AUTH_ERROR', payload: 'Chưa đăng nhập' });
         return;
+      }
+
+      // If we have refresh token but no access token, try to refresh
+      if (refreshToken && !accessToken) {
+        logger.debug('Không có access token, thử làm mới với refresh token');
+        try {
+          const tokenData = await api.auth.refresh();
+          tokenStorage.setToken(tokenData.access_token);
+          tokenStorage.setRefreshToken(tokenData.refresh_token);
+          logger.debug('Đã làm mới token thành công');
+        } catch (refreshError) {
+          logger.authError(
+            'Làm mới token thất bại',
+            refreshError instanceof Error
+              ? refreshError
+              : new Error('Token refresh failed')
+          );
+          tokenStorage.clearTokens();
+          dispatch({
+            type: 'AUTH_ERROR',
+            payload: 'Phiên đăng nhập đã hết hạn',
+          });
+          return;
+        }
       }
 
       logger.debug('Kiểm tra trạng thái xác thực với token từ localStorage');
@@ -136,6 +164,47 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         error instanceof Error ? error : new Error('Auth status check failed')
       );
 
+      // If error is 401, try to refresh token before giving up
+      if (
+        error instanceof Error &&
+        (error.message.includes('401') ||
+          error.message.includes('Phiên đăng nhập đã hết hạn'))
+      ) {
+        const refreshToken = tokenStorage.getRefreshToken();
+        if (refreshToken) {
+          try {
+            logger.debug('Thử làm mới token sau khi kiểm tra thất bại');
+            const tokenData = await api.auth.refresh();
+            tokenStorage.setToken(tokenData.access_token);
+            tokenStorage.setRefreshToken(tokenData.refresh_token);
+
+            // Retry getting user info
+            const userData = await api.auth.me();
+            const user: User = {
+              id: userData.id?.toString() || '',
+              email: userData.email || '',
+              firstName: userData.first_name || '',
+              lastName: userData.last_name || '',
+              profilePicture: userData.avatar_url || undefined,
+              phoneNumber: userData.phone_number || undefined,
+              emailVerified: userData.email_verified ?? false,
+              createdAt: userData.created_at || new Date().toISOString(),
+              updatedAt: userData.updated_at || new Date().toISOString(),
+            };
+
+            dispatch({ type: 'AUTH_SUCCESS', payload: user });
+            return;
+          } catch (refreshError) {
+            logger.authError(
+              'Làm mới token thất bại sau khi kiểm tra',
+              refreshError instanceof Error
+                ? refreshError
+                : new Error('Token refresh failed')
+            );
+          }
+        }
+      }
+
       // Clear invalid tokens
       tokenStorage.clearTokens();
       dispatch({ type: 'AUTH_ERROR', payload: 'Phiên đăng nhập đã hết hạn' });
@@ -148,13 +217,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       logger.debug('Đăng nhập với email', { email: credentials.email });
 
-      const response = await api.auth.login(credentials);
+      const tokenData = await api.auth.login(credentials);
 
       logger.debug('Đăng nhập thành công');
 
       // Store tokens in localStorage
-      tokenStorage.setToken(response.access_token);
-      tokenStorage.setRefreshToken(response.refresh_token);
+      tokenStorage.setToken(tokenData.access_token);
+      tokenStorage.setRefreshToken(tokenData.refresh_token);
 
       // Get user data
       const userData = await api.auth.me();
@@ -294,7 +363,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       logger.debug('Đăng xuất');
 
-      // Call logout API (optional - to invalidate server-side sessions)
+      // Call logout API to revoke refresh token
       try {
         await api.auth.logout();
       } catch (error) {
@@ -315,6 +384,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       logger.authError(
         'Đăng xuất thất bại',
         error instanceof Error ? error : new Error('Logout failed')
+      );
+
+      // Even if logout API fails, clear local tokens
+      tokenStorage.clearTokens();
+      dispatch({ type: 'LOGOUT' });
+    }
+  };
+
+  const logoutAll = async (): Promise<void> => {
+    try {
+      logger.debug('Đăng xuất tất cả thiết bị');
+
+      // Call logout-all API to revoke all refresh tokens
+      try {
+        await api.auth.logoutAll();
+      } catch (error) {
+        // Ignore logout API errors - we'll clear local tokens anyway
+        logger.debug('Logout all API failed, continuing with local cleanup', {
+          error: error instanceof Error ? error.message : 'Unknown error',
+        });
+      }
+
+      // Clear tokens from localStorage
+      tokenStorage.clearTokens();
+
+      dispatch({ type: 'LOGOUT' });
+      toast.success('Đã đăng xuất tất cả thiết bị');
+
+      logger.debug('Đăng xuất tất cả thiết bị thành công');
+    } catch (error) {
+      logger.authError(
+        'Đăng xuất tất cả thiết bị thất bại',
+        error instanceof Error ? error : new Error('Logout all failed')
       );
 
       // Even if logout API fails, clear local tokens
@@ -389,8 +491,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       logger.debug('Bắt đầu làm mới phiên đăng nhập');
 
-      // Refresh tokens - httpOnly cookies will be updated by server
-      await api.auth.refresh();
+      const refreshToken = tokenStorage.getRefreshToken();
+      if (!refreshToken) {
+        throw new Error('Không có refresh token');
+      }
+
+      // Refresh tokens - returns new access_token and refresh_token (token rotation)
+      const tokenData = await api.auth.refresh();
+
+      // Update stored tokens with new ones
+      tokenStorage.setToken(tokenData.access_token);
+      tokenStorage.setRefreshToken(tokenData.refresh_token);
 
       // Verify the new session and get user data
       await checkAuthStatus();
@@ -403,7 +514,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       );
 
       // Refresh failed, logout user
-      await logout();
+      tokenStorage.clearTokens();
+      dispatch({ type: 'LOGOUT' });
       throw error;
     }
   };
@@ -418,6 +530,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     register,
     loginWithGoogle,
     logout,
+    logoutAll,
     updateProfile,
     refreshAuth,
     checkAuthStatus,

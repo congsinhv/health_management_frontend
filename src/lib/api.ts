@@ -68,16 +68,41 @@ interface UserData {
   [key: string]: unknown;
 }
 
+interface TokenPair {
+  access_token: string;
+  refresh_token: string;
+  token_type: 'bearer';
+}
+
 interface AuthResponse {
   access_token: string;
   refresh_token: string;
-  user: UserData;
+  user?: UserData;
 }
 
 interface GoogleAuthResponse {
   authorization_url: string;
   state: string;
 }
+
+// Token refresh state management
+let isRefreshing = false;
+let failedQueue: Array<{
+  resolve: (value?: any) => void;
+  reject: (reason?: any) => void;
+}> = [];
+
+const processQueue = (error: any, token: string | null = null) => {
+  failedQueue.forEach(prom => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token);
+    }
+  });
+
+  failedQueue = [];
+};
 
 async function apiRequest<T>(
   endpoint: string,
@@ -113,6 +138,115 @@ async function apiRequest<T>(
     const response = await fetch(url, config);
 
     if (!response.ok) {
+      // Handle 401 Unauthorized - try to refresh token
+      // Skip refresh for refresh endpoint itself to prevent infinite loops
+      if (
+        response.status === 401 &&
+        !(config as any)._retry &&
+        !endpoint.includes('/auth/refresh')
+      ) {
+        const originalRequest = config as any;
+
+        // If already refreshing, queue this request
+        if (isRefreshing) {
+          return new Promise<T>((resolve, reject) => {
+            failedQueue.push({ resolve, reject });
+          })
+            .then((newToken: unknown) => {
+              if (typeof newToken !== 'string') {
+                throw new ApiError('Invalid token received', 401);
+              }
+              originalRequest.headers = {
+                ...originalRequest.headers,
+                Authorization: `Bearer ${newToken}`,
+              };
+              return apiRequest<T>(endpoint, originalRequest);
+            })
+            .catch(err => {
+              return Promise.reject(err);
+            });
+        }
+
+        originalRequest._retry = true;
+        isRefreshing = true;
+
+        const refreshToken = tokenStorage.getRefreshToken();
+
+        if (!refreshToken) {
+          // No refresh token, clear tokens and reject
+          processQueue(new Error('No refresh token'), null);
+          tokenStorage.clearTokens();
+          isRefreshing = false;
+
+          // Redirect to login if in browser
+          if (typeof window !== 'undefined') {
+            window.location.href = '/auth/login';
+          }
+
+          throw new ApiError('Phiên đăng nhập đã hết hạn', 401);
+        }
+
+        try {
+          // Try to refresh the token
+          const refreshResponse = await fetch(
+            `${API_BASE_URL}/api/v1/auth/refresh`,
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ refresh_token: refreshToken }),
+            }
+          );
+
+          if (!refreshResponse.ok) {
+            // Refresh failed, clear tokens and reject
+            processQueue(new Error('Refresh token invalid'), null);
+            tokenStorage.clearTokens();
+            isRefreshing = false;
+
+            // Redirect to login if in browser
+            if (typeof window !== 'undefined') {
+              window.location.href = '/auth/login';
+            }
+
+            throw new ApiError('Phiên đăng nhập đã hết hạn', 401);
+          }
+
+          const tokenData: TokenPair = await refreshResponse.json();
+
+          // Update stored tokens
+          tokenStorage.setToken(tokenData.access_token);
+          tokenStorage.setRefreshToken(tokenData.refresh_token);
+
+          // Update authorization header
+          originalRequest.headers = {
+            ...originalRequest.headers,
+            Authorization: `Bearer ${tokenData.access_token}`,
+          };
+
+          // Process queued requests
+          processQueue(null, tokenData.access_token);
+
+          // Retry original request
+          isRefreshing = false;
+          return apiRequest<T>(endpoint, originalRequest);
+        } catch (refreshError) {
+          // Refresh failed, clear tokens and reject
+          processQueue(refreshError, null);
+          tokenStorage.clearTokens();
+          isRefreshing = false;
+
+          // Redirect to login if in browser
+          if (typeof window !== 'undefined') {
+            window.location.href = '/auth/login';
+          }
+
+          throw new ApiError('Phiên đăng nhập đã hết hạn', 401);
+        }
+      }
+
+      // Handle other errors
       let errorData: ApiErrorData;
       try {
         errorData = await response.json();
@@ -161,7 +295,7 @@ export const api = {
   // Authentication endpoints
   auth: {
     login: (credentials: { email: string; password: string }) =>
-      apiRequest<AuthResponse>('/api/v1/users/login', {
+      apiRequest<TokenPair>('/api/v1/auth/login-with-refresh', {
         method: 'POST',
         body: JSON.stringify(credentials),
       }),
@@ -194,15 +328,28 @@ export const api = {
       if (!refreshToken) {
         throw new ApiError('Không có refresh token', 401);
       }
-      return apiRequest<AuthResponse>('/api/v1/auth/refresh', {
+      return apiRequest<TokenPair>('/api/v1/auth/refresh', {
         method: 'POST',
         body: JSON.stringify({ refresh_token: refreshToken }),
       });
     },
 
-    // Logout - clear tokens
-    logout: () =>
-      apiRequest<{ message: string }>('/api/v1/auth/logout', {
+    // Logout - revoke refresh token
+    logout: () => {
+      const refreshToken = tokenStorage.getRefreshToken();
+      if (!refreshToken) {
+        // If no refresh token, just return success
+        return Promise.resolve({ message: 'Logged out' });
+      }
+      return apiRequest<{ message: string }>('/api/v1/auth/logout', {
+        method: 'POST',
+        body: JSON.stringify({ refresh_token: refreshToken }),
+      });
+    },
+
+    // Logout all devices - revoke all refresh tokens
+    logoutAll: () =>
+      apiRequest<{ message: string }>('/api/v1/auth/logout-all', {
         method: 'POST',
       }),
 
