@@ -9,7 +9,13 @@ import {
   RegisterCredentials,
   User,
 } from '@/types/auth';
-import React, { createContext, useContext, useEffect, useReducer } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useReducer,
+  useRef,
+} from 'react';
 import { toast } from 'sonner';
 
 // Auth reducer actions
@@ -90,6 +96,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 // Auth provider component
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(authReducer, initialState);
+  const isLoggingOutRef = useRef(false);
 
   // Check for existing session on mount
   useEffect(() => {
@@ -97,6 +104,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const checkAuthStatus = async (): Promise<void> => {
+    // Skip auth check if logout is in progress
+    if (isLoggingOutRef.current) {
+      return;
+    }
+
     dispatch({ type: 'AUTH_START' });
 
     try {
@@ -360,21 +372,60 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const logout = async (): Promise<void> => {
+    // Prevent concurrent logout attempts
+    if (isLoggingOutRef.current) {
+      logger.debug('Logout already in progress, skipping');
+      return;
+    }
+
+    isLoggingOutRef.current = true;
+
     try {
       logger.debug('Đăng xuất');
 
-      // Call logout API to revoke refresh token
+      // Clear tokens FIRST (defensive approach - ensure cleanup even if API fails)
+      tokenStorage.clearTokens();
+
+      // Verify tokens were cleared
+      const accessToken = tokenStorage.getToken();
+      const refreshToken = tokenStorage.getRefreshToken();
+      if (accessToken || refreshToken) {
+        logger.debug('Tokens still present after clear, forcing removal');
+        // Force clear again with multiple attempts
+        if (typeof window !== 'undefined') {
+          try {
+            // Multiple removal attempts
+            for (let i = 0; i < 3; i++) {
+              localStorage.removeItem('access_token');
+              localStorage.removeItem('refresh_token');
+              // Check if cleared
+              if (
+                !localStorage.getItem('access_token') &&
+                !localStorage.getItem('refresh_token')
+              ) {
+                break;
+              }
+              // If still present, try setting to empty first
+              if (i < 2) {
+                localStorage.setItem('access_token', '');
+                localStorage.setItem('refresh_token', '');
+              }
+            }
+          } catch (e) {
+            logger.authError('Failed to force clear tokens', e as Error);
+          }
+        }
+      }
+
+      // Call logout API to revoke refresh token (best effort)
       try {
         await api.auth.logout();
       } catch (error) {
-        // Ignore logout API errors - we'll clear local tokens anyway
-        logger.debug('Logout API failed, continuing with local cleanup', {
+        // Ignore logout API errors - tokens are already cleared locally
+        logger.debug('Logout API failed, but tokens already cleared locally', {
           error: error instanceof Error ? error.message : 'Unknown error',
         });
       }
-
-      // Clear tokens from localStorage
-      tokenStorage.clearTokens();
 
       dispatch({ type: 'LOGOUT' });
       toast.success('Đã đăng xuất');
@@ -386,28 +437,73 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         error instanceof Error ? error : new Error('Logout failed')
       );
 
-      // Even if logout API fails, clear local tokens
+      // Ensure tokens are cleared even if something went wrong
       tokenStorage.clearTokens();
       dispatch({ type: 'LOGOUT' });
+    } finally {
+      // Always reset the flag
+      isLoggingOutRef.current = false;
     }
   };
 
   const logoutAll = async (): Promise<void> => {
+    // Prevent concurrent logout attempts
+    if (isLoggingOutRef.current) {
+      logger.debug('Logout already in progress, skipping');
+      return;
+    }
+
+    isLoggingOutRef.current = true;
+
     try {
       logger.debug('Đăng xuất tất cả thiết bị');
 
-      // Call logout-all API to revoke all refresh tokens
+      // Clear tokens FIRST (defensive approach - ensure cleanup even if API fails)
+      tokenStorage.clearTokens();
+
+      // Verify tokens were cleared
+      const accessToken = tokenStorage.getToken();
+      const refreshToken = tokenStorage.getRefreshToken();
+      if (accessToken || refreshToken) {
+        logger.debug('Tokens still present after clear, forcing removal');
+        // Force clear again with multiple attempts
+        if (typeof window !== 'undefined') {
+          try {
+            // Multiple removal attempts
+            for (let i = 0; i < 3; i++) {
+              localStorage.removeItem('access_token');
+              localStorage.removeItem('refresh_token');
+              // Check if cleared
+              if (
+                !localStorage.getItem('access_token') &&
+                !localStorage.getItem('refresh_token')
+              ) {
+                break;
+              }
+              // If still present, try setting to empty first
+              if (i < 2) {
+                localStorage.setItem('access_token', '');
+                localStorage.setItem('refresh_token', '');
+              }
+            }
+          } catch (e) {
+            logger.authError('Failed to force clear tokens', e as Error);
+          }
+        }
+      }
+
+      // Call logout-all API to revoke all refresh tokens (best effort)
       try {
         await api.auth.logoutAll();
       } catch (error) {
-        // Ignore logout API errors - we'll clear local tokens anyway
-        logger.debug('Logout all API failed, continuing with local cleanup', {
-          error: error instanceof Error ? error.message : 'Unknown error',
-        });
+        // Ignore logout API errors - tokens are already cleared locally
+        logger.debug(
+          'Logout all API failed, but tokens already cleared locally',
+          {
+            error: error instanceof Error ? error.message : 'Unknown error',
+          }
+        );
       }
-
-      // Clear tokens from localStorage
-      tokenStorage.clearTokens();
 
       dispatch({ type: 'LOGOUT' });
       toast.success('Đã đăng xuất tất cả thiết bị');
@@ -419,9 +515,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         error instanceof Error ? error : new Error('Logout all failed')
       );
 
-      // Even if logout API fails, clear local tokens
+      // Ensure tokens are cleared even if something went wrong
       tokenStorage.clearTokens();
       dispatch({ type: 'LOGOUT' });
+    } finally {
+      // Always reset the flag
+      isLoggingOutRef.current = false;
     }
   };
 
