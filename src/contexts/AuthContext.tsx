@@ -17,6 +17,7 @@ type AuthAction =
   | { type: 'AUTH_START' }
   | { type: 'AUTH_SUCCESS'; payload: User }
   | { type: 'AUTH_ERROR'; payload: string }
+  | { type: 'REGISTER_SUCCESS' }
   | { type: 'LOGOUT' }
   | { type: 'UPDATE_USER'; payload: Partial<User> }
   | { type: 'CLEAR_ERROR' };
@@ -53,6 +54,12 @@ function authReducer(state: AuthState, action: AuthAction): AuthState {
         isAuthenticated: false,
         isLoading: false,
         error: action.payload,
+      };
+    case 'REGISTER_SUCCESS':
+      return {
+        ...state,
+        isLoading: false,
+        error: null,
       };
     case 'LOGOUT':
       return {
@@ -117,6 +124,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         lastName: userData.last_name || '',
         profilePicture: userData.avatar_url || undefined,
         phoneNumber: userData.phone_number || undefined,
+        emailVerified: userData.email_verified ?? false,
         createdAt: userData.created_at || new Date().toISOString(),
         updatedAt: userData.updated_at || new Date().toISOString(),
       };
@@ -159,6 +167,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         lastName: userData.last_name || '',
         profilePicture: userData.avatar_url || undefined,
         phoneNumber: userData.phone_number || undefined,
+        emailVerified: userData.email_verified ?? false,
         createdAt: userData.created_at || new Date().toISOString(),
         updatedAt: userData.updated_at || new Date().toISOString(),
       };
@@ -166,6 +175,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       dispatch({ type: 'AUTH_SUCCESS', payload: user });
 
       toast.success('Đăng nhập thành công!');
+
+      // Check if email is verified, show warning if not
+      if (!user.emailVerified) {
+        toast.warning(
+          'Vui lòng xác thực email của bạn để sử dụng đầy đủ tính năng.',
+          {
+            duration: 6000,
+          }
+        );
+      }
     } catch (error) {
       const errorMessage =
         error instanceof Error && error.message === 'Invalid credentials'
@@ -189,49 +208,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       logger.debug('Đăng ký tài khoản mới', { email: userData.email });
 
+      // Register user - this does NOT automatically log them in
       await api.auth.register({
         email: userData.email,
         first_name: userData.firstName,
         last_name: userData.lastName,
         password: userData.password,
+        provider: 'portal',
+        is_active: true,
+        email_verified: false,
       });
 
       logger.debug('Đăng ký thành công');
 
-      // Login
-      const loginResponse = await api.auth.login({
-        email: userData.email,
-        password: userData.password,
-      });
+      // Do NOT auto-login after registration
+      // User must verify their email first
+      dispatch({ type: 'REGISTER_SUCCESS' });
 
-      // Store tokens in localStorage
-      tokenStorage.setToken(loginResponse.access_token);
-      tokenStorage.setRefreshToken(loginResponse.refresh_token);
-
-      // Get user data
-      const userDataResponse = await api.auth.me();
-
-      // Convert API response to User type
-      const user: User = {
-        id: userData.id?.toString() || '',
-        email: userDataResponse.email || '',
-        firstName: userDataResponse.first_name || '',
-        lastName: userDataResponse.last_name || '',
-        profilePicture: userDataResponse.avatar_url || undefined,
-        phoneNumber: userDataResponse.phone_number || undefined,
-        createdAt: userDataResponse.created_at || new Date().toISOString(),
-        updatedAt: userDataResponse.updated_at || new Date().toISOString(),
-      };
-
-      dispatch({ type: 'AUTH_SUCCESS', payload: user });
-
-      toast.success('Đăng ký thành công!');
+      toast.success(
+        'Đăng ký thành công! Vui lòng kiểm tra email để xác thực tài khoản.',
+        {
+          duration: 5000,
+        }
+      );
     } catch (error) {
       const errorMessage =
         error instanceof Error &&
         error.message === 'User with this email already exists'
           ? 'Email đã tồn tại'
-          : 'Đăng ký thất bại';
+          : error instanceof Error && error.message.includes('email')
+            ? 'Email không hợp lệ hoặc đã tồn tại'
+            : 'Đăng ký thất bại';
 
       logger.authError(
         'Đăng ký thất bại',
@@ -340,6 +347,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         lastName: updatedUser.last_name || '',
         profilePicture: updatedUser.avatar_url || undefined,
         phoneNumber: updatedUser.phone_number || undefined,
+        emailVerified: updatedUser.email_verified ?? false,
         createdAt: updatedUser.created_at || new Date().toISOString(),
         updatedAt: updatedUser.updated_at || new Date().toISOString(),
       };

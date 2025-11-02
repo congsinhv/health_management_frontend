@@ -60,6 +60,9 @@ interface UserData {
   last_name?: string;
   avatar_url?: string;
   phone_number?: string;
+  email_verified?: boolean;
+  is_active?: boolean;
+  provider?: string;
   created_at?: string;
   updated_at?: string;
   [key: string]: unknown;
@@ -168,10 +171,21 @@ export const api = {
       first_name: string;
       last_name: string;
       password: string;
+      provider?: string;
+      is_active?: boolean;
+      email_verified?: boolean;
     }) =>
-      apiRequest<AuthResponse>('/api/v1/users/', {
+      apiRequest<Omit<UserData, 'password'>>('/api/v1/users/', {
         method: 'POST',
-        body: JSON.stringify(userData),
+        body: JSON.stringify({
+          email: userData.email,
+          password: userData.password,
+          first_name: userData.first_name,
+          last_name: userData.last_name,
+          provider: userData.provider || 'portal',
+          is_active: userData.is_active ?? true,
+          email_verified: userData.email_verified ?? false,
+        }),
       }),
 
     // Refresh authentication using refresh token
@@ -205,13 +219,20 @@ export const api = {
       }),
 
     // Email verification endpoints
-    verifyEmail: (token: string) =>
-      apiRequest<{ message: string }>(
+    verifyEmail: (token: string, method: 'GET' | 'POST' = 'GET') => {
+      if (method === 'POST') {
+        return apiRequest<{ message: string }>('/api/v1/auth/verify-email', {
+          method: 'POST',
+          body: JSON.stringify({ token }),
+        });
+      }
+      return apiRequest<{ message: string }>(
         `/api/v1/auth/verify-email?token=${encodeURIComponent(token)}`,
         {
           method: 'GET',
         }
-      ),
+      );
+    },
 
     resendVerification: () =>
       apiRequest<{ message: string }>('/api/v1/auth/resend-verification', {

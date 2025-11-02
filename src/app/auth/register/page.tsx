@@ -56,10 +56,10 @@ export default function RegisterPage() {
     onSubmit: async credentials => {
       try {
         await register(credentials);
-        // Small delay to show the success toast before redirecting
+        // Small delay to show the success toast before redirecting to login
         setTimeout(() => {
-          router.push('/dashboard');
-        }, 1500);
+          router.push('/auth/login');
+        }, 2000);
       } catch (error) {
         // Error is already handled by the AuthContext with toast
         console.error('Registration failed:', error);

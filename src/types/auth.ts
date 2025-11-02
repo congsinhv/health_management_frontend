@@ -7,6 +7,7 @@ export interface User {
   dateOfBirth?: string;
   gender?: 'male' | 'female' | 'other' | 'prefer-not-to-say';
   phoneNumber?: string;
+  emailVerified?: boolean;
   createdAt: string;
   updatedAt: string;
 }
