@@ -383,13 +383,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       logger.debug('Đăng xuất');
 
+      // Save refresh token BEFORE clearing (needed for API call)
+      const refreshToken = tokenStorage.getRefreshToken();
+
       // Clear tokens FIRST (defensive approach - ensure cleanup even if API fails)
       tokenStorage.clearTokens();
 
       // Verify tokens were cleared
       const accessToken = tokenStorage.getToken();
-      const refreshToken = tokenStorage.getRefreshToken();
-      if (accessToken || refreshToken) {
+      const remainingRefreshToken = tokenStorage.getRefreshToken();
+      if (accessToken || remainingRefreshToken) {
         logger.debug('Tokens still present after clear, forcing removal');
         // Force clear again with multiple attempts
         if (typeof window !== 'undefined') {
@@ -418,8 +421,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       // Call logout API to revoke refresh token (best effort)
+      // Pass the saved refresh token since we already cleared it from storage
       try {
-        await api.auth.logout();
+        await api.auth.logout(refreshToken || undefined);
       } catch (error) {
         // Ignore logout API errors - tokens are already cleared locally
         logger.debug('Logout API failed, but tokens already cleared locally', {
@@ -458,13 +462,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       logger.debug('Đăng xuất tất cả thiết bị');
 
+      // Save access token BEFORE clearing (needed for API call)
+      const accessToken = tokenStorage.getToken();
+
       // Clear tokens FIRST (defensive approach - ensure cleanup even if API fails)
       tokenStorage.clearTokens();
 
       // Verify tokens were cleared
-      const accessToken = tokenStorage.getToken();
+      const remainingAccessToken = tokenStorage.getToken();
       const refreshToken = tokenStorage.getRefreshToken();
-      if (accessToken || refreshToken) {
+      if (remainingAccessToken || refreshToken) {
         logger.debug('Tokens still present after clear, forcing removal');
         // Force clear again with multiple attempts
         if (typeof window !== 'undefined') {
@@ -493,8 +500,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       // Call logout-all API to revoke all refresh tokens (best effort)
+      // Pass the saved access token since we already cleared it from storage
       try {
-        await api.auth.logoutAll();
+        await api.auth.logoutAll(accessToken || undefined);
       } catch (error) {
         // Ignore logout API errors - tokens are already cleared locally
         logger.debug(

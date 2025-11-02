@@ -163,11 +163,14 @@ async function apiRequest<T>(
 
     if (!response.ok) {
       // Handle 401 Unauthorized - try to refresh token
-      // Skip refresh for refresh endpoint itself to prevent infinite loops
+      const isAuthEndpoint =
+        endpoint.includes('/auth/login') ||
+        endpoint.includes('/auth/register') ||
+        endpoint.includes('/auth/refresh');
       if (
         response.status === 401 &&
         !(config as any)._retry &&
-        !endpoint.includes('/auth/refresh')
+        !isAuthEndpoint
       ) {
         const originalRequest = config as any;
 
@@ -359,23 +362,34 @@ export const api = {
     },
 
     // Logout - revoke refresh token
-    logout: () => {
-      const refreshToken = tokenStorage.getRefreshToken();
-      if (!refreshToken) {
+    logout: (refreshToken?: string) => {
+      // Use provided token or get from storage
+      const token = refreshToken || tokenStorage.getRefreshToken();
+      if (!token) {
         // If no refresh token, just return success
         return Promise.resolve({ message: 'Logged out' });
       }
       return apiRequest<{ message: string }>('/api/v1/auth/logout', {
         method: 'POST',
-        body: JSON.stringify({ refresh_token: refreshToken }),
+        body: JSON.stringify({ refresh_token: token }),
       });
     },
 
     // Logout all devices - revoke all refresh tokens
-    logoutAll: () =>
-      apiRequest<{ message: string }>('/api/v1/auth/logout-all', {
+    logoutAll: (accessToken?: string) => {
+      // Use provided token or get from storage
+      const token = accessToken || tokenStorage.getToken();
+      // Build headers with access token if available
+      // Note: apiRequest will merge these with default headers
+      const headers: Record<string, string> = {};
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+      }
+      return apiRequest<{ message: string }>('/api/v1/auth/logout-all', {
         method: 'POST',
-      }),
+        headers,
+      });
+    },
 
     me: () => apiRequest<UserData>('/api/v1/auth/me'),
 
