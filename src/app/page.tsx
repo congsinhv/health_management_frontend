@@ -5,6 +5,10 @@ import styles from './page.module.scss';
 import Button from '@/components/button/Button';
 import Star from '@/components/icons/star';
 import Card from '@/components/card/Card';
+import NumberSection from '@/components/number/NumberSection';
+import FeaturesSection from '@/components/features/FeaturesSection';
+import InforSection from '@/components/information/InforSection';
+import Footer from '@/components/footer/Footer';
 
 const gridData = [
   {
@@ -101,6 +105,11 @@ export default function LandingPage() {
           />
         </div>
       </div>
+      <NumberSection />
+      <FeaturesSection />
+      <InforSection />
+      {/* Footer */}
+      <Footer />
     </div>
   );
 }

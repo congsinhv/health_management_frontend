@@ -9,7 +9,7 @@
   width: 100%;
   margin: 0 auto;
   display: flex;
-  padding-block: 0.25rem;
+  padding-block: 1.25rem;
   justify-content: space-between;
   align-items: center;
 }
@@ -38,6 +38,7 @@
 }
 
 .nav__item {
+  cursor: pointer;
   a {
     text-decoration: none;
     color: #000;

@@ -120,9 +120,6 @@ const ChatboxPage = () => {
                 <div className={styles.option_content}>
                   <h3>Dự đoán khả năng thừa cân, béo phì</h3>
                 </div>
-                <div className={styles.option_icon}>
-                  <HeartbeatIcon />
-                </div>
               </div>
 
               <div
@@ -130,12 +127,7 @@ const ChatboxPage = () => {
                 onClick={() => handleHealthOptionClick('diet-recommendation')}
               >
                 <div className={styles.option_content}>
-                  <h3>
-                    Gợi ý chế độ ăn cá nhân hóa, dựa trên thông tin của bạn
-                  </h3>
-                </div>
-                <div className={styles.option_icon}>
-                  <MenuIcon />
+                  <h3>Gợi ý chế độ ăn cá nhân hóa</h3>
                 </div>
               </div>
             </div>

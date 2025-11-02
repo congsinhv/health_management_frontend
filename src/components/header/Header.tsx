@@ -48,14 +48,13 @@ const Header = () => {
           <div className={styles.nav__item}>
             <Link href='/'>Về chúng tôi</Link>
           </div>
-
           <div className={styles.nav__item}>
             <Link href='/'>Dự đoán sức khỏe</Link>
           </div>
           <div className={styles.nav__item}>
-            <Link href='/'>Liên hệ</Link>
+            <Link href='/'>Liên hệ hỗ trợ</Link>
           </div>
-          <div className={styles.chat} onClick={handleChat}>
+          {/* <div className={styles.chat} onClick={handleChat}>
             {LottieComponent && animationData ? (
               <LottieComponent
                 animationData={animationData}
@@ -78,7 +77,7 @@ const Header = () => {
                 AI
               </div>
             )}
-          </div>
+          </div> */}
         </div>
       </div>
     </div>

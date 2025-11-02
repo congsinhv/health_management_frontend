@@ -26,7 +26,7 @@ const Button = ({
         styles.button +
         ' ' +
         (className ? className : '') +
-        (isPrimary ? styles.primary : '')
+        (isPrimary ? styles.primary : styles.secondary)
       }
       onClick={onClick}
     >

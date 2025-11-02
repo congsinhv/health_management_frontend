@@ -111,7 +111,7 @@ const HeaderVertical = ({
         </div>
         <div className={styles.header_vertical_avatar}>
           <div className={styles.header_vertical_img}>
-            <Image src={user.avatar} alt='avatar' width={42} height={42} />
+            {/* <Image src={user.avatar} alt='avatar' width={42} height={42} /> */}
           </div>
           {isExpanded && (
             <div className={styles.header_vertical_account}>
