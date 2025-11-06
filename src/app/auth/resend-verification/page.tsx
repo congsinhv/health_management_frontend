@@ -11,7 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { api } from '@/lib/api';
+import { authService } from '@/services/auth';
 import { logger } from '@/lib/logger';
 import { useAuth } from '@/contexts/AuthContext';
 import { CheckCircle, XCircle, Loader2, Mail, ArrowLeft } from 'lucide-react';
@@ -60,7 +60,7 @@ function ResendVerificationContent() {
         message: 'Đang gửi email xác thực...',
       });
 
-      const response = await api.auth.resendVerification();
+      const response = await authService.resendVerification();
 
       logger.authSuccess('Gửi lại email xác thực thành công');
 

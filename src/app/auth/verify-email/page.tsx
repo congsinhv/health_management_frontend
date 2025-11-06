@@ -4,7 +4,7 @@ import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/Logo';
-import { api } from '@/lib/api';
+import { authService } from '@/services/auth';
 import { logger } from '@/lib/logger';
 import { CheckCircle, XCircle, Loader2, Mail } from 'lucide-react';
 import Link from 'next/link';
@@ -49,7 +49,7 @@ function VerifyEmailContent() {
           tokenStart: token.substring(0, 20) + '...',
         });
 
-        const response = await api.auth.verifyEmail(token);
+        const response = await authService.verifyEmail(token);
 
         logger.authSuccess('Xác thực email thành công', {
           message: response.message,
@@ -122,7 +122,7 @@ function VerifyEmailContent() {
     try {
       setIsResending(true);
 
-      await api.auth.resendVerification();
+      await authService.resendVerification();
 
       setVerificationState({
         status: 'success',

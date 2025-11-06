@@ -3,15 +3,30 @@
 import { Google } from '@/components/icons';
 import { Logo } from '@/components/Logo';
 import { Button } from '@/components/ui/button';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
-import { useAuthForm, validateLogin } from '@/hooks/useAuthForm';
-import { LoginCredentials } from '@/types/auth';
+import { zodResolver } from '@hookform/resolvers/zod';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
 import Image from 'next/image';
+import * as z from 'zod';
+
+const loginFormSchema = z.object({
+  email: z.string().min(1, 'Email là bắt buộc').email('Email không hợp lệ'),
+  password: z.string().min(6, 'Mật khẩu phải có ít nhất 6 ký tự'),
+});
+
+type LoginFormValues = z.infer<typeof loginFormSchema>;
 
 function LoginContent() {
   const router = useRouter();
@@ -29,7 +44,7 @@ function LoginContent() {
     if (error) {
       clearError();
     }
-  });
+  }, [error, clearError]);
 
   // State for URL-based messages
   const [urlError, setUrlError] = useState<string | null>(null);
@@ -75,37 +90,31 @@ function LoginContent() {
     }
   }, [searchParams]);
 
-  const {
-    values,
-    isSubmitting,
-    isValid,
-    handleChange,
-    handleSubmit,
-    getFieldError,
-  } = useAuthForm<LoginCredentials>({
-    initialValues: {
+  const form = useForm<LoginFormValues>({
+    resolver: zodResolver(loginFormSchema),
+    defaultValues: {
       email: '',
       password: '',
     },
-    validate: validateLogin,
-    onSubmit: async credentials => {
-      try {
-        setUrlError(null); // Clear any URL errors
-        setUrlSuccess(null); // Clear any URL success messages
-        await login(credentials);
-        // Small delay to show the success toast before redirecting
-        setTimeout(() => {
-          router.push('/dashboard');
-        }, 1000);
-      } catch (error) {
-        // Error is already handled by the AuthContext with toast
-        console.error('Login failed:', error);
-      }
-    },
   });
 
+  async function onSubmit(data: LoginFormValues) {
+    try {
+      setUrlError(null); // Clear any URL errors
+      setUrlSuccess(null); // Clear any URL success messages
+      await login(data);
+      // Small delay to show the success toast before redirecting
+      setTimeout(() => {
+        router.push('/dashboard');
+      }, 1000);
+    } catch (error) {
+      // Error is already handled by the AuthContext with toast
+      console.error('Login failed:', error);
+    }
+  }
+
   // Combined loading state for better UX
-  const isFormLoading = isLoading || isSubmitting;
+  const isFormLoading = isLoading || form.formState.isSubmitting;
 
   // Combined error message (prioritize form errors over URL errors)
   const displayError = error || urlError;
@@ -161,91 +170,82 @@ function LoginContent() {
             )}
 
             {/* Form */}
-            <form onSubmit={handleSubmit} className='space-y-1'>
-              {/* Email */}
-              <div>
-                <Label htmlFor='email' className='mb-2 block'>
-                  Email
-                </Label>
-                <Input
-                  id='email'
-                  type='email'
-                  placeholder='Nhập email của bạn'
-                  value={values.email}
-                  onChange={e => handleChange('email', e.target.value)}
-                  className={
-                    getFieldError('email')
-                      ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
-                      : ''
-                  }
-                  disabled={isFormLoading}
-                />
-                <div className='mt-1 min-h-[20px]'>
-                  {getFieldError('email') && (
-                    <p className='text-xs text-red-500 italic'>
-                      {getFieldError('email')}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              {/* Password */}
-              <div>
-                <Label htmlFor='password' className='mb-2 block'>
-                  Mật khẩu
-                </Label>
-                <Input
-                  id='password'
-                  type='password'
-                  placeholder='Nhập mật khẩu của bạn'
-                  value={values.password}
-                  onChange={e => handleChange('password', e.target.value)}
-                  className={
-                    getFieldError('password')
-                      ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
-                      : ''
-                  }
-                  disabled={isFormLoading}
-                />
-                <div className='mt-1 min-h-[20px]'>
-                  {getFieldError('password') && (
-                    <p className='text-xs text-red-500 italic'>
-                      {getFieldError('password')}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              {/* Forgot Password Link */}
-              <div className='flex justify-end pt-1 pb-3'>
-                <Link
-                  href='/auth/forgot-password'
-                  className={`text-xs text-[#657282] italic hover:text-[#101828] hover:underline ${
-                    isFormLoading ? 'pointer-events-none opacity-50' : ''
-                  }`}
-                >
-                  Quên mật khẩu?
-                </Link>
-              </div>
-
-              {/* Submit Button */}
-              <Button
-                type='submit'
-                variant='gradient'
-                size='lg'
-                className='w-full'
-                disabled={isFormLoading}
+            <Form {...form}>
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className='space-y-4'
               >
-                {isFormLoading ? (
-                  <>
-                    <div className='mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent'></div>
-                    <span className='font-semibold'>Đang đăng nhập...</span>
-                  </>
-                ) : (
-                  <span className='font-semibold'>Đăng nhập</span>
-                )}
-              </Button>
-            </form>
+                {/* Email */}
+                <FormField
+                  control={form.control}
+                  name='email'
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email</FormLabel>
+                      <FormControl>
+                        <Input
+                          type='email'
+                          placeholder='Nhập email của bạn'
+                          disabled={isFormLoading}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Password */}
+                <FormField
+                  control={form.control}
+                  name='password'
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Mật khẩu</FormLabel>
+                      <FormControl>
+                        <Input
+                          type='password'
+                          placeholder='Nhập mật khẩu của bạn'
+                          disabled={isFormLoading}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Forgot Password Link */}
+                <div className='flex justify-end pt-1 pb-3'>
+                  <Link
+                    href='/auth/forgot-password'
+                    className={`text-xs text-[#657282] italic hover:text-[#101828] hover:underline ${
+                      isFormLoading ? 'pointer-events-none opacity-50' : ''
+                    }`}
+                  >
+                    Quên mật khẩu?
+                  </Link>
+                </div>
+
+                {/* Submit Button */}
+                <Button
+                  type='submit'
+                  variant='gradient'
+                  size='lg'
+                  className='w-full'
+                  disabled={isFormLoading}
+                >
+                  {isFormLoading ? (
+                    <>
+                      <div className='mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent'></div>
+                      <span className='font-semibold'>Đang đăng nhập...</span>
+                    </>
+                  ) : (
+                    <span className='font-semibold'>Đăng nhập</span>
+                  )}
+                </Button>
+              </form>
+            </Form>
 
             {/* Social Login Section */}
             <div className='space-y-2'>

@@ -60,6 +60,7 @@ export interface AuthContextType extends AuthState {
   refreshAuth: () => Promise<void>;
   checkAuthStatus: () => Promise<void>;
   clearError: () => void;
+  updateUserInContext: (userData: Partial<User>) => void;
 }
 
 export interface HealthProfile {
