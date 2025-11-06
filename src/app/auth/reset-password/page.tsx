@@ -2,30 +2,60 @@
 
 import { Logo } from '@/components/Logo';
 import { Button } from '@/components/ui/button';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { PasswordStrength } from '@/components/ui/password-strength';
 import { authService } from '@/services/auth';
 import { logger } from '@/lib/logger';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { AlertTriangle, ArrowLeft, CheckCircle, Lock } from 'lucide-react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
 import Image from 'next/image';
+import * as z from 'zod';
+
+const resetPasswordFormSchema = z
+  .object({
+    password: z
+      .string()
+      .min(1, 'Mật khẩu là bắt buộc')
+      .min(8, 'Mật khẩu phải có ít nhất 8 ký tự')
+      .regex(/[a-z]/, 'Mật khẩu phải chứa chữ thường')
+      .regex(/[A-Z]/, 'Mật khẩu phải chứa chữ hoa')
+      .regex(/\d/, 'Mật khẩu phải chứa số'),
+    confirmPassword: z.string().min(1, 'Vui lòng xác nhận mật khẩu'),
+  })
+  .refine(data => data.password === data.confirmPassword, {
+    message: 'Mật khẩu xác nhận không khớp',
+    path: ['confirmPassword'],
+  });
+
+type ResetPasswordFormValues = z.infer<typeof resetPasswordFormSchema>;
 
 function ResetPasswordContent() {
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
 
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
   const [tokenValid, setTokenValid] = useState<boolean | null>(null);
-  const [touched, setTouched] = useState({
-    password: false,
-    confirmPassword: false,
+
+  const form = useForm<ResetPasswordFormValues>({
+    resolver: zodResolver(resetPasswordFormSchema),
+    defaultValues: {
+      password: '',
+      confirmPassword: '',
+    },
   });
 
   // Check if token exists on mount
@@ -40,49 +70,7 @@ function ResetPasswordContent() {
     setTokenValid(true);
   }, [token]);
 
-  const validatePassword = (password: string): string | null => {
-    if (!password) return 'Mật khẩu là bắt buộc';
-    if (password.length < 8) return 'Mật khẩu phải có ít nhất 8 ký tự';
-    if (!/[a-z]/.test(password)) return 'Mật khẩu phải chứa chữ thường';
-    if (!/[A-Z]/.test(password)) return 'Mật khẩu phải chứa chữ hoa';
-    if (!/\d/.test(password)) return 'Mật khẩu phải chứa số';
-    return null;
-  };
-
-  const validateConfirmPassword = (
-    confirmPassword: string,
-    password: string
-  ): string | null => {
-    if (!confirmPassword) return 'Vui lòng xác nhận mật khẩu';
-    if (confirmPassword !== password) return 'Mật khẩu xác nhận không khớp';
-    return null;
-  };
-
-  const passwordError = touched.password ? validatePassword(password) : null;
-  const confirmPasswordError = touched.confirmPassword
-    ? validateConfirmPassword(confirmPassword, password)
-    : null;
-  const isValid =
-    !passwordError && !confirmPasswordError && password && confirmPassword;
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    setTouched({
-      password: true,
-      confirmPassword: true,
-    });
-
-    const passwordValidationError = validatePassword(password);
-    const confirmPasswordValidationError = validateConfirmPassword(
-      confirmPassword,
-      password
-    );
-
-    if (passwordValidationError || confirmPasswordValidationError) {
-      return;
-    }
-
+  async function onSubmit(data: ResetPasswordFormValues) {
     if (!token) {
       const errorMessage = 'Không có mã đặt lại mật khẩu';
       setError(errorMessage);
@@ -96,7 +84,7 @@ function ResetPasswordContent() {
     try {
       logger.debug('Bắt đầu đặt lại mật khẩu');
 
-      await authService.resetPassword({ token, new_password: password });
+      await authService.resetPassword({ token, new_password: data.password });
       setIsSuccess(true);
 
       logger.authSuccess('Đặt lại mật khẩu thành công');
@@ -115,19 +103,13 @@ function ResetPasswordContent() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }
 
-  const handleChange = (
-    field: 'password' | 'confirmPassword',
-    value: string
-  ) => {
-    if (field === 'password') {
-      setPassword(value);
-    } else {
-      setConfirmPassword(value);
-    }
+  // Clear error when form values change
+  const passwordValue = form.watch('password');
+  if (error && passwordValue) {
     setError(null);
-  };
+  }
 
   // Loading state while validating token
   if (tokenValid === null) {
@@ -321,101 +303,84 @@ function ResetPasswordContent() {
             )}
 
             {/* Form */}
-            <form onSubmit={handleSubmit} className='space-y-1'>
-              {/* New Password */}
-              <div>
-                <Label htmlFor='password' className='mb-2 block'>
-                  Mật khẩu mới
-                </Label>
-                <Input
-                  id='password'
-                  type='password'
-                  placeholder='Nhập mật khẩu mới của bạn'
-                  value={password}
-                  onChange={e => handleChange('password', e.target.value)}
-                  onBlur={() =>
-                    setTouched(prev => ({ ...prev, password: true }))
-                  }
-                  disabled={isLoading}
-                  className={
-                    passwordError
-                      ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
-                      : ''
-                  }
+            <Form {...form}>
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className='space-y-1'
+              >
+                {/* New Password */}
+                <FormField
+                  control={form.control}
+                  name='password'
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Mật khẩu mới</FormLabel>
+                      <FormControl>
+                        <Input
+                          type='password'
+                          placeholder='Nhập mật khẩu mới của bạn'
+                          disabled={isLoading}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-                <div className='mt-1 min-h-[20px]'>
-                  {passwordError && (
-                    <p className='text-xs text-red-500 italic'>
-                      {passwordError}
-                    </p>
+
+                {/* Password Strength Indicator */}
+                {form.watch('password') && (
+                  <div className='py-2'>
+                    <PasswordStrength password={form.watch('password')} />
+                  </div>
+                )}
+
+                {/* Confirm Password */}
+                <FormField
+                  control={form.control}
+                  name='confirmPassword'
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Xác nhận mật khẩu mới</FormLabel>
+                      <FormControl>
+                        <Input
+                          type='password'
+                          placeholder='Xác nhận mật khẩu mới của bạn'
+                          disabled={isLoading}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
                   )}
-                </div>
-              </div>
-
-              {/* Password Strength Indicator */}
-              {password && (
-                <div className='py-2'>
-                  <PasswordStrength password={password} />
-                </div>
-              )}
-
-              {/* Confirm Password */}
-              <div>
-                <Label htmlFor='confirmPassword' className='mb-2 block'>
-                  Xác nhận mật khẩu mới
-                </Label>
-                <Input
-                  id='confirmPassword'
-                  type='password'
-                  placeholder='Xác nhận mật khẩu mới của bạn'
-                  value={confirmPassword}
-                  onChange={e =>
-                    handleChange('confirmPassword', e.target.value)
-                  }
-                  onBlur={() =>
-                    setTouched(prev => ({ ...prev, confirmPassword: true }))
-                  }
-                  disabled={isLoading}
-                  className={
-                    confirmPasswordError
-                      ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
-                      : ''
-                  }
                 />
-                <div className='mt-1 min-h-[20px]'>
-                  {confirmPasswordError && (
-                    <p className='text-xs text-red-500 italic'>
-                      {confirmPasswordError}
-                    </p>
-                  )}
-                </div>
-              </div>
 
-              {/* Submit Button */}
-              <div className='pt-3'>
-                <Button
-                  type='submit'
-                  variant='gradient'
-                  size='lg'
-                  className='w-full'
-                  disabled={!isValid || isLoading}
-                >
-                  {isLoading ? (
-                    <>
-                      <div className='mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent' />
-                      <span className='font-semibold'>
-                        Đang cập nhật mật khẩu...
-                      </span>
-                    </>
-                  ) : (
-                    <>
-                      <Lock className='mr-2 h-4 w-4' />
-                      <span className='font-semibold'>Cập nhật mật khẩu</span>
-                    </>
-                  )}
-                </Button>
-              </div>
-            </form>
+                {/* Submit Button */}
+                <div className='pt-3'>
+                  <Button
+                    type='submit'
+                    variant='gradient'
+                    size='lg'
+                    className='w-full'
+                    disabled={isLoading || form.formState.isSubmitting}
+                  >
+                    {isLoading || form.formState.isSubmitting ? (
+                      <>
+                        <div className='mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent' />
+                        <span className='font-semibold'>
+                          Đang cập nhật mật khẩu...
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <Lock className='mr-2 h-4 w-4' />
+                        <span className='font-semibold'>Cập nhật mật khẩu</span>
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </form>
+            </Form>
           </div>
         </div>
       </div>

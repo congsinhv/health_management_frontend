@@ -3,15 +3,44 @@
 import { Google } from '@/components/icons';
 import { Logo } from '@/components/Logo';
 import { Button } from '@/components/ui/button';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
-import { useAuthForm, validateRegister } from '@/hooks/useAuthForm';
-import { RegisterCredentials } from '@/types/auth';
+import { zodResolver } from '@hookform/resolvers/zod';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
+import { useForm } from 'react-hook-form';
 import Image from 'next/image';
+import * as z from 'zod';
+
+const registerFormSchema = z
+  .object({
+    firstName: z.string().min(2, 'Tên phải có ít nhất 2 ký tự'),
+    lastName: z.string().min(2, 'Họ phải có ít nhất 2 ký tự'),
+    email: z.string().min(1, 'Email là bắt buộc').email('Email không hợp lệ'),
+    password: z
+      .string()
+      .min(8, 'Mật khẩu phải có ít nhất 8 ký tự')
+      .regex(
+        /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
+        'Mật khẩu phải chứa ít nhất một chữ hoa, một chữ thường và một số'
+      ),
+    confirmPassword: z.string().min(1, 'Vui lòng xác nhận mật khẩu'),
+  })
+  .refine(data => data.password === data.confirmPassword, {
+    message: 'Mật khẩu xác nhận không khớp',
+    path: ['confirmPassword'],
+  });
+
+type RegisterFormValues = z.infer<typeof registerFormSchema>;
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -37,32 +66,32 @@ export default function RegisterPage() {
     }
   }, [isAuthenticated, router]);
 
-  const { values, isSubmitting, handleChange, handleSubmit, getFieldError } =
-    useAuthForm<RegisterCredentials>({
-      initialValues: {
-        firstName: '',
-        lastName: '',
-        email: '',
-        password: '',
-        confirmPassword: '',
-      },
-      validate: validateRegister,
-      onSubmit: async credentials => {
-        try {
-          await register(credentials);
-          // Small delay to show the success toast before redirecting to login
-          setTimeout(() => {
-            router.push('/auth/login');
-          }, 2000);
-        } catch (error) {
-          // Error is already handled by the AuthContext with toast
-          console.error('Registration failed:', error);
-        }
-      },
-    });
+  const form = useForm<RegisterFormValues>({
+    resolver: zodResolver(registerFormSchema),
+    defaultValues: {
+      firstName: '',
+      lastName: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
+    },
+  });
+
+  async function onSubmit(data: RegisterFormValues) {
+    try {
+      await register(data);
+      // Small delay to show the success toast before redirecting to login
+      setTimeout(() => {
+        router.push('/auth/login');
+      }, 2000);
+    } catch (error) {
+      // Error is already handled by the AuthContext with toast
+      console.error('Registration failed:', error);
+    }
+  }
 
   // Combined loading state for better UX
-  const isFormLoading = isLoading || isSubmitting;
+  const isFormLoading = isLoading || form.formState.isSubmitting;
 
   return (
     <div className='flex min-h-screen bg-white'>
@@ -109,162 +138,132 @@ export default function RegisterPage() {
             )}
 
             {/* Form */}
-            <form onSubmit={handleSubmit} className='space-y-1'>
-              {/* Name Fields */}
-              <div className='grid grid-cols-2 gap-4'>
-                <div>
-                  <Label htmlFor='firstName' className='mb-2 block'>
-                    Tên
-                  </Label>
-                  <Input
-                    id='firstName'
-                    type='text'
-                    placeholder='Nhập tên của bạn'
-                    value={values.firstName}
-                    onChange={e => handleChange('firstName', e.target.value)}
-                    className={
-                      getFieldError('firstName')
-                        ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
-                        : ''
-                    }
-                    disabled={isFormLoading}
-                  />
-                  <div className='mt-1 min-h-[20px]'>
-                    {getFieldError('firstName') && (
-                      <p className='text-xs text-red-500 italic'>
-                        {getFieldError('firstName')}
-                      </p>
-                    )}
-                  </div>
-                </div>
-                <div>
-                  <Label htmlFor='lastName' className='mb-2 block'>
-                    Họ
-                  </Label>
-                  <Input
-                    id='lastName'
-                    type='text'
-                    placeholder='Nhập họ của bạn'
-                    value={values.lastName}
-                    onChange={e => handleChange('lastName', e.target.value)}
-                    className={
-                      getFieldError('lastName')
-                        ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
-                        : ''
-                    }
-                    disabled={isFormLoading}
-                  />
-                  <div className='mt-1 min-h-[20px]'>
-                    {getFieldError('lastName') && (
-                      <p className='text-xs text-red-500 italic'>
-                        {getFieldError('lastName')}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* Email */}
-              <div>
-                <Label htmlFor='email' className='mb-2 block'>
-                  Email
-                </Label>
-                <Input
-                  id='email'
-                  type='email'
-                  placeholder='Nhập email của bạn'
-                  value={values.email}
-                  onChange={e => handleChange('email', e.target.value)}
-                  className={
-                    getFieldError('email')
-                      ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
-                      : ''
-                  }
-                  disabled={isFormLoading}
-                />
-                <div className='mt-1 min-h-[20px]'>
-                  {getFieldError('email') && (
-                    <p className='text-xs text-red-500 italic'>
-                      {getFieldError('email')}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              {/* Password */}
-              <div>
-                <Label htmlFor='password' className='mb-2 block'>
-                  Mật khẩu
-                </Label>
-                <Input
-                  id='password'
-                  type='password'
-                  placeholder='Tạo mật khẩu mạnh'
-                  value={values.password}
-                  onChange={e => handleChange('password', e.target.value)}
-                  className={
-                    getFieldError('password')
-                      ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
-                      : ''
-                  }
-                  disabled={isFormLoading}
-                />
-                <div className='mt-1 min-h-[20px]'>
-                  {getFieldError('password') && (
-                    <p className='text-xs text-red-500 italic'>
-                      {getFieldError('password')}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              {/* Confirm Password */}
-              <div>
-                <Label htmlFor='confirmPassword' className='mb-2 block'>
-                  Xác nhận mật khẩu
-                </Label>
-                <Input
-                  id='confirmPassword'
-                  type='password'
-                  placeholder='Xác nhận mật khẩu của bạn'
-                  value={values.confirmPassword}
-                  onChange={e =>
-                    handleChange('confirmPassword', e.target.value)
-                  }
-                  className={
-                    getFieldError('confirmPassword')
-                      ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
-                      : ''
-                  }
-                  disabled={isFormLoading}
-                />
-                <div className='mt-1 min-h-[20px]'>
-                  {getFieldError('confirmPassword') && (
-                    <p className='text-xs text-red-500 italic'>
-                      {getFieldError('confirmPassword')}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              {/* Submit Button */}
-              <Button
-                type='submit'
-                variant='gradient'
-                size='lg'
-                className='w-full'
-                disabled={isFormLoading}
+            <Form {...form}>
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className='space-y-4'
               >
-                {isFormLoading ? (
-                  <>
-                    <div className='mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent'></div>
-                    <span className='font-semibold'>Đang tạo tài khoản...</span>
-                  </>
-                ) : (
-                  <span className='font-semibold'>Đăng ký</span>
-                )}
-              </Button>
-            </form>
+                {/* Name Fields */}
+                <div className='grid grid-cols-2 gap-4'>
+                  <FormField
+                    control={form.control}
+                    name='firstName'
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Tên</FormLabel>
+                        <FormControl>
+                          <Input
+                            type='text'
+                            placeholder='Nhập tên của bạn'
+                            disabled={isFormLoading}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name='lastName'
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Họ</FormLabel>
+                        <FormControl>
+                          <Input
+                            type='text'
+                            placeholder='Nhập họ của bạn'
+                            disabled={isFormLoading}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                {/* Email */}
+                <FormField
+                  control={form.control}
+                  name='email'
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email</FormLabel>
+                      <FormControl>
+                        <Input
+                          type='email'
+                          placeholder='Nhập email của bạn'
+                          disabled={isFormLoading}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Password */}
+                <FormField
+                  control={form.control}
+                  name='password'
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Mật khẩu</FormLabel>
+                      <FormControl>
+                        <Input
+                          type='password'
+                          placeholder='Tạo mật khẩu mạnh'
+                          disabled={isFormLoading}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Confirm Password */}
+                <FormField
+                  control={form.control}
+                  name='confirmPassword'
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Xác nhận mật khẩu</FormLabel>
+                      <FormControl>
+                        <Input
+                          type='password'
+                          placeholder='Xác nhận mật khẩu của bạn'
+                          disabled={isFormLoading}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Submit Button */}
+                <Button
+                  type='submit'
+                  variant='gradient'
+                  size='lg'
+                  className='w-full'
+                  disabled={isFormLoading}
+                >
+                  {isFormLoading ? (
+                    <>
+                      <div className='mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent'></div>
+                      <span className='font-semibold'>
+                        Đang tạo tài khoản...
+                      </span>
+                    </>
+                  ) : (
+                    <span className='font-semibold'>Đăng ký</span>
+                  )}
+                </Button>
+              </form>
+            </Form>
 
             {/* Social Login Section */}
             <div className='space-y-2'>
