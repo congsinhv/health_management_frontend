@@ -160,9 +160,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const user: User = {
         id: userData.id?.toString() || '',
         email: userData.email || '',
-        firstName: userData.first_name || '',
-        lastName: userData.last_name || '',
-        profilePicture: userData.avatar_url || undefined,
+        firstName: userData.profile?.first_name || '',
+        lastName: userData.profile?.last_name || '',
+        profilePicture: userData.profile?.avatar_url || undefined,
         phoneNumber: userData.phone_number || undefined,
         emailVerified: userData.email_verified ?? false,
         createdAt: userData.created_at || new Date().toISOString(),
@@ -195,9 +195,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             const user: User = {
               id: userData.id?.toString() || '',
               email: userData.email || '',
-              firstName: userData.first_name || '',
-              lastName: userData.last_name || '',
-              profilePicture: userData.avatar_url || undefined,
+              firstName: userData.profile?.first_name || '',
+              lastName: userData.profile?.last_name || '',
+              profilePicture: userData.profile?.avatar_url || undefined,
               phoneNumber: userData.phone_number || undefined,
               emailVerified: userData.email_verified ?? false,
               createdAt: userData.created_at || new Date().toISOString(),
@@ -244,9 +244,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const user: User = {
         id: userData.id?.toString() || '',
         email: userData.email || '',
-        firstName: userData.first_name || '',
-        lastName: userData.last_name || '',
-        profilePicture: userData.avatar_url || undefined,
+        firstName: userData.profile?.first_name || '',
+        lastName: userData.profile?.last_name || '',
+        profilePicture: userData.profile?.avatar_url || undefined,
         phoneNumber: userData.phone_number || undefined,
         emailVerified: userData.email_verified ?? false,
         createdAt: userData.created_at || new Date().toISOString(),
@@ -534,27 +534,57 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const updateProfile = async (userData: Partial<User>) => {
     try {
+      if (!state.user?.id) {
+        throw new Error('Không tìm thấy thông tin người dùng');
+      }
+
       logger.debug('Bắt đầu cập nhật thông tin cá nhân', {
         userId: state.user?.id,
         fields: Object.keys(userData),
       });
 
+      // Parse user ID to number
+      const userId = Number(state.user.id);
+      if (isNaN(userId)) {
+        throw new Error('ID người dùng không hợp lệ');
+      }
+
       // Map frontend user fields to backend format
-      const backendUserData: Record<string, string> = {};
+      const backendUserData: Record<string, string | undefined> = {};
       if (userData.firstName) backendUserData.first_name = userData.firstName;
       if (userData.lastName) backendUserData.last_name = userData.lastName;
       if (userData.email) backendUserData.email = userData.email;
       if (userData.phoneNumber)
         backendUserData.phone_number = userData.phoneNumber;
+      if (userData.profilePicture)
+        backendUserData.avatar_url = userData.profilePicture;
 
-      const updatedUser = await api.users.updateProfile(backendUserData);
+      // Remove undefined values
+      Object.keys(backendUserData).forEach(
+        key =>
+          backendUserData[key as keyof typeof backendUserData] === undefined &&
+          delete backendUserData[key as keyof typeof backendUserData]
+      );
+
+      // Ensure body is not empty
+      if (Object.keys(backendUserData).length === 0) {
+        logger.debug('Không có dữ liệu để cập nhật');
+        return;
+      }
+
+      const updatedUser = await api.users.updateProfile(userId, {
+        email: backendUserData.email,
+        first_name: backendUserData.first_name,
+        last_name: backendUserData.last_name,
+        avatar_url: backendUserData.avatar_url,
+      });
 
       const user: User = {
         id: updatedUser.id?.toString() || '',
         email: updatedUser.email || '',
-        firstName: updatedUser.first_name || '',
-        lastName: updatedUser.last_name || '',
-        profilePicture: updatedUser.avatar_url || undefined,
+        firstName: updatedUser.profile?.first_name || '',
+        lastName: updatedUser.profile?.last_name || '',
+        profilePicture: updatedUser.profile?.avatar_url || undefined,
         phoneNumber: updatedUser.phone_number || undefined,
         emailVerified: updatedUser.email_verified ?? false,
         createdAt: updatedUser.created_at || new Date().toISOString(),
@@ -631,6 +661,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     dispatch({ type: 'CLEAR_ERROR' });
   };
 
+  // Helper function to update user in context without calling API
+  // Used when API is called directly elsewhere (e.g., profile page)
+  const updateUserInContext = (userData: Partial<User>) => {
+    dispatch({ type: 'UPDATE_USER', payload: userData });
+  };
+
   const contextValue: AuthContextType = {
     ...state,
     login,
@@ -642,6 +678,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     refreshAuth,
     checkAuthStatus,
     clearError,
+    updateUserInContext,
   };
 
   return (

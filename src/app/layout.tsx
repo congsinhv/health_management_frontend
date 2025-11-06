@@ -3,6 +3,7 @@ import localFont from 'next/font/local';
 import './globals.css';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { Toaster } from '@/components/ui/sonner';
+import ChatFloatingButton from '@/components/chat/ChatFloatingButton';
 
 // Gilroy font family configuration
 const gilroy = localFont({
@@ -51,6 +52,7 @@ export default function RootLayout({
       <body className={`${gilroy.variable} antialiased`}>
         <AuthProvider>{children}</AuthProvider>
         <Toaster />
+        <ChatFloatingButton />
       </body>
     </html>
   );

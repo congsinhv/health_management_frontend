@@ -1,0 +1,64 @@
+.chatButton {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background-color: #ffffff;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  z-index: 1000;
+  padding: 0;
+
+  &:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  &:focus {
+    outline: none;
+    box-shadow:
+      0 6px 20px rgba(0, 0, 0, 0.2),
+      0 0 0 3px rgba(59, 130, 246, 0.3);
+  }
+}
+
+.chatButton__placeholder {
+  width: 60px;
+  height: 60px;
+  background-color: #f0f0f0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1e1e1e;
+  font-family: var(--font-gilroy);
+}
+
+// Responsive styles
+@media (max-width: 768px) {
+  .chatButton {
+    bottom: 20px;
+    right: 20px;
+    width: 56px;
+    height: 56px;
+  }
+
+  .chatButton__placeholder {
+    width: 52px;
+    height: 52px;
+    font-size: 16px;
+  }
+}
