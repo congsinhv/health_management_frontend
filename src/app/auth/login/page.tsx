@@ -29,7 +29,7 @@ function LoginContent() {
     if (error) {
       clearError();
     }
-  });
+  }, [error, clearError]);
 
   // State for URL-based messages
   const [urlError, setUrlError] = useState<string | null>(null);
@@ -75,34 +75,28 @@ function LoginContent() {
     }
   }, [searchParams]);
 
-  const {
-    values,
-    isSubmitting,
-    isValid,
-    handleChange,
-    handleSubmit,
-    getFieldError,
-  } = useAuthForm<LoginCredentials>({
-    initialValues: {
-      email: '',
-      password: '',
-    },
-    validate: validateLogin,
-    onSubmit: async credentials => {
-      try {
-        setUrlError(null); // Clear any URL errors
-        setUrlSuccess(null); // Clear any URL success messages
-        await login(credentials);
-        // Small delay to show the success toast before redirecting
-        setTimeout(() => {
-          router.push('/dashboard');
-        }, 1000);
-      } catch (error) {
-        // Error is already handled by the AuthContext with toast
-        console.error('Login failed:', error);
-      }
-    },
-  });
+  const { values, isSubmitting, handleChange, handleSubmit, getFieldError } =
+    useAuthForm<LoginCredentials>({
+      initialValues: {
+        email: '',
+        password: '',
+      },
+      validate: validateLogin,
+      onSubmit: async credentials => {
+        try {
+          setUrlError(null); // Clear any URL errors
+          setUrlSuccess(null); // Clear any URL success messages
+          await login(credentials);
+          // Small delay to show the success toast before redirecting
+          setTimeout(() => {
+            router.push('/dashboard');
+          }, 1000);
+        } catch (error) {
+          // Error is already handled by the AuthContext with toast
+          console.error('Login failed:', error);
+        }
+      },
+    });
 
   // Combined loading state for better UX
   const isFormLoading = isLoading || isSubmitting;

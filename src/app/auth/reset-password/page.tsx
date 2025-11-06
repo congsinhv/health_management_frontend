@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { PasswordStrength } from '@/components/ui/password-strength';
-import { api } from '@/lib/api';
+import { authService } from '@/services/auth';
 import { logger } from '@/lib/logger';
 import { AlertTriangle, ArrowLeft, CheckCircle, Lock } from 'lucide-react';
 import Link from 'next/link';
@@ -96,7 +96,7 @@ function ResetPasswordContent() {
     try {
       logger.debug('Bắt đầu đặt lại mật khẩu');
 
-      await api.auth.resetPassword({ token, new_password: password });
+      await authService.resetPassword({ token, new_password: password });
       setIsSuccess(true);
 
       logger.authSuccess('Đặt lại mật khẩu thành công');

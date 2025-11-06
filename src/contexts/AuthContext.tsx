@@ -1,6 +1,8 @@
 'use client';
 
-import { api, tokenStorage } from '@/lib/api';
+import { authService } from '@/services/auth';
+import { userService } from '@/services/user';
+import { tokenStorage } from '@/lib/storage';
 import { logger } from '@/lib/logger';
 import {
   AuthContextType,
@@ -15,6 +17,7 @@ import React, {
   useEffect,
   useReducer,
   useRef,
+  useCallback,
 } from 'react';
 import { toast } from 'sonner';
 
@@ -114,7 +117,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       // Check if we have a refresh token first
       const refreshToken = tokenStorage.getRefreshToken();
-      const accessToken = tokenStorage.getToken();
+      const accessToken = tokenStorage.getAccessToken();
 
       // If no tokens at all, user is not authenticated
       if (!refreshToken && !accessToken) {
@@ -126,8 +129,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (refreshToken && !accessToken) {
         logger.debug('Không có access token, thử làm mới với refresh token');
         try {
-          const tokenData = await api.auth.refresh();
-          tokenStorage.setToken(tokenData.access_token);
+          const tokenData = await authService.refresh();
+          tokenStorage.setAccessToken(tokenData.access_token);
           tokenStorage.setRefreshToken(tokenData.refresh_token);
           logger.debug('Đã làm mới token thành công');
         } catch (refreshError) {
@@ -149,7 +152,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       logger.debug('Kiểm tra trạng thái xác thực với token từ localStorage');
 
       // Try to get user info with the stored token
-      const userData = await api.auth.me();
+      const userData = await authService.me();
 
       logger.debug('Trạng thái xác thực hợp lệ', {
         userId: userData.id,
@@ -186,12 +189,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (refreshToken) {
           try {
             logger.debug('Thử làm mới token sau khi kiểm tra thất bại');
-            const tokenData = await api.auth.refresh();
-            tokenStorage.setToken(tokenData.access_token);
+            const tokenData = await authService.refresh();
+            tokenStorage.setAccessToken(tokenData.access_token);
             tokenStorage.setRefreshToken(tokenData.refresh_token);
 
             // Retry getting user info
-            const userData = await api.auth.me();
+            const userData = await authService.me();
             const user: User = {
               id: userData.id?.toString() || '',
               email: userData.email || '',
@@ -229,16 +232,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       logger.debug('Đăng nhập với email', { email: credentials.email });
 
-      const tokenData = await api.auth.login(credentials);
+      const tokenData = await authService.login(credentials);
 
       logger.debug('Đăng nhập thành công');
 
       // Store tokens in localStorage
-      tokenStorage.setToken(tokenData.access_token);
+      tokenStorage.setAccessToken(tokenData.access_token);
       tokenStorage.setRefreshToken(tokenData.refresh_token);
 
       // Get user data
-      const userData = await api.auth.me();
+      const userData = await authService.me();
 
       // Convert API response to User type
       const user: User = {
@@ -290,7 +293,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       logger.debug('Đăng ký tài khoản mới', { email: userData.email });
 
       // Register user - this does NOT automatically log them in
-      await api.auth.register({
+      await authService.register({
         email: userData.email,
         first_name: userData.firstName,
         last_name: userData.lastName,
@@ -339,7 +342,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       logger.debug('Bắt đầu đăng nhập với Google');
 
       // Get Google OAuth URL
-      const { authorization_url, state } = await api.auth.googleLogin();
+      const { authorization_url, state } = await authService.googleLogin();
 
       // Store state in sessionStorage for CSRF protection (not sensitive data)
       sessionStorage.setItem('google_oauth_state', state);
@@ -390,7 +393,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       tokenStorage.clearTokens();
 
       // Verify tokens were cleared
-      const accessToken = tokenStorage.getToken();
+      const accessToken = tokenStorage.getAccessToken();
       const remainingRefreshToken = tokenStorage.getRefreshToken();
       if (accessToken || remainingRefreshToken) {
         logger.debug('Tokens still present after clear, forcing removal');
@@ -423,7 +426,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Call logout API to revoke refresh token (best effort)
       // Pass the saved refresh token since we already cleared it from storage
       try {
-        await api.auth.logout(refreshToken || undefined);
+        await authService.logout(refreshToken || undefined);
       } catch (error) {
         // Ignore logout API errors - tokens are already cleared locally
         logger.debug('Logout API failed, but tokens already cleared locally', {
@@ -463,13 +466,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       logger.debug('Đăng xuất tất cả thiết bị');
 
       // Save access token BEFORE clearing (needed for API call)
-      const accessToken = tokenStorage.getToken();
+      const accessToken = tokenStorage.getAccessToken();
 
       // Clear tokens FIRST (defensive approach - ensure cleanup even if API fails)
       tokenStorage.clearTokens();
 
       // Verify tokens were cleared
-      const remainingAccessToken = tokenStorage.getToken();
+      const remainingAccessToken = tokenStorage.getAccessToken();
       const refreshToken = tokenStorage.getRefreshToken();
       if (remainingAccessToken || refreshToken) {
         logger.debug('Tokens still present after clear, forcing removal');
@@ -502,7 +505,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Call logout-all API to revoke all refresh tokens (best effort)
       // Pass the saved access token since we already cleared it from storage
       try {
-        await api.auth.logoutAll(accessToken || undefined);
+        await authService.logoutAll(accessToken || undefined);
       } catch (error) {
         // Ignore logout API errors - tokens are already cleared locally
         logger.debug(
@@ -572,7 +575,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      const updatedUser = await api.users.updateProfile(userId, {
+      const updatedUser = await userService.updateProfile(userId, {
         email: backendUserData.email,
         first_name: backendUserData.first_name,
         last_name: backendUserData.last_name,
@@ -634,10 +637,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       // Refresh tokens - returns new access_token and refresh_token (token rotation)
-      const tokenData = await api.auth.refresh();
+      const tokenData = await authService.refresh();
 
       // Update stored tokens with new ones
-      tokenStorage.setToken(tokenData.access_token);
+      tokenStorage.setAccessToken(tokenData.access_token);
       tokenStorage.setRefreshToken(tokenData.refresh_token);
 
       // Verify the new session and get user data
@@ -657,15 +660,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const clearError = () => {
+  const clearError = useCallback(() => {
     dispatch({ type: 'CLEAR_ERROR' });
-  };
+  }, []);
 
   // Helper function to update user in context without calling API
   // Used when API is called directly elsewhere (e.g., profile page)
-  const updateUserInContext = (userData: Partial<User>) => {
+  const updateUserInContext = useCallback((userData: Partial<User>) => {
     dispatch({ type: 'UPDATE_USER', payload: userData });
-  };
+  }, []);
 
   const contextValue: AuthContextType = {
     ...state,

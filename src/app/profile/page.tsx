@@ -1,20 +1,11 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 'use client';
 
-import * as React from 'react';
-import { useEffect, useRef, useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
+import { AvatarFill } from '@/components/avatar/Avatar.fill';
+import Header from '@/components/header/Header';
+import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { DatePicker } from '@/components/ui/date-picker';
 import {
   Form,
   FormControl,
@@ -23,16 +14,29 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import Header from '@/components/header/Header';
-import { DatePicker } from '@/components/ui/date-picker';
-import { ProtectedRoute } from '@/components/ProtectedRoute';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/contexts/AuthContext';
-import { api, ApiError } from '@/lib/api';
-import { toast } from 'sonner';
-import { AvatarFill } from '@/components/avatar/Avatar.fill';
 import { AVATAR_IMAGE_ACCEPT } from '@/lib/constants';
 import { validateAvatarImage } from '@/lib/utils/avatar';
-import { Skeleton } from '@/components/ui/skeleton';
+import { uploadService } from '@/services/upload';
+import { userService } from '@/services/user';
+import { UpdateUserProfileData } from '@/types/user';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useQuery } from '@tanstack/react-query';
+import * as React from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
+import * as z from 'zod';
 
 const profileFormSchema = z.object({
   fullName: z.string().min(2, 'Họ tên phải có ít nhất 2 ký tự'),
@@ -68,17 +72,13 @@ type ProfileFormValues = z.infer<typeof profileFormSchema>;
 
 function ProfileContent() {
   const { user, updateUserInContext } = useAuth();
-  const [userId, setUserId] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const hasInitializedUserId = useRef(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [selectedAvatarFile, setSelectedAvatarFile] = useState<File | null>(
     null
   );
-  const [avatarPreview, setAvatarPreview] = useState<string | null>(
-    user?.profilePicture || null
-  );
-  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
@@ -93,86 +93,81 @@ function ProfileContent() {
     },
   });
 
-  useEffect(() => {
-    if (user?.id && !userId && !hasInitializedUserId.current) {
-      hasInitializedUserId.current = true;
-      setUserId(Number(user?.id));
-    }
-  }, [user?.id, userId]);
+  // Fetch user profile data
+  const {
+    data: userData,
+    isLoading: isLoadingProfile,
+    error: profileError,
+    refetch: refetchUserProfile,
+  } = useQuery({
+    queryKey: ['userProfile', user?.id],
+    queryFn: () => userService.getProfile(Number(user?.id)),
+    enabled: user?.id !== null,
+  });
 
-  // Fetch user profile data on mount
+  // Update form when userData is loaded
   useEffect(() => {
-    if (userId === null) {
+    if (!userData) {
       setIsLoading(false);
       return;
     }
 
-    async function fetchUserProfile() {
-      try {
-        setIsLoading(true);
-        const userData = await api.users.getProfile(userId!);
+    // Extract profile data from profile object
+    const profile = userData.profile;
+    const firstName = profile?.first_name || '';
+    const lastName = profile?.last_name || '';
+    const avatarUrl = profile?.avatar_url;
+    const fullName = `${firstName} ${lastName}`.trim() || '';
 
-        // Extract profile data from profile object
-        const profile = userData.profile;
-        const firstName = profile?.first_name || '';
-        const lastName = profile?.last_name || '';
-        const fullName = `${firstName} ${lastName}`.trim() || '';
-
-        // Map goal from API to form enum values
-        const goalValue = profile?.goal;
-        let goalEnum: 'lose-weight' | 'gain-weight' | 'maintain' | undefined;
-        if (goalValue) {
-          const goalLower = goalValue.toLowerCase();
-          if (goalLower.includes('giảm') || goalLower.includes('lose')) {
-            goalEnum = 'lose-weight';
-          } else if (goalLower.includes('tăng') || goalLower.includes('gain')) {
-            goalEnum = 'gain-weight';
-          } else if (
-            goalLower.includes('duy trì') ||
-            goalLower.includes('maintain')
-          ) {
-            goalEnum = 'maintain';
-          }
-        }
-
-        // Update user context with avatar if available
-        const avatarUrl = profile?.avatar_url;
-        if (avatarUrl) {
-          updateUserInContext({
-            profilePicture: avatarUrl,
-          });
-        }
-
-        // Set avatar preview from fetched data (will be overridden if user has selected a file)
-        setAvatarPreview(currentPreview => {
-          // Only update if no file is currently selected and no preview exists
-          // This preserves user's file selection
-          return currentPreview || avatarUrl || null;
-        });
-
-        // Map API data to form values
-        form.reset({
-          fullName: fullName || '',
-          gender: profile?.gender as 'male' | 'female' | 'other' | undefined,
-          height: profile?.height_cm ? String(profile.height_cm) : '',
-          currentWeight: profile?.weight_kg ? String(profile.weight_kg) : '',
-          dateOfBirth: profile?.date_of_birth
-            ? new Date(profile.date_of_birth)
-            : undefined,
-          underlyingConditions: profile?.family_medical_history || '',
-          goal: goalEnum,
-        });
-      } catch (error) {
-        console.error('Failed to fetch user profile:', error);
-        toast.error('Không thể tải thông tin profile');
-      } finally {
-        setIsLoading(false);
+    // Map goal from API to form enum values
+    const goalValue = profile?.goal;
+    let goalEnum: 'lose-weight' | 'gain-weight' | 'maintain' | undefined;
+    if (goalValue) {
+      const goalLower = goalValue.toLowerCase();
+      if (goalLower.includes('giảm') || goalLower.includes('lose')) {
+        goalEnum = 'lose-weight';
+      } else if (goalLower.includes('tăng') || goalLower.includes('gain')) {
+        goalEnum = 'gain-weight';
+      } else if (
+        goalLower.includes('duy trì') ||
+        goalLower.includes('maintain')
+      ) {
+        goalEnum = 'maintain';
       }
     }
+    updateUserInContext({
+      profilePicture: avatarUrl || '',
+    });
 
-    fetchUserProfile();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userId]);
+    setAvatarPreview(avatarUrl || null);
+
+    // Map API data to form values
+    form.reset({
+      fullName: fullName || '',
+      gender: profile?.gender as 'male' | 'female' | 'other' | undefined,
+      height: profile?.height_cm ? String(profile.height_cm) : '',
+      currentWeight: profile?.weight_kg ? String(profile.weight_kg) : '',
+      dateOfBirth: profile?.date_of_birth
+        ? new Date(profile.date_of_birth)
+        : undefined,
+      underlyingConditions: profile?.family_medical_history || '',
+      goal: goalEnum,
+    });
+
+    setIsLoading(false);
+  }, [userData]);
+
+  // Handle loading and error states
+  useEffect(() => {
+    setIsLoading(isLoadingProfile);
+  }, [isLoadingProfile]);
+
+  useEffect(() => {
+    if (profileError) {
+      console.error('Failed to fetch user profile:', profileError);
+      toast.error('Không thể tải thông tin profile');
+    }
+  }, [profileError]);
 
   // Cleanup preview URL on unmount or when new file is selected
   useEffect(() => {
@@ -184,7 +179,7 @@ function ProfileContent() {
   }, [avatarPreview]);
 
   async function onSubmit(data: ProfileFormValues) {
-    if (userId === null) {
+    if (user?.id === null) {
       toast.error('Không tìm thấy thông tin người dùng');
       return;
     }
@@ -198,12 +193,6 @@ function ProfileContent() {
         try {
           const uploadedUrl = await uploadAvatarFile();
           avatarUrl = uploadedUrl || undefined;
-          // Clean up preview URL
-          if (avatarPreview) {
-            URL.revokeObjectURL(avatarPreview);
-            setAvatarPreview(null);
-          }
-          setSelectedAvatarFile(null);
         } catch (error) {
           const errorMessage =
             error instanceof Error
@@ -221,7 +210,10 @@ function ProfileContent() {
 
       // Format date_of_birth to YYYY-MM-DD
       const dateOfBirth = data.dateOfBirth
-        ? new Date(data.dateOfBirth.getTime() - data.dateOfBirth.getTimezoneOffset() * 60000)
+        ? new Date(
+            data.dateOfBirth.getTime() -
+              data.dateOfBirth.getTimezoneOffset() * 60000
+          )
             .toISOString()
             .split('T')[0]
         : undefined;
@@ -235,17 +227,7 @@ function ProfileContent() {
       const goalValue = data.goal ? goalMap[data.goal] || data.goal : undefined;
 
       // Prepare update data
-      const updateData: {
-        first_name?: string;
-        last_name?: string;
-        gender?: string;
-        height_cm?: number;
-        weight_kg?: number;
-        date_of_birth?: string;
-        family_medical_history?: string;
-        goal?: string;
-        avatar_url?: string;
-      } = {
+      const updateData: UpdateUserProfileData = {
         first_name: firstName,
         last_name: lastName,
         gender: data.gender,
@@ -263,30 +245,14 @@ function ProfileContent() {
         updateData.avatar_url = avatarUrl;
       }
 
-      // Remove undefined values
-      Object.keys(updateData).forEach(
-        key =>
-          updateData[key as keyof typeof updateData] === undefined &&
-          delete updateData[key as keyof typeof updateData]
-      );
+      await userService.updateProfile(Number(user?.id), updateData);
 
-      const updatedUserData = await api.users.updateProfile(userId, updateData);
-
-      // Update auth context with new user data (without calling API again)
-      const profile = updatedUserData.profile;
-      updateUserInContext({
-        firstName: profile?.first_name || '',
-        lastName: profile?.last_name || '',
-        profilePicture: profile?.avatar_url || avatarUrl,
-        gender: profile?.gender as 'male' | 'female' | 'other' | undefined,
-        dateOfBirth: profile?.date_of_birth,
-      });
-
+      refetchUserProfile();
       toast.success('Cập nhật thông tin thành công!');
     } catch (error) {
       console.error('Failed to update profile:', error);
       const errorMessage =
-        error instanceof ApiError
+        error instanceof Error
           ? error.message
           : 'Không thể cập nhật thông tin profile';
       toast.error(errorMessage);
@@ -320,13 +286,13 @@ function ProfileContent() {
   }
 
   async function uploadAvatarFile(): Promise<string | null> {
-    if (!selectedAvatarFile || userId === null) {
+    if (!selectedAvatarFile || user?.id === null) {
       return null;
     }
 
     try {
       // Upload image to GCS
-      const uploadResult = await api.upload.uploadImage(
+      const uploadResult = await uploadService.uploadImage(
         selectedAvatarFile,
         'avatars'
       );
@@ -334,7 +300,7 @@ function ProfileContent() {
     } catch (error) {
       console.error('Failed to upload avatar:', error);
       const errorMessage =
-        error instanceof ApiError
+        error instanceof Error
           ? error.message
           : 'Không thể upload ảnh đại diện';
       throw new Error(errorMessage);
@@ -378,7 +344,7 @@ function ProfileContent() {
                     src={avatarPreview || user?.profilePicture}
                     alt='Avatar Preview'
                     className='shadow-lg'
-                    userId={userId?.toString()}
+                    userId={user?.id?.toString()}
                     loading={isLoading}
                   />
                 </div>

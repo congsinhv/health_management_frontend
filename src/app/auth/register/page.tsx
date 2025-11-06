@@ -1,6 +1,6 @@
 'use client';
 
-import { Google, FacebookIcon, AppleIcon } from '@/components/icons';
+import { Google } from '@/components/icons';
 import { Logo } from '@/components/Logo';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -28,7 +28,7 @@ export default function RegisterPage() {
     if (error) {
       clearError();
     }
-  });
+  }, [error, clearError]);
 
   // Redirect to dashboard if already authenticated
   useEffect(() => {
@@ -37,35 +37,29 @@ export default function RegisterPage() {
     }
   }, [isAuthenticated, router]);
 
-  const {
-    values,
-    isSubmitting,
-    isValid,
-    handleChange,
-    handleSubmit,
-    getFieldError,
-  } = useAuthForm<RegisterCredentials>({
-    initialValues: {
-      firstName: '',
-      lastName: '',
-      email: '',
-      password: '',
-      confirmPassword: '',
-    },
-    validate: validateRegister,
-    onSubmit: async credentials => {
-      try {
-        await register(credentials);
-        // Small delay to show the success toast before redirecting to login
-        setTimeout(() => {
-          router.push('/auth/login');
-        }, 2000);
-      } catch (error) {
-        // Error is already handled by the AuthContext with toast
-        console.error('Registration failed:', error);
-      }
-    },
-  });
+  const { values, isSubmitting, handleChange, handleSubmit, getFieldError } =
+    useAuthForm<RegisterCredentials>({
+      initialValues: {
+        firstName: '',
+        lastName: '',
+        email: '',
+        password: '',
+        confirmPassword: '',
+      },
+      validate: validateRegister,
+      onSubmit: async credentials => {
+        try {
+          await register(credentials);
+          // Small delay to show the success toast before redirecting to login
+          setTimeout(() => {
+            router.push('/auth/login');
+          }, 2000);
+        } catch (error) {
+          // Error is already handled by the AuthContext with toast
+          console.error('Registration failed:', error);
+        }
+      },
+    });
 
   // Combined loading state for better UX
   const isFormLoading = isLoading || isSubmitting;

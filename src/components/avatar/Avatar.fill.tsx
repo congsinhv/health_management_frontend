@@ -69,7 +69,7 @@ export function AvatarFill({
 
   return loading ? (
     <div className={imageClassName}>
-      <Skeleton className='w-full h-full rounded-full' />
+      <Skeleton className='h-full w-full rounded-full' />
     </div>
   ) : (
     <Image

@@ -35,18 +35,20 @@ const Header = () => {
           <div className={styles.nav__item}>
             <Link href='/'>Liên hệ</Link>
           </div>
-          <div className={styles.profile}>
-            <Link href='/profile' className={styles.profile__link}>
-              <Avatar
-                src={user?.profilePicture}
-                alt='Profile'
-                size={AVATAR_CONFIG.HEADER_SIZE}
-                className={styles.profile__avatar}
-                userId={user?.id}
-                priority
-              />
-            </Link>
-          </div>
+          {user?.id && (
+            <div className={styles.profile}>
+              <Link href='/profile' className={styles.profile__link}>
+                <Avatar
+                  src={user?.profilePicture}
+                  alt='Profile'
+                  size={AVATAR_CONFIG.HEADER_SIZE}
+                  className={styles.profile__avatar}
+                  userId={user?.id}
+                  priority
+                />
+              </Link>
+            </div>
+          )}
         </div>
       </div>
     </div>
