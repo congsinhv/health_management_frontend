@@ -9,6 +9,7 @@ import NumberSection from '@/components/number/NumberSection';
 import FeaturesSection from '@/components/features/FeaturesSection';
 import InforSection from '@/components/information/InforSection';
 import Footer from '@/components/footer/Footer';
+import Image from 'next/image';
 
 const gridData = [
   {
@@ -79,19 +80,41 @@ export default function LandingPage() {
                 industry
               </p>
               <div className={styles.custom_block_content_decorates}>
-                <img src='/icons/Decorate1.svg' alt='Custom Content Block 1' />
-                <img src='/icons/Decorate2.svg' alt='Custom Content Block 2' />
+                <Image
+                  src='/icons/Decorate1.svg'
+                  alt='Custom Content Block 1'
+                  width={24}
+                  height={24}
+                />
+                <Image
+                  src='/icons/Decorate2.svg'
+                  alt='Custom Content Block 2'
+                  width={24}
+                  height={24}
+                />
               </div>
             </div>
             <div className='flex w-full flex-row justify-between'>
               <div className={styles.custom_block_icons}>
-                <img src='/Avatar1.png' alt='Custom Content Block 4' />
-                <img src='/Avatar2.png' alt='Custom Content Block 5' />
+                <Image
+                  src='/Avatar1.png'
+                  alt='Custom Content Block 4'
+                  width={32}
+                  height={32}
+                />
+                <Image
+                  src='/Avatar2.png'
+                  alt='Custom Content Block 5'
+                  width={32}
+                  height={32}
+                />
               </div>
-              <img
+              <Image
                 className={styles.custom_block_icons_feedback}
                 src='/icons/Feedback.svg'
                 alt='Custom Content Block 6'
+                width={20}
+                height={20}
               />
             </div>
           </div>

@@ -130,15 +130,33 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
                 remarkPlugins={[remarkGfm]}
                 components={{
                   // Custom renderers for better styling
-                  p: ({ children }) => <p className={styles.paragraph}>{children}</p>,
-                  strong: ({ children }) => <strong className={styles.bold}>{children}</strong>,
-                  em: ({ children }) => <em className={styles.italic}>{children}</em>,
-                  ol: ({ children }) => <ol className={styles.ordered_list}>{children}</ol>,
-                  ul: ({ children }) => <ul className={styles.unordered_list}>{children}</ul>,
-                  li: ({ children }) => <li className={styles.list_item}>{children}</li>,
-                  h1: ({ children }) => <h1 className={styles.heading1}>{children}</h1>,
-                  h2: ({ children }) => <h2 className={styles.heading2}>{children}</h2>,
-                  h3: ({ children }) => <h3 className={styles.heading3}>{children}</h3>,
+                  p: ({ children }) => (
+                    <p className={styles.paragraph}>{children}</p>
+                  ),
+                  strong: ({ children }) => (
+                    <strong className={styles.bold}>{children}</strong>
+                  ),
+                  em: ({ children }) => (
+                    <em className={styles.italic}>{children}</em>
+                  ),
+                  ol: ({ children }) => (
+                    <ol className={styles.ordered_list}>{children}</ol>
+                  ),
+                  ul: ({ children }) => (
+                    <ul className={styles.unordered_list}>{children}</ul>
+                  ),
+                  li: ({ children }) => (
+                    <li className={styles.list_item}>{children}</li>
+                  ),
+                  h1: ({ children }) => (
+                    <h1 className={styles.heading1}>{children}</h1>
+                  ),
+                  h2: ({ children }) => (
+                    <h2 className={styles.heading2}>{children}</h2>
+                  ),
+                  h3: ({ children }) => (
+                    <h3 className={styles.heading3}>{children}</h3>
+                  ),
                   code: ({ children, className }) => {
                     const isInline = !className;
                     return isInline ? (
@@ -147,7 +165,9 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
                       <code className={styles.code_block}>{children}</code>
                     );
                   },
-                  pre: ({ children }) => <pre className={styles.pre_block}>{children}</pre>,
+                  pre: ({ children }) => (
+                    <pre className={styles.pre_block}>{children}</pre>
+                  ),
                 }}
               >
                 {message.content}
@@ -166,46 +186,43 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
             )}
           >
             <Button
-              variant="ghost"
-              size="sm"
-              className={cn(
-                styles.action_button,
-                isCopied && styles.copied
-              )}
+              variant='ghost'
+              size='sm'
+              className={cn(styles.action_button, isCopied && styles.copied)}
               onClick={handleCopy}
               title={isCopied ? 'Đã sao chép' : 'Sao chép'}
             >
               {isCopied ? (
                 <>
-                  <Check className="w-4 h-4" />
+                  <Check className='h-4 w-4' />
                   <span className={styles.button_text}>Đã sao chép</span>
                 </>
               ) : (
-                <Copy className="w-4 h-4" />
+                <Copy className='h-4 w-4' />
               )}
             </Button>
 
             {isUser && onEdit && (
               <Button
-                variant="ghost"
-                size="sm"
+                variant='ghost'
+                size='sm'
                 className={styles.action_button}
                 onClick={handleEditClick}
                 title='Chỉnh sửa'
               >
-                <Pencil className="w-4 h-4" />
+                <Pencil className='h-4 w-4' />
               </Button>
             )}
 
             {!isUser && onRegenerate && (
               <Button
-                variant="ghost"
-                size="sm"
+                variant='ghost'
+                size='sm'
                 className={styles.action_button}
                 onClick={onRegenerate}
                 title='Tạo lại'
               >
-                <RotateCw className="w-4 h-4" />
+                <RotateCw className='h-4 w-4' />
               </Button>
             )}
           </div>

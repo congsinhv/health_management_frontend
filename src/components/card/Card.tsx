@@ -1,7 +1,7 @@
 import React from 'react';
+import Image from 'next/image';
 
 import styles from './Card.module.scss';
-import FeedbackIcon from '../icons/feedback';
 
 interface CardProps {
   id: number;
@@ -16,7 +16,13 @@ const Card = ({ description, image, index }: CardProps) => {
       {index !== 1 && (
         <p className={styles.card_header_description}>{description}</p>
       )}
-      <img src={image} alt={description} className={styles.card_image} />
+      <Image
+        src={image}
+        alt={description}
+        className={styles.card_image}
+        width={300}
+        height={200}
+      />
 
       <div
         className={`${styles.overlay} ${index === 0 ? styles.custom_block : ''}`}

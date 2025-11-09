@@ -35,7 +35,11 @@
   .user & {
     padding: 0.875rem 1.5rem;
     border-radius: 24px;
-    background: linear-gradient(90deg, rgba(157, 255, 234, 0.2) 0%, rgba(20, 182, 226, 0.2) 100%);
+    background: linear-gradient(
+      90deg,
+      rgba(157, 255, 234, 0.2) 0%,
+      rgba(20, 182, 226, 0.2) 100%
+    );
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     box-shadow: 0px 4px 16px 0px rgba(0, 0, 0, 0.08);

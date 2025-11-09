@@ -32,7 +32,7 @@ const HeaderVertical = ({
 }: HeaderVerticalProps) => {
   const [isExpanded, setIsExpanded] = useState(isOpen);
   const [isLogoHovered, setIsLogoHovered] = useState(false);
-  const [user, setUser] = useState(mockUser);
+  const [user] = useState(mockUser);
   const router = useRouter();
 
   const toggleHeader = () => {

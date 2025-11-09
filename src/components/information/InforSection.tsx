@@ -1,4 +1,5 @@
 import React from 'react';
+import Image from 'next/image';
 import styles from './InforSection.module.scss';
 
 const images = [
@@ -13,10 +14,12 @@ const InforSection = () => {
       <div className={styles.infor_images}>
         {images.map((src, index) => (
           <div className={styles.infor_imageWrapper} key={index}>
-            <img
+            <Image
               src={src}
               alt={`infor lifestyle ${index + 1}`}
               className={styles.infor_image}
+              width={400}
+              height={300}
             />
           </div>
         ))}
