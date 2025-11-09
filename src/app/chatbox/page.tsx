@@ -170,10 +170,10 @@ const ChatboxPage = () => {
                 onClick={() => handleHealthOptionClick('ai-chat')}
               >
                 <div className={styles.option_content}>
-                  <h3>Chat với AI</h3>
+                  <h3>Chat ngay với AI</h3>
                 </div>
               </div>
-
+              {/*
               <div
                 className={styles.health_option}
                 onClick={() => handleHealthOptionClick('obesity-prediction')}
@@ -190,7 +190,7 @@ const ChatboxPage = () => {
                 <div className={styles.option_content}>
                   <h3>Gợi ý chế độ ăn cá nhân hóa</h3>
                 </div>
-              </div>
+              </div> */}
             </div>
           </div>
         ) : currentMode === 'ai-chat' ? (
@@ -199,11 +199,11 @@ const ChatboxPage = () => {
             <div className={styles.chat_header}>
               <h2>Chat với AI</h2>
               <Button
-                variant="outline"
+                variant='outline'
                 className={styles.new_chat_button}
                 onClick={handleNewChat}
               >
-                <X className="w-5 h-5" />
+                <X className='h-5 w-5' />
                 Cuộc trò chuyện mới
               </Button>
             </div>
@@ -216,7 +216,7 @@ const ChatboxPage = () => {
                   </p>
                   <div className={styles.suggestions}>
                     <Button
-                      variant="outline"
+                      variant='outline'
                       className={styles.suggestion_button}
                       onClick={() =>
                         handleSuggestionClick(
@@ -227,7 +227,7 @@ const ChatboxPage = () => {
                       Dự đoán khả năng thừa cân, béo phì
                     </Button>
                     <Button
-                      variant="outline"
+                      variant='outline'
                       className={styles.suggestion_button}
                       onClick={() =>
                         handleSuggestionClick('Gợi ý chế độ ăn cá nhân hóa')
@@ -271,11 +271,11 @@ const ChatboxPage = () => {
                   : 'Gợi ý chế độ ăn'}
               </h2>
               <Button
-                variant="outline"
+                variant='outline'
                 className={styles.new_chat_button}
                 onClick={handleNewChat}
               >
-                <X className="w-5 h-5" />
+                <X className='h-5 w-5' />
                 Cuộc trò chuyện mới
               </Button>
             </div>
@@ -313,7 +313,10 @@ const ChatboxPage = () => {
           <div className={styles.chat_input_container}>
             <div className={styles.chat_input_wrapper}>
               <Textarea
-                className={cn(styles.chat_input, 'focus:outline-none focus:ring-0 focus:border-none shadow-none focus-visible:ring-0')}
+                className={cn(
+                  styles.chat_input,
+                  'shadow-none focus:border-none focus:ring-0 focus:outline-none focus-visible:ring-0'
+                )}
                 placeholder={
                   currentMode === 'ai-chat'
                     ? 'Nhập câu hỏi của bạn...'
@@ -330,13 +333,13 @@ const ChatboxPage = () => {
               />
               <div className={styles.input_actions}>
                 <Button
-                  variant="ghost"
-                  size="icon"
+                  variant='ghost'
+                  size='icon'
                   className={styles.attachment_button}
                   title='Đính kèm tài liệu'
                   disabled={isWaitingForResponse}
                 >
-                  <MoreVertical className="w-5 h-5" />
+                  <MoreVertical className='h-5 w-5' />
                 </Button>
                 <span
                   className={`${styles.character_count} ${
@@ -349,10 +352,12 @@ const ChatboxPage = () => {
                   className={styles.send_button}
                   onClick={handleSendMessage}
                   disabled={
-                    !message.trim() || isWaitingForResponse || message.length > 1000
+                    !message.trim() ||
+                    isWaitingForResponse ||
+                    message.length > 1000
                   }
                 >
-                  <Send className="w-5 h-5" />
+                  <Send className='h-5 w-5' />
                 </Button>
               </div>
             </div>
