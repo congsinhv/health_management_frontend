@@ -2,7 +2,9 @@ import type { Metadata } from 'next';
 import localFont from 'next/font/local';
 import './globals.css';
 import { AuthProvider } from '@/contexts/AuthContext';
+import { ReactQueryProvider } from '@/lib/react-query';
 import { Toaster } from '@/components/ui/sonner';
+import ChatFloatingButton from '@/components/chat/ChatFloatingButton';
 
 // Gilroy font family configuration
 const gilroy = localFont({
@@ -48,9 +50,21 @@ export default function RootLayout({
 }>) {
   return (
     <html lang='en'>
-      <body className={`${gilroy.variable} antialiased`}>
-        <AuthProvider>{children}</AuthProvider>
-        <Toaster />
+      <body
+        className={`${gilroy.variable} antialiased`}
+        suppressHydrationWarning={true}
+      >
+        {/*
+          suppressHydrationWarning is used to prevent hydration mismatch errors caused by
+          browser extensions (like BIS, ad-blockers, etc.) that inject attributes into the body element.
+          This is safe to use here as we're only applying CSS classes and the hydration mismatch
+          is caused by external factors, not application state.
+        */}
+        <ReactQueryProvider>
+          <AuthProvider>{children}</AuthProvider>
+          <Toaster />
+          <ChatFloatingButton />
+        </ReactQueryProvider>
       </body>
     </html>
   );

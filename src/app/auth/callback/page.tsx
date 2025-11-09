@@ -7,32 +7,32 @@ import { logger } from '@/lib/logger';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect } from 'react';
 
-function GoogleCallbackContent() {
+function OAuthCallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { checkAuthStatus } = useAuth();
 
   useEffect(() => {
-    const handleGoogleCallback = async () => {
+    const handleOAuthCallback = async () => {
       try {
         const code = searchParams.get('code');
         const state = searchParams.get('state');
         const error = searchParams.get('error');
 
-        logger.debug('Xử lý callback Google OAuth', {
+        logger.debug('Xử lý callback OAuth', {
           hasCode: !!code,
           hasState: !!state,
           hasError: !!error,
         });
 
         if (error) {
-          logger.authError('Google OAuth error', new Error(error));
+          logger.authError('OAuth error', new Error(error));
           router.push('/auth/login?error=oauth_cancelled');
           return;
         }
 
         if (!code) {
-          logger.authError('Không nhận được mã xác thực từ Google');
+          logger.authError('Không nhận được mã xác thực từ OAuth provider');
           router.push('/auth/login?error=oauth_failed');
           return;
         }
@@ -46,7 +46,7 @@ function GoogleCallbackContent() {
           return;
         }
 
-        logger.debug('Gọi API Google callback', {
+        logger.debug('Gọi API OAuth callback', {
           code: code.substring(0, 20) + '...',
           state: state?.substring(0, 20) + '...',
         });
@@ -57,7 +57,7 @@ function GoogleCallbackContent() {
           state: state || undefined,
         });
 
-        logger.debug('Google callback response received', {
+        logger.debug('OAuth callback response received', {
           hasUser: !!response.user,
           hasAccessToken: !!response.access_token,
           hasRefreshToken: !!response.refresh_token,
@@ -81,12 +81,12 @@ function GoogleCallbackContent() {
         await checkAuthStatus();
 
         // Redirect to dashboard/home page
-        logger.debug('Chuyển hướng sau đăng nhập Google thành công');
+        logger.debug('Chuyển hướng sau đăng nhập OAuth thành công');
         router.push('/dashboard');
       } catch (error) {
         logger.authError(
-          'Google OAuth callback thất bại',
-          error instanceof Error ? error : new Error('Google callback failed')
+          'OAuth callback thất bại',
+          error instanceof Error ? error : new Error('OAuth callback failed')
         );
 
         // Clear any partial tokens that might have been set
@@ -94,12 +94,12 @@ function GoogleCallbackContent() {
 
         // Redirect to login with error
         const errorMessage =
-          error instanceof Error ? error.message : 'Google OAuth thất bại';
+          error instanceof Error ? error.message : 'OAuth thất bại';
         router.push(`/auth/login?error=${encodeURIComponent(errorMessage)}`);
       }
     };
 
-    handleGoogleCallback();
+    handleOAuthCallback();
   }, [searchParams, router, checkAuthStatus]);
 
   return (
@@ -107,7 +107,7 @@ function GoogleCallbackContent() {
       <div className='text-center'>
         <div className='border-health-600 mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-b-2'></div>
         <h2 className='mb-2 text-xl font-semibold text-gray-900'>
-          Hoàn tất đăng nhập Google
+          Hoàn tất đăng nhập
         </h2>
         <p className='text-gray-600'>
           Vui lòng đợi trong khi chúng tôi hoàn tất xác thực của bạn...
@@ -117,7 +117,7 @@ function GoogleCallbackContent() {
   );
 }
 
-export default function GoogleCallbackPage() {
+export default function OAuthCallbackPage() {
   return (
     <Suspense
       fallback={
@@ -131,7 +131,7 @@ export default function GoogleCallbackPage() {
         </div>
       }
     >
-      <GoogleCallbackContent />
+      <OAuthCallbackContent />
     </Suspense>
   );
 }

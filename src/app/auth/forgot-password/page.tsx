@@ -2,54 +2,61 @@
 
 import { Logo } from '@/components/Logo';
 import { Button } from '@/components/ui/button';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { useCountdown } from '@/hooks/useCountdown';
 import { useForgotPassword } from '@/hooks/useForgotPassword';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { ArrowLeft, CheckCircle, Mail, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useForm } from 'react-hook-form';
 import Image from 'next/image';
+import * as z from 'zod';
+
+const forgotPasswordFormSchema = z.object({
+  email: z
+    .string()
+    .min(1, 'Email là bắt buộc')
+    .email('Vui lòng nhập địa chỉ email hợp lệ'),
+});
+
+type ForgotPasswordFormValues = z.infer<typeof forgotPasswordFormSchema>;
 
 export default function ForgotPasswordPage() {
-  const [email, setEmail] = useState('');
-  const [touched, setTouched] = useState(false);
   const { requestReset, isLoading, error, isSuccess, clearError, reset } =
     useForgotPassword();
   const countdown = useCountdown(60); // 60 minutes
 
-  const validateEmail = (email: string): string | null => {
-    if (!email.trim()) return 'Email là bắt buộc';
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return 'Vui lòng nhập địa chỉ email hợp lệ';
-    }
-    return null;
-  };
+  const form = useForm<ForgotPasswordFormValues>({
+    resolver: zodResolver(forgotPasswordFormSchema),
+    defaultValues: {
+      email: '',
+    },
+  });
 
-  const emailError = touched ? validateEmail(email) : null;
-  const isValid = !emailError && email.trim();
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setTouched(true);
-
-    const validationError = validateEmail(email);
-    if (validationError) return;
-
+  async function onSubmit(data: ForgotPasswordFormValues) {
     try {
-      await requestReset(email);
+      await requestReset(data.email);
       if (isSuccess) {
         countdown.restart(); // Start countdown when email is successfully sent
       }
     } catch {
       // Error is handled by the hook
     }
-  };
+  }
 
-  const handleEmailChange = (value: string) => {
-    setEmail(value);
-    if (error) clearError();
-  };
+  // Clear error when form values change
+  const emailValue = form.watch('email');
+  if (error && emailValue) {
+    clearError();
+  }
 
   if (isSuccess) {
     return (
@@ -88,7 +95,10 @@ export default function ForgotPasswordPage() {
                 </h1>
 
                 <p className='mb-6 text-base leading-6 font-normal tracking-tight text-[#6a7282]'>
-                  Nếu email <strong className='text-[#101828]'>{email}</strong>{' '}
+                  Nếu email{' '}
+                  <strong className='text-[#101828]'>
+                    {form.getValues('email')}
+                  </strong>{' '}
                   tồn tại trong hệ thống của chúng tôi, chúng tôi đã gửi cho bạn
                   liên kết đặt lại mật khẩu.
                 </p>
@@ -103,7 +113,7 @@ export default function ForgotPasswordPage() {
                 <Button
                   onClick={() => {
                     reset();
-                    setEmail('');
+                    form.reset();
                     countdown.restart();
                   }}
                   variant='gradient'
@@ -192,60 +202,59 @@ export default function ForgotPasswordPage() {
             )}
 
             {/* Form */}
-            <form onSubmit={handleSubmit} className='space-y-1'>
-              {/* Email */}
-              <div>
-                <Label htmlFor='email' className='mb-2 block'>
-                  Địa chỉ email
-                </Label>
-                <Input
-                  id='email'
-                  type='email'
-                  placeholder='Nhập email của bạn'
-                  value={email}
-                  onChange={e => handleEmailChange(e.target.value)}
-                  onBlur={() => setTouched(true)}
-                  disabled={isLoading}
-                  className={
-                    emailError
-                      ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
-                      : ''
-                  }
+            <Form {...form}>
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className='space-y-4'
+              >
+                {/* Email */}
+                <FormField
+                  control={form.control}
+                  name='email'
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Địa chỉ email</FormLabel>
+                      <FormControl>
+                        <Input
+                          type='email'
+                          placeholder='Nhập email của bạn'
+                          disabled={isLoading}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-                <div className='mt-1 min-h-[20px]'>
-                  {emailError && (
-                    <p className='text-xs text-red-500 italic'>{emailError}</p>
-                  )}
-                </div>
-              </div>
 
-              {/* Submit Button */}
-              <div className='pt-3'>
-                <Button
-                  type='submit'
-                  variant='gradient'
-                  size='lg'
-                  className='w-full'
-                  disabled={!isValid || isLoading}
-                >
-                  {isLoading ? (
-                    <>
-                      <div className='mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent' />
-                      <span className='font-semibold'>
-                        Đang gửi liên kết đặt lại...
-                      </span>
-                    </>
-                  ) : (
-                    <>
-                      <Mail className='mr-2 h-4 w-4' />
-                      <span className='font-semibold'>
-                        Gửi liên kết đặt lại
-                      </span>
-                    </>
-                  )}
-                </Button>
-              </div>
-            </form>
+                {/* Submit Button */}
+                <div className='pt-3'>
+                  <Button
+                    type='submit'
+                    variant='gradient'
+                    size='lg'
+                    className='w-full'
+                    disabled={isLoading || form.formState.isSubmitting}
+                  >
+                    {isLoading || form.formState.isSubmitting ? (
+                      <>
+                        <div className='mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent' />
+                        <span className='font-semibold'>
+                          Đang gửi liên kết đặt lại...
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <Mail className='mr-2 h-4 w-4' />
+                        <span className='font-semibold'>
+                          Gửi liên kết đặt lại
+                        </span>
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </form>
+            </Form>
           </div>
         </div>
       </div>

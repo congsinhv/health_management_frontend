@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { api } from '@/lib/api';
+import { authService } from '@/services/auth';
 import { logger } from '@/lib/logger';
 
 interface UseForgotPasswordReturn {
@@ -33,7 +33,7 @@ export function useForgotPassword(): UseForgotPasswordReturn {
     try {
       logger.debug('Yêu cầu đặt lại mật khẩu', { email });
 
-      await api.auth.requestPasswordReset(email);
+      await authService.requestPasswordReset(email);
       setIsSuccess(true);
 
       logger.authSuccess('Yêu cầu đặt lại mật khẩu thành công', { email });

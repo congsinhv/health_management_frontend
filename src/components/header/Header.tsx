@@ -1,83 +1,121 @@
 'use client';
 
+import React, { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { User, LogOut } from 'lucide-react';
 import styles from './Header.module.scss';
+import { useAuth } from '@/contexts/AuthContext';
+import { Avatar } from '@/components/avatar/Avatar';
+import { Button } from '@/components/ui/button';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import { AVATAR_CONFIG } from '@/lib/constants';
 
 const Header = () => {
+  const { user, logout, isAuthenticated } = useAuth();
   const router = useRouter();
-  const [LottieComponent, setLottieComponent] = useState<any>(null);
-  const [animationData, setAnimationData] = useState<any>(null);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-  const handleChat = () => {
-    router.push('/chatbox');
+  const handleLogin = () => {
+    router.push('/auth/login');
   };
 
-  useEffect(() => {
-    // Dynamically import Lottie and animation data only on client side
-    const loadLottie = async () => {
-      try {
-        const [lottieModule, animData] = await Promise.all([
-          import('lottie-react'),
-          import('../../../public/AI_logo.json'),
-        ]);
-        setLottieComponent(() => lottieModule.default);
-        setAnimationData(animData.default);
-      } catch (error) {
-        console.warn('Failed to load Lottie animation:', error);
-      }
-    };
+  const handleProfile = () => {
+    setIsDropdownOpen(false);
+    router.push('/profile');
+  };
 
-    loadLottie();
-  }, []);
+  const handleLogout = async () => {
+    setIsDropdownOpen(false);
+    try {
+      await logout();
+      router.push('/');
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  };
 
   return (
     <div className={styles.header}>
       <div className={styles.container}>
-        <div className={styles.logo}>
-          <Image
-            src='/Healthcare_logo.svg'
-            alt='logo'
-            width={100}
-            height={100}
-          />
-        </div>
+        <Link href='/'>
+          <div className={styles.logo}>
+            <Image
+              src='/Healthcare_logo.svg'
+              alt='logo'
+              width={100}
+              height={100}
+            />
+          </div>
+        </Link>
         <div className={styles.nav}>
           <div className={styles.nav__item}>
             <Link href='/'>Về chúng tôi</Link>
           </div>
+
           <div className={styles.nav__item}>
             <Link href='/'>Dự đoán sức khỏe</Link>
           </div>
           <div className={styles.nav__item}>
-            <Link href='/'>Liên hệ hỗ trợ</Link>
+            <Link href='/'>Liên hệ</Link>
           </div>
-          {/* <div className={styles.chat} onClick={handleChat}>
-            {LottieComponent && animationData ? (
-              <LottieComponent
-                animationData={animationData}
-                loop={true}
-                autoplay={true}
-                style={{ width: 60, height: 60 }}
-              />
-            ) : (
-              <div
-                style={{
-                  width: 60,
-                  height: 60,
-                  backgroundColor: '#f0f0f0',
-                  borderRadius: '50%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
+          {isAuthenticated && user ? (
+            <div className={styles.profile}>
+              <Popover open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
+                <PopoverTrigger asChild>
+                  <button
+                    className={styles.profile__link}
+                    aria-label='User menu'
+                  >
+                    <Avatar
+                      src={user?.profilePicture}
+                      alt='Profile'
+                      size={AVATAR_CONFIG.HEADER_SIZE}
+                      className={styles.profile__avatar}
+                      userId={user?.id}
+                      priority
+                    />
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent align='end' className={styles.dropdown}>
+                  <div className={styles.dropdownContent}>
+                    <button
+                      onClick={handleProfile}
+                      className={styles.dropdownItem}
+                      aria-label='Go to profile'
+                    >
+                      <User size={16} />
+                      <span>Profile</span>
+                    </button>
+                    <button
+                      onClick={handleLogout}
+                      className={styles.dropdownItem}
+                      aria-label='Log out'
+                    >
+                      <LogOut size={16} />
+                      <span>Log out</span>
+                    </button>
+                  </div>
+                </PopoverContent>
+              </Popover>
+            </div>
+          ) : (
+            <div className={styles.auth}>
+              <Button
+                onClick={handleLogin}
+                variant='outline'
+                size='sm'
+                className={styles.loginButton}
               >
-                AI
-              </div>
-            )}
-          </div> */}
+                Đăng nhập
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     </div>
