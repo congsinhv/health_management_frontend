@@ -6,6 +6,12 @@
 import apiClient from './api';
 import type { UploadImageResponse } from '@/types/upload';
 import { tokenStorage } from '@/lib/storage';
+import {
+  AVATAR_CONFIG,
+  VALIDATION,
+  ERROR_MESSAGES,
+  API_CONSTANTS,
+} from '@/lib/constants';
 
 export const uploadService = {
   /**
@@ -19,21 +25,17 @@ export const uploadService = {
     folder?: string
   ): Promise<UploadImageResponse> => {
     // Validate file type
-    const validImageTypes = [
-      'image/jpeg',
-      'image/jpg',
-      'image/png',
-      'image/webp',
-      'image/gif',
-    ];
-    if (!validImageTypes.includes(file.type)) {
-      throw new Error('Chỉ chấp nhận file ảnh (JPEG, PNG, WebP, GIF)');
+    const validImageTypes = AVATAR_CONFIG.VALID_IMAGE_TYPES;
+    if (
+      !validImageTypes.includes(file.type as (typeof validImageTypes)[number])
+    ) {
+      throw new Error(ERROR_MESSAGES.INVALID_FILE_TYPE);
     }
 
-    // Validate file size (max 10MB)
-    const maxSize = 10 * 1024 * 1024; // 10MB
+    // Validate file size - use DOCUMENT max size (10MB) for general uploads
+    const maxSize = VALIDATION.FILE_SIZE.MAX_DOCUMENT;
     if (file.size > maxSize) {
-      throw new Error('Kích thước file không được vượt quá 10MB');
+      throw new Error(ERROR_MESSAGES.FILE_TOO_LARGE);
     }
 
     // Build form data
@@ -51,7 +53,7 @@ export const uploadService = {
     }
 
     const response = await apiClient.post<UploadImageResponse>(
-      '/api/v1/upload/image',
+      API_CONSTANTS.ENDPOINTS.UPLOAD.IMAGE,
       formData,
       {
         headers: {

@@ -13,34 +13,15 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/contexts/AuthContext';
+import { logger } from '@/lib/logger';
+import { ROUTES } from '@/lib/constants';
+import { registerFormSchema, type RegisterFormValues } from '@/lib/schemas';
 import { zodResolver } from '@hookform/resolvers/zod';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import Image from 'next/image';
-import * as z from 'zod';
-
-const registerFormSchema = z
-  .object({
-    firstName: z.string().min(2, 'Tên phải có ít nhất 2 ký tự'),
-    lastName: z.string().min(2, 'Họ phải có ít nhất 2 ký tự'),
-    email: z.string().min(1, 'Email là bắt buộc').email('Email không hợp lệ'),
-    password: z
-      .string()
-      .min(8, 'Mật khẩu phải có ít nhất 8 ký tự')
-      .regex(
-        /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-        'Mật khẩu phải chứa ít nhất một chữ hoa, một chữ thường và một số'
-      ),
-    confirmPassword: z.string().min(1, 'Vui lòng xác nhận mật khẩu'),
-  })
-  .refine(data => data.password === data.confirmPassword, {
-    message: 'Mật khẩu xác nhận không khớp',
-    path: ['confirmPassword'],
-  });
-
-type RegisterFormValues = z.infer<typeof registerFormSchema>;
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -62,7 +43,7 @@ export default function RegisterPage() {
   // Redirect to dashboard if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
-      router.push('/dashboard');
+      router.push(ROUTES.DASHBOARD);
     }
   }, [isAuthenticated, router]);
 
@@ -82,11 +63,14 @@ export default function RegisterPage() {
       await register(data);
       // Small delay to show the success toast before redirecting to login
       setTimeout(() => {
-        router.push('/auth/login');
+        router.push(ROUTES.AUTH.LOGIN);
       }, 2000);
     } catch (error) {
       // Error is already handled by the AuthContext with toast
-      console.error('Registration failed:', error);
+      logger.error(
+        'Registration failed',
+        error instanceof Error ? error : new Error('Unknown registration error')
+      );
     }
   }
 
@@ -104,7 +88,7 @@ export default function RegisterPage() {
             <span className='text-xs text-[#657282] italic'>
               Đã có tài khoản?
             </span>
-            <Link href='/auth/login'>
+            <Link href={ROUTES.AUTH.LOGIN}>
               <Button
                 variant='outline'
                 size='default'

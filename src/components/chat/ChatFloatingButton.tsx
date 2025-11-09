@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { logger } from '@/lib/logger';
 import styles from './ChatFloatingButton.module.scss';
 
 const ChatFloatingButton = () => {
@@ -18,7 +19,10 @@ const ChatFloatingButton = () => {
         setLottieComponent(() => lottieModule.default);
         setAnimationData(animData.default);
       } catch (error) {
-        console.warn('Failed to load Lottie animation:', error);
+        logger.warn('Failed to load Lottie animation', {
+          errorMessage:
+            error instanceof Error ? error.message : 'Unknown Lottie error',
+        });
       }
     };
 
@@ -27,7 +31,7 @@ const ChatFloatingButton = () => {
 
   const handleClick = () => {
     // TODO: Open chat modal/drawer when chat feature is implemented
-    console.log('Chat button clicked');
+    logger.debug('Chat button clicked');
   };
 
   return (

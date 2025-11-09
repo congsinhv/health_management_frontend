@@ -13,20 +13,15 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/contexts/AuthContext';
+import { logger } from '@/lib/logger';
+import { ROUTES } from '@/lib/constants';
+import { loginFormSchema, type LoginFormValues } from '@/lib/schemas';
 import { zodResolver } from '@hookform/resolvers/zod';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import Image from 'next/image';
-import * as z from 'zod';
-
-const loginFormSchema = z.object({
-  email: z.string().min(1, 'Email là bắt buộc').email('Email không hợp lệ'),
-  password: z.string().min(6, 'Mật khẩu phải có ít nhất 6 ký tự'),
-});
-
-type LoginFormValues = z.infer<typeof loginFormSchema>;
 
 function LoginContent() {
   const router = useRouter();
@@ -53,7 +48,7 @@ function LoginContent() {
   // Redirect to dashboard if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
-      router.push('/dashboard');
+      router.push(ROUTES.DASHBOARD);
     }
   }, [isAuthenticated, router]);
 
@@ -105,11 +100,14 @@ function LoginContent() {
       await login(data);
       // Small delay to show the success toast before redirecting
       setTimeout(() => {
-        router.push('/dashboard');
+        router.push(ROUTES.DASHBOARD);
       }, 1000);
     } catch (error) {
       // Error is already handled by the AuthContext with toast
-      console.error('Login failed:', error);
+      logger.error(
+        'Login failed',
+        error instanceof Error ? error : new Error('Unknown login error')
+      );
     }
   }
 
@@ -130,7 +128,7 @@ function LoginContent() {
             <span className='text-xs text-[#657282] italic'>
               Chưa có tài khoản?
             </span>
-            <Link href='/auth/register'>
+            <Link href={ROUTES.AUTH.REGISTER}>
               <Button
                 variant='outline'
                 size='default'
@@ -218,7 +216,7 @@ function LoginContent() {
                 {/* Forgot Password Link */}
                 <div className='flex justify-end pt-1 pb-3'>
                   <Link
-                    href='/auth/forgot-password'
+                    href={ROUTES.AUTH.FORGOT_PASSWORD}
                     className={`text-xs text-[#657282] italic hover:text-[#101828] hover:underline ${
                       isFormLoading ? 'pointer-events-none opacity-50' : ''
                     }`}

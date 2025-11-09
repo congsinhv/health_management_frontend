@@ -26,6 +26,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/contexts/AuthContext';
 import { AVATAR_IMAGE_ACCEPT } from '@/lib/constants';
+import { logger } from '@/lib/logger';
 import { validateAvatarImage } from '@/lib/utils/avatar';
 import { uploadService } from '@/services/upload';
 import { userService } from '@/services/user';
@@ -164,7 +165,12 @@ function ProfileContent() {
 
   useEffect(() => {
     if (profileError) {
-      console.error('Failed to fetch user profile:', profileError);
+      logger.error(
+        'Failed to fetch user profile',
+        profileError instanceof Error
+          ? profileError
+          : new Error('Unknown profile error')
+      );
       toast.error('Không thể tải thông tin profile');
     }
   }, [profileError]);
@@ -250,7 +256,12 @@ function ProfileContent() {
       refetchUserProfile();
       toast.success('Cập nhật thông tin thành công!');
     } catch (error) {
-      console.error('Failed to update profile:', error);
+      logger.error(
+        'Failed to update profile',
+        error instanceof Error
+          ? error
+          : new Error('Unknown profile update error')
+      );
       const errorMessage =
         error instanceof Error
           ? error.message
@@ -298,7 +309,12 @@ function ProfileContent() {
       );
       return uploadResult.url;
     } catch (error) {
-      console.error('Failed to upload avatar:', error);
+      logger.error(
+        'Failed to upload avatar',
+        error instanceof Error
+          ? error
+          : new Error('Unknown avatar upload error')
+      );
       const errorMessage =
         error instanceof Error
           ? error.message
