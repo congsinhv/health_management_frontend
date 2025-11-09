@@ -208,9 +208,39 @@
   flex-shrink: 0;
 }
 
+.attachment_button {
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #999;
+  padding: 0;
+
+  &:hover:not(:disabled) {
+    background: rgba(79, 209, 199, 0.1);
+    color: #2c7a7b;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+}
+
 .character_count {
   font-size: 12px;
   color: #999;
+
+  &.character_count_error {
+    color: #ef4444;
+    font-weight: 500;
+  }
 }
 
 .send_button {
@@ -301,7 +331,7 @@
     transform: translateY(-1px);
 
     svg {
-      transform: rotate(90deg);
+      transform: rotate(45deg);
     }
   }
 }
@@ -329,6 +359,64 @@
       background: rgba(79, 209, 199, 0.5);
     }
   }
+}
+
+// AI Chat welcome and suggestions
+.ai_welcome {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  padding: 2rem;
+  text-align: center;
+  height: 100%;
+}
+
+.ai_welcome_text {
+  font-size: 1.125rem;
+  color: #666;
+  margin: 0;
+}
+
+.suggestions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%;
+  max-width: 400px;
+}
+
+.suggestion_button {
+  padding: 0.875rem 1.25rem;
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  color: #1e1e1e;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: left;
+
+  &:hover {
+    background: rgba(79, 209, 199, 0.1);
+    border: 1px solid rgba(79, 209, 199, 0.3);
+    transform: translateY(-2px);
+  }
+}
+
+// Error message
+.error_message {
+  margin-top: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 8px;
+  color: #dc2626;
+  font-size: 0.875rem;
+  text-align: center;
 }
 
 // Responsive design

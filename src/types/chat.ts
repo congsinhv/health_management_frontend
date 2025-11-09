@@ -1,6 +1,7 @@
 export type MessageRole = 'user' | 'assistant' | 'system';
 
 export type HealthOptionType =
+  | 'ai-chat'
   | 'obesity-prediction'
   | 'diet-recommendation'
   | null;
