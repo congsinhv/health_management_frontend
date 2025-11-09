@@ -1,6 +1,7 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
+  output: 'standalone',
   webpack(config) {
     // SVG handling with SVGR
     config.module.rules.push({
