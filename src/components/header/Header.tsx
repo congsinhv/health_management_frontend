@@ -59,7 +59,7 @@ const Header = () => {
           </div>
 
           <div className={styles.nav__item}>
-            <Link href='/'>Dự đoán sức khỏe</Link>
+            <Link href='/chatbox'>Dự đoán sức khỏe</Link>
           </div>
           <div className={styles.nav__item}>
             <Link href='/'>Liên hệ</Link>
@@ -108,6 +108,8 @@ const Header = () => {
             <div className={styles.auth}>
               <Button
                 onClick={handleLogin}
+                variant='outline'
+                size='sm'
                 className={styles.loginButton}
               >
                 Đăng nhập

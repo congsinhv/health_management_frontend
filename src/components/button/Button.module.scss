@@ -1,0 +1,26 @@
+.button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 100rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  span {
+    line-height: 1;
+    font-size: 0.9rem;
+    font-weight: 600;
+    font-family: var(--font-gilroy);
+  }
+}
+
+.primary {
+  background-color: var(--white);
+  color: var(--black);
+}
+
+.secondary {
+  background-color: transparent;
+  border: 1px solid var(--black);
+}

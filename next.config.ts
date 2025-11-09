@@ -1,20 +1,7 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  // Enable standalone output for Docker
   output: 'standalone',
-
-  // Turbopack configuration
-  turbopack: {
-    rules: {
-      '*.svg': {
-        loaders: ['@svgr/webpack'],
-        as: '*.js',
-      },
-    },
-  },
-
-  // Webpack configuration (fallback for when not using Turbopack)
   webpack(config) {
     // SVG handling with SVGR
     config.module.rules.push({

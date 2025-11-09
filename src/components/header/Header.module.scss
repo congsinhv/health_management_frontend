@@ -127,18 +127,25 @@
 }
 
 .loginButton {
+  border: 1px solid #d1d5dc;
   background-color: white;
   color: #1e1e1e;
   font-size: 14px;
   font-weight: 500;
-  padding: 0;
   font-family: var(--font-gilroy);
+  padding: 8px 16px;
   height: 36px;
-  cursor: pointer;
+  border-radius: 6px;
   transition: all 0.2s ease;
+  cursor: pointer;
 
   &:hover {
-    transform: scale(1.05);
+    background-color: #f8f9fa;
+    border-color: #c1c7cd;
+  }
+
+  &:active {
+    transform: scale(0.98);
   }
 }
 

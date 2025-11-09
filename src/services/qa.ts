@@ -1,21 +1,28 @@
 /**
  * QA service
- * Placeholder for future chat/QA features
+ * Handles Q&A API interactions for chat features
  */
 
 import apiClient from './api';
-import type { QAResponse, QASession } from '@/types/qa';
+import type {
+  AskQuestionRequest,
+  QuestionResponse,
+  QASession,
+} from '@/types/qa';
 
 export const qaService = {
   /**
-   * Send a question to the QA system
-   * @param question - The question to ask
-   * @returns The answer from the QA system
+   * Send a question to the Q&A system
+   * @param request - Question request with optional threshold and top_k
+   * @returns The answer from the Q&A system
    */
-  askQuestion: async (question: string): Promise<QAResponse> => {
-    // TODO: Implement when QA endpoint is available
-    const response = await apiClient.post<QAResponse>('/api/v1/qa/ask', {
-      question,
+  askQuestion: async (
+    request: AskQuestionRequest
+  ): Promise<QuestionResponse> => {
+    const response = await apiClient.post<QuestionResponse>('/api/v1/qa/ask', {
+      question: request.question,
+      threshold: request.threshold ?? 0.55,
+      top_k: request.top_k ?? 7,
     });
     return response.data;
   },
@@ -26,7 +33,6 @@ export const qaService = {
    * @returns QA session data
    */
   getSession: async (sessionId?: string): Promise<QASession> => {
-    // TODO: Implement when QA endpoint is available
     const endpoint = sessionId
       ? `/api/v1/qa/sessions/${sessionId}`
       : '/api/v1/qa/sessions/current';

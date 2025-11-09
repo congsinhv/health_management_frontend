@@ -1,5 +1,40 @@
+'use client';
+
 import Header from '@/components/header/Header';
 import styles from './page.module.scss';
+import Button from '@/components/button/Button';
+import Star from '@/components/icons/star';
+import Card from '@/components/card/Card';
+import NumberSection from '@/components/number/NumberSection';
+import FeaturesSection from '@/components/features/FeaturesSection';
+import InforSection from '@/components/information/InforSection';
+import Footer from '@/components/footer/Footer';
+import Image from 'next/image';
+
+const gridData = [
+  {
+    id: 1,
+    image: '/healthcare-image1.png',
+    description:
+      'Lorem Ipsum is simply  dummy  text of the printing and typesetting industry',
+  },
+  {
+    id: 2,
+    image: '/healthcare_image2.png',
+    description:
+      'Lorem Ipsum is simply  dummy  text of the printing and typesetting industry',
+  },
+  {
+    id: 3,
+    image: '/healthcare_image3.png',
+    description:
+      'Lorem Ipsum is simply  dummy  text of the printing and typesetting industry',
+  },
+];
+
+const handleChat = () => {
+  console.log('Chat ngay');
+};
 
 export default function LandingPage() {
   return (
@@ -8,7 +43,6 @@ export default function LandingPage() {
       <Header />
 
       {/* Hero Section */}
-
       <div className={styles.container}>
         <div className={styles.hero_section}>
           <div className={styles.hero_section_content}>
@@ -19,15 +53,86 @@ export default function LandingPage() {
               Trò chuyện trực tiếp với trợ lý sức khỏe, nhận gợi ý chế độ ăn cá
               nhân hoá và dự đoán nguy cơ thừa cân, béo phì
             </p>
+            <Button
+              text='Dự đoán sức khỏe ngay'
+              onClick={handleChat}
+              isPrimary
+              showIcon
+              icon={<Star />}
+            />
           </div>
         </div>
         <div className={styles.grid_section}>
-          <div className={styles.grid_item}></div>
-          <div className={styles.grid_item}></div>
-          <div className={styles.grid_item}></div>
-          <div className={styles.grid_item}></div>
+          {gridData.slice(0, 2).map((item, index) => (
+            <Card
+              index={index}
+              key={index}
+              id={item.id}
+              image={item.image}
+              description={item.description}
+            />
+          ))}
+          <div className={styles.custom_block}>
+            <div className={styles.custom_block_content}>
+              <h3>Lorem Ipsum is simply </h3>
+              <p>
+                Lorem Ipsum is simply dummy text of the printing and typesetting
+                industry
+              </p>
+              <div className={styles.custom_block_content_decorates}>
+                <Image
+                  src='/icons/Decorate1.svg'
+                  alt='Custom Content Block 1'
+                  width={24}
+                  height={24}
+                />
+                <Image
+                  src='/icons/Decorate2.svg'
+                  alt='Custom Content Block 2'
+                  width={24}
+                  height={24}
+                />
+              </div>
+            </div>
+            <div className='flex w-full flex-row justify-between'>
+              <div className={styles.custom_block_icons}>
+                <Image
+                  src='/Avatar1.png'
+                  alt='Custom Content Block 4'
+                  width={32}
+                  height={32}
+                />
+                <Image
+                  src='/Avatar2.png'
+                  alt='Custom Content Block 5'
+                  width={32}
+                  height={32}
+                />
+              </div>
+              <Image
+                className={styles.custom_block_icons_feedback}
+                src='/icons/Feedback.svg'
+                alt='Custom Content Block 6'
+                width={20}
+                height={20}
+              />
+            </div>
+          </div>
+          {/* Fourth position - Last item from gridData */}
+          <Card
+            index={2}
+            key={2}
+            id={gridData[2].id}
+            image={gridData[2].image}
+            description={gridData[2].description}
+          />
         </div>
       </div>
+      <NumberSection />
+      <FeaturesSection />
+      <InforSection />
+      {/* Footer */}
+      <Footer />
     </div>
   );
 }
