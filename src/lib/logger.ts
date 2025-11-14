@@ -144,6 +144,29 @@ class Logger {
       category: 'api',
     });
   }
+
+  // Conversation-specific logging methods
+  conversation(action: string, context?: Record<string, unknown>): void {
+    this.info(`Conversation: ${action}`, {
+      ...context,
+      category: 'conversation',
+    });
+  }
+
+  conversationError(
+    action: string,
+    error?: Error | unknown,
+    context?: Record<string, unknown>
+  ): void {
+    this.error(
+      `Conversation error: ${action}`,
+      error instanceof Error ? error : new Error(String(error)),
+      {
+        ...context,
+        category: 'conversation',
+      }
+    );
+  }
 }
 
 // Create singleton instance

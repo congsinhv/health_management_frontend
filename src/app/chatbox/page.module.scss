@@ -6,18 +6,13 @@
 }
 
 .header_vertical {
-  width: max-content;
+  width: 20rem;
   height: 100vh;
   position: fixed;
   left: 0;
   top: 0;
   z-index: 100;
   transition: width 0.3s ease;
-
-  // When expanded (default state)
-  &:not(.collapsed) {
-    width: max-content;
-  }
 
   // When collapsed
   &.collapsed {
@@ -273,11 +268,10 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  max-width: 80%;
   width: 100%;
   margin: 0 auto;
   height: 100%;
-  overflow: hidden;
+  overflow-y: auto;
 }
 
 .chat_header {
@@ -287,6 +281,10 @@
   padding: 1.5rem 0;
   border-bottom: 1px solid #e5e5e5;
   margin-bottom: 1.5rem;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: #fcfcfc;
 
   h2 {
     font-size: 1.5rem;
@@ -320,6 +318,7 @@
   font-weight: 500;
   cursor: pointer;
   transition: all 0.3s ease;
+  visibility: hidden;
 
   svg {
     transition: transform 0.3s ease;
@@ -338,10 +337,11 @@
 
 .messages_container {
   flex: 1;
-  overflow-y: auto;
   padding: 1rem 0;
   margin-bottom: 1rem;
-
+  max-width: 80%;
+  width: 100%;
+  margin: 0 auto;
   // Custom scrollbar
   &::-webkit-scrollbar {
     width: 6px;

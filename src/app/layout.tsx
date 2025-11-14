@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import localFont from 'next/font/local';
 import './globals.css';
 import { AuthProvider } from '@/contexts/AuthContext';
+import { ConversationProvider } from '@/contexts/ConversationContext';
 import { ReactQueryProvider } from '@/lib/react-query';
 import { Toaster } from '@/components/ui/sonner';
 import ChatFloatingButton from '@/components/chat/ChatFloatingButton';
@@ -61,7 +62,9 @@ export default function RootLayout({
           is caused by external factors, not application state.
         */}
         <ReactQueryProvider>
-          <AuthProvider>{children}</AuthProvider>
+          <AuthProvider>
+            <ConversationProvider>{children}</ConversationProvider>
+          </AuthProvider>
           <Toaster />
           <ChatFloatingButton />
         </ReactQueryProvider>
