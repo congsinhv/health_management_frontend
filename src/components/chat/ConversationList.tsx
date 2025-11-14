@@ -5,16 +5,16 @@
 
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
-import { ConversationResponse } from '@/types/conversation';
-import { useConversation } from '@/contexts/ConversationContext';
-import { useAuth } from '@/contexts/AuthContext';
-import { conversationService } from '@/services/conversation';
-import { MessageCircle, Pin, Search, Plus, Loader2 } from 'lucide-react';
-import styles from '../header/HeaderVertical.module.scss';
 import { Input } from '@/components/ui/input';
+import { useAuth } from '@/contexts/AuthContext';
+import { useConversation } from '@/contexts/ConversationContext';
 import { cn } from '@/lib/utils';
+import { conversationService } from '@/services/conversation';
+import { ConversationResponse } from '@/types/conversation';
+import { Loader2, MessageCircle, Pin, Search } from 'lucide-react';
+import { usePathname, useRouter } from 'next/navigation';
+import React, { useEffect, useState } from 'react';
+import styles from '../header/HeaderVertical.module.scss';
 import HistoryIcon from '../icons/history';
 
 interface ConversationListProps {

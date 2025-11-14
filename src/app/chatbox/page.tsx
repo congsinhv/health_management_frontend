@@ -1,25 +1,22 @@
 'use client';
 
-import HeaderVertical from '@/components/header/HeaderVertical';
-import React, { useState, useEffect, useRef } from 'react';
-import styles from './page.module.scss';
 import ChatMessage from '@/components/chat/ChatMessage';
-import QuickResponses from '@/components/chat/QuickResponses';
-import { ConversationSwitcher } from '@/components/chat/ConversationSwitcher';
-import { ConversationTitle } from '@/components/chat/ConversationTitle';
+import HeaderVertical from '@/components/header/HeaderVertical';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { X, MoreVertical, Send, Loader2 } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { useConversation } from '@/contexts/ConversationContext';
 import { useChat } from '@/hooks/useChat';
 import { useQAChat } from '@/hooks/useQAChat';
-import { useConversation } from '@/contexts/ConversationContext';
+import { cn } from '@/lib/utils';
 import {
+  DIET_RECOMMENDATION_FLOW,
   HealthOptionType,
   OBESITY_PREDICTION_FLOW,
-  DIET_RECOMMENDATION_FLOW,
 } from '@/types/chat';
-import { cn } from '@/lib/utils';
-import { useAuth } from '@/contexts/AuthContext';
+import { Loader2, MoreVertical, Send, X } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import styles from './page.module.scss';
 
 const ChatboxPage = () => {
   const { user } = useAuth();

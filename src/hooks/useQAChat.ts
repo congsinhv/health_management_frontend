@@ -1,11 +1,11 @@
-import { useState, useCallback, useEffect } from 'react';
-import { qaService } from '@/services/qa';
-import { conversationService } from '@/services/conversation';
-import { useConversation } from '@/contexts/ConversationContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { useConversation } from '@/contexts/ConversationContext';
+import { conversationService } from '@/services/conversation';
+import { qaService } from '@/services/qa';
 import { ChatMessage } from '@/types/chat';
 import type { QuestionResponse, ValidationError } from '@/types/qa';
 import { AxiosError } from 'axios';
+import { useCallback, useEffect, useState } from 'react';
 
 interface UseQAChatReturn {
   messages: ChatMessage[];
