@@ -45,7 +45,6 @@ const ChatboxPage = () => {
   // Conversation context
   const {
     currentConversation,
-    createConversation,
     switchConversation,
     isLoading: isLoadingConversation,
   } = useConversation();
@@ -97,22 +96,10 @@ const ChatboxPage = () => {
     }
   };
 
-  const handleNewChat = async () => {
-    // Create a new conversation if we're in AI chat mode
-    try {
-      const newConversation = await createConversation({
-        title: 'Cuộc trò chuyện mới',
-        user_id: Number(user?.id),
-        metadata: {
-          health_option: 'ai-chat',
-        },
-      });
-      switchConversation(newConversation.id);
-    } catch (error) {
-      console.error('Failed to create new conversation:', error);
-      // Fallback to clearing messages if conversation creation fails
-      clearMessages();
-    }
+  const handleNewChat = () => {
+    // Clear current conversation (deselect from sidebar)
+    // Conversation will be created lazily when user sends first message
+    switchConversation(null);
   };
 
   // Get current step for quick responses
