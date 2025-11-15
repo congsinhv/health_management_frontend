@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useConversation } from '@/contexts/ConversationContext';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import AddIcon from '../icons/add';
 import HomeIcon from '../icons/home';
 import LogoIcon from '../icons/logo';
@@ -27,8 +27,10 @@ const HeaderVertical = ({
   const { user } = useAuth();
   const [isExpanded, setIsExpanded] = useState(isOpen);
   const [isLogoHovered, setIsLogoHovered] = useState(false);
+  const [isCreatingChat, setIsCreatingChat] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
+  const createChatRequestRef = useRef<boolean>(false);
 
   const toggleHeader = () => {
     setIsExpanded(!isExpanded);
@@ -50,9 +52,18 @@ const HeaderVertical = ({
     }
   };
 
-  // Handle new conversation creation
+  // Handle new conversation creation with spam prevention
   const handleNewConversation = async () => {
+    // Prevent spam clicking - if already creating, ignore the click
+    if (createChatRequestRef.current || isCreatingChat) {
+      return;
+    }
+
     try {
+      // Mark as creating to prevent duplicate requests
+      createChatRequestRef.current = true;
+      setIsCreatingChat(true);
+
       const newConversation = await createConversation({
         title: 'Cuộc trò chuyện mới',
         user_id: Number(user?.id),
@@ -64,6 +75,13 @@ const HeaderVertical = ({
       await handleConversationSelect(newConversation.id);
     } catch (error) {
       console.error('Failed to create new conversation:', error);
+      // You can add error handling here (e.g., show a toast notification)
+    } finally {
+      // Reset the creating state after a short delay to prevent immediate re-clicks
+      setTimeout(() => {
+        createChatRequestRef.current = false;
+        setIsCreatingChat(false);
+      }, 500); // 500ms cooldown after completion
     }
   };
 
@@ -110,11 +128,17 @@ const HeaderVertical = ({
           </div>
           <div className={styles.header_vertical_list}>
             <div
-              className={styles.header_vertical_content}
+              className={`${styles.header_vertical_content} ${isCreatingChat ? styles.disabled : ''}`}
               onClick={handleNewConversation}
+              style={{
+                cursor: isCreatingChat ? 'not-allowed' : 'pointer',
+                opacity: isCreatingChat ? 0.6 : 1,
+              }}
             >
               <AddIcon />
-              {isExpanded && <p>Tạo đoạn chat mới</p>}
+              {isExpanded && (
+                <p>{isCreatingChat ? 'Đang tạo...' : 'Tạo đoạn chat mới'}</p>
+              )}
             </div>
             <div className={styles.header_vertical_content}>
               <div className={styles.header_vertical_icon}>
