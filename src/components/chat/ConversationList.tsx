@@ -11,7 +11,7 @@ import { useConversation } from '@/contexts/ConversationContext';
 import { cn } from '@/lib/utils';
 import { conversationService } from '@/services/conversation';
 import { ConversationResponse } from '@/types/conversation';
-import { Loader2, MessageCircle, Pin, Search } from 'lucide-react';
+import { LoaderIcon, MessageCircle, Pin, Search } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import styles from '../header/HeaderVertical.module.scss';
@@ -118,7 +118,7 @@ export const ConversationList: React.FC<ConversationListProps> = ({
           <div className='max-h-64 overflow-y-auto'>
             {isLoading ? (
               <div className='flex h-20 items-center justify-center'>
-                <Loader2 className='h-4 w-4 animate-spin' />
+                <LoaderIcon className={cn('size-4 animate-spin text-primary')} />
               </div>
             ) : (
               <>

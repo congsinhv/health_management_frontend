@@ -52,18 +52,12 @@ const HeaderVertical = ({
 
   // Handle new conversation creation
   const handleNewConversation = async () => {
-    try {
-      const newConversation = await createConversation({
-        title: 'Cuộc trò chuyện mới',
-        user_id: Number(user?.id),
-        metadata: {
-          health_option: 'ai-chat',
-        },
-      });
+    // Clear current conversation (deselect from sidebar)
+    switchConversation(null);
 
-      await handleConversationSelect(newConversation.id);
-    } catch (error) {
-      console.error('Failed to create new conversation:', error);
+    // Navigate to chatbox if not already there
+    if (pathname !== '/chatbox') {
+      router.push('/chatbox');
     }
   };
 

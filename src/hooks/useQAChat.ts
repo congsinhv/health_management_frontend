@@ -68,8 +68,9 @@ export const useQAChat = (): UseQAChatReturn => {
               timestamp: new Date(msg.created_at),
             })
           );
-
-          setMessages(conversationMessages);
+          if (!isWaitingForResponse) {
+            setMessages(conversationMessages);
+          }
         } catch (error) {
           console.error('Failed to load conversation history:', error);
           // Don't set error state here as it's not critical for user experience
@@ -109,7 +110,7 @@ export const useQAChat = (): UseQAChatReturn => {
       if (!conversationId && user) {
         try {
           const newConversation = await createConversation({
-            title: conversationService.generateTitle(question),
+            title: 'Cuộc trò chuyện mới',
             user_id: Number(user.id),
             metadata: {
               source: 'user_input',

@@ -14,12 +14,11 @@ import {
   HealthOptionType,
   OBESITY_PREDICTION_FLOW,
 } from '@/types/chat';
-import { Loader2, MoreVertical, Send, X } from 'lucide-react';
+import { LoaderIcon, MoreVertical, Send, X } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
 import styles from './page.module.scss';
 
 const ChatboxPage = () => {
-  const { user } = useAuth();
   const [message, setMessage] = useState('');
   const [isHeaderOpen, setIsHeaderOpen] = useState(true);
 
@@ -45,9 +44,7 @@ const ChatboxPage = () => {
   // Conversation context
   const {
     currentConversation,
-    createConversation,
     switchConversation,
-    isLoading: isLoadingConversation,
   } = useConversation();
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -99,20 +96,7 @@ const ChatboxPage = () => {
 
   const handleNewChat = async () => {
     // Create a new conversation if we're in AI chat mode
-    try {
-      const newConversation = await createConversation({
-        title: 'Cuộc trò chuyện mới',
-        user_id: Number(user?.id),
-        metadata: {
-          health_option: 'ai-chat',
-        },
-      });
-      switchConversation(newConversation.id);
-    } catch (error) {
-      console.error('Failed to create new conversation:', error);
-      // Fallback to clearing messages if conversation creation fails
-      clearMessages();
-    }
+    switchConversation(null);
   };
 
   // Get current step for quick responses
@@ -141,7 +125,7 @@ const ChatboxPage = () => {
       >
         {isInitializing || isGuidedWaiting ? (
           <div className='flex h-full items-center justify-center'>
-            <Loader2 className='h-10 w-10 animate-spin' />
+            <LoaderIcon className={cn('size-4 animate-spin text-primary')} />
           </div>
         ) : !session && !currentConversation ? (
           // Welcome screen with health options
