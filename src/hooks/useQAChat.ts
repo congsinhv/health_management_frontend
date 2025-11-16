@@ -1,11 +1,15 @@
-import { useState, useCallback } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import { useConversation } from '@/contexts/ConversationContext';
+import { conversationService } from '@/services/conversation';
 import { qaService } from '@/services/qa';
 import { ChatMessage } from '@/types/chat';
 import type { QuestionResponse, ValidationError } from '@/types/qa';
 import { AxiosError } from 'axios';
+import { useCallback, useEffect, useState } from 'react';
 
 interface UseQAChatReturn {
   messages: ChatMessage[];
+  isInitializing: boolean;
   isWaitingForResponse: boolean;
   error: string | null;
   askQuestion: (question: string) => Promise<void>;
@@ -15,8 +19,17 @@ interface UseQAChatReturn {
 
 export const useQAChat = (): UseQAChatReturn => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [isInitializing, setIsInitializing] = useState(false);
   const [isWaitingForResponse, setIsWaitingForResponse] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const { user } = useAuth();
+  const {
+    currentConversation,
+    createConversation,
+    switchConversation,
+    loadConversations,
+  } = useConversation();
 
   const generateMessageId = () =>
     `msg-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
@@ -35,6 +48,44 @@ export const useQAChat = (): UseQAChatReturn => {
     []
   );
 
+  // Load conversation history when current conversation changes
+  useEffect(() => {
+    const loadConversationHistory = async () => {
+      if (currentConversation?.id && user) {
+        try {
+          setIsInitializing(true);
+          const response = await conversationService.getMessages(
+            currentConversation.id,
+            { limit: 100 }
+          );
+
+          const conversationMessages: ChatMessage[] = response.messages.map(
+            msg => ({
+              id: msg.id.toString(),
+              role:
+                msg.metadata?.source === 'user_input' ? 'user' : 'assistant',
+              content: msg.content,
+              timestamp: new Date(msg.created_at),
+            })
+          );
+          if (!isWaitingForResponse) {
+            setMessages(conversationMessages);
+          }
+        } catch (error) {
+          console.error('Failed to load conversation history:', error);
+          // Don't set error state here as it's not critical for user experience
+        } finally {
+          setIsInitializing(false);
+        }
+      } else {
+        // No conversation, clear messages
+        setMessages([]);
+      }
+    };
+
+    loadConversationHistory();
+  }, [currentConversation?.id]);
+
   const askQuestion = useCallback(
     async (question: string) => {
       // Clear previous error
@@ -51,13 +102,62 @@ export const useQAChat = (): UseQAChatReturn => {
         return;
       }
 
-      // Add user message immediately
-      addMessage(question, 'user');
-
       // Show loading state
       setIsWaitingForResponse(true);
 
+      // Ensure we have a conversation
+      let conversationId = currentConversation?.id;
+      if (!conversationId && user) {
+        try {
+          const newConversation = await createConversation({
+            title: 'Cuộc trò chuyện mới',
+            user_id: Number(user.id),
+            metadata: {
+              source: 'user_input',
+            },
+          });
+          conversationId = newConversation.id;
+          switchConversation(newConversation.id);
+        } catch (error) {
+          console.error('Failed to create conversation:', error);
+          // Fallback to non-persistent mode
+        }
+      }
+
+      // Add user message immediately
+      addMessage(question, 'user');
+
+      let needUpdateTitle = false;
+
       try {
+        // Create user message in conversation if we have one
+        if (conversationId) {
+          try {
+            const messageCount =
+              await conversationService.getConversationMessageCount(
+                conversationId
+              );
+            if (messageCount.message_count === 0) {
+              needUpdateTitle = true;
+            }
+            await conversationService.createMessage({
+              conversation_id: conversationId,
+              content: question,
+              content_type: 'text',
+              user_id: Number(user?.id),
+              metadata: {
+                source: 'user_input',
+              },
+            });
+          } catch (convError) {
+            console.error(
+              'Failed to create message in conversation:',
+              convError
+            );
+            // Continue with QA service even if conversation storage fails
+          }
+        }
+
         // Call the Q&A API
         const response: QuestionResponse = await qaService.askQuestion({
           question,
@@ -67,6 +167,32 @@ export const useQAChat = (): UseQAChatReturn => {
 
         // Add AI response with the summary
         addMessage(response.summary, 'assistant');
+
+        // Create AI message in conversation if we have one
+        if (conversationId) {
+          try {
+            await conversationService.createMessage({
+              conversation_id: conversationId,
+              content: response.summary,
+              content_type: 'text',
+              user_id: Number(user?.id),
+              metadata: {
+                source: 'ai_generated',
+                model_used: 'vietnamese-sbert',
+                qa_results: response.answers,
+              },
+            });
+          } catch (convError) {
+            console.error(
+              'Failed to create AI message in conversation:',
+              convError
+            );
+            // Don't fail the whole operation if conversation storage fails
+          }
+        }
+        if (needUpdateTitle && conversationId) {
+          loadConversations();
+        }
       } catch (err) {
         const axiosError = err as AxiosError<ValidationError>;
 
@@ -107,7 +233,13 @@ export const useQAChat = (): UseQAChatReturn => {
         setIsWaitingForResponse(false);
       }
     },
-    [addMessage]
+    [
+      addMessage,
+      currentConversation,
+      user,
+      createConversation,
+      switchConversation,
+    ]
   );
 
   const editMessage = useCallback(
@@ -207,6 +339,7 @@ export const useQAChat = (): UseQAChatReturn => {
   return {
     messages,
     isWaitingForResponse,
+    isInitializing,
     error,
     askQuestion,
     editMessage,

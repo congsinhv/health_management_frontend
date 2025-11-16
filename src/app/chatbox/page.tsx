@@ -1,26 +1,26 @@
 'use client';
 
-import HeaderVertical from '@/components/header/HeaderVertical';
-import React, { useState, useEffect, useRef } from 'react';
-import styles from './page.module.scss';
 import ChatMessage from '@/components/chat/ChatMessage';
-import QuickResponses from '@/components/chat/QuickResponses';
+import HeaderVertical from '@/components/header/HeaderVertical';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { X, MoreVertical, Send } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { useConversation } from '@/contexts/ConversationContext';
 import { useChat } from '@/hooks/useChat';
 import { useQAChat } from '@/hooks/useQAChat';
+import { cn } from '@/lib/utils';
 import {
+  DIET_RECOMMENDATION_FLOW,
   HealthOptionType,
   OBESITY_PREDICTION_FLOW,
-  DIET_RECOMMENDATION_FLOW,
 } from '@/types/chat';
-import { cn } from '@/lib/utils';
+import { LoaderIcon, MoreVertical, Send, X } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import styles from './page.module.scss';
 
 const ChatboxPage = () => {
   const [message, setMessage] = useState('');
   const [isHeaderOpen, setIsHeaderOpen] = useState(true);
-  const [currentMode, setCurrentMode] = useState<HealthOptionType>(null);
 
   // Guided chat hook (for obesity prediction and diet recommendation)
   const {
@@ -28,25 +28,27 @@ const ChatboxPage = () => {
     isWaitingForResponse: isGuidedWaiting,
     startNewSession,
     processUserResponse,
-    resetSession,
   } = useChat();
 
   // AI Q&A chat hook
   const {
     messages: qaMessages,
     isWaitingForResponse: isQAWaiting,
+    isInitializing,
     error: qaError,
     askQuestion,
     editMessage,
     clearMessages,
   } = useQAChat();
 
+  // Conversation context
+  const {
+    currentConversation,
+    switchConversation,
+  } = useConversation();
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
-
-  // Determine which waiting state to use
-  const isWaitingForResponse =
-    currentMode === 'ai-chat' ? isQAWaiting : isGuidedWaiting;
 
   // Auto scroll to bottom when new messages arrive
   useEffect(() => {
@@ -54,7 +56,6 @@ const ChatboxPage = () => {
   }, [session?.messages, qaMessages]);
 
   const handleHealthOptionClick = (option: HealthOptionType) => {
-    setCurrentMode(option);
     if (option === 'ai-chat') {
       // AI chat mode - no need to start a session
       clearMessages();
@@ -65,51 +66,24 @@ const ChatboxPage = () => {
   };
 
   const handleSuggestionClick = (suggestion: string) => {
-    if (currentMode === 'ai-chat') {
-      setMessage(suggestion);
-    }
+    setMessage(suggestion);
   };
 
   const handleSendMessage = async () => {
-    if (!message.trim() || isWaitingForResponse) return;
+    if (!message.trim() || isQAWaiting) return;
 
-    if (currentMode === 'ai-chat') {
-      // AI chat mode - send question to Q&A API
-      const questionToSend = message.trim();
-      // Clear input IMMEDIATELY before API call
-      setMessage('');
-      await askQuestion(questionToSend);
-    } else if (session) {
-      // Guided flow mode
-      const currentFlow =
-        session.healthOption === 'obesity-prediction'
-          ? OBESITY_PREDICTION_FLOW
-          : DIET_RECOMMENDATION_FLOW;
-      const currentStep = currentFlow[session.currentStep];
-
-      // Parse response based on type
-      let response: string | number = message.trim();
-      if (currentStep.responseType === 'number') {
-        const numValue = parseFloat(message.trim());
-        if (!isNaN(numValue)) {
-          response = numValue;
-        }
-      }
-
-      // Clear input before processing
-      setMessage('');
-      await processUserResponse(response);
-    }
+    const questionToSend = message.trim();
+    // Clear input IMMEDIATELY before API call
+    setMessage('');
+    await askQuestion(questionToSend);
   };
 
   const handleEditMessage = async (messageId: string, newContent: string) => {
-    if (currentMode === 'ai-chat') {
-      await editMessage(messageId, newContent);
-    }
+    await editMessage(messageId, newContent);
   };
 
   const handleQuickResponse = async (choice: string) => {
-    if (!session || isWaitingForResponse) return;
+    if (!session || isQAWaiting) return;
     await processUserResponse(choice);
   };
 
@@ -120,10 +94,9 @@ const ChatboxPage = () => {
     }
   };
 
-  const handleNewChat = () => {
-    setCurrentMode(null);
-    resetSession();
-    clearMessages();
+  const handleNewChat = async () => {
+    // Create a new conversation if we're in AI chat mode
+    switchConversation(null);
   };
 
   // Get current step for quick responses
@@ -150,7 +123,11 @@ const ChatboxPage = () => {
       <div
         className={`${styles.main_content} ${!isHeaderOpen ? styles.collapsed : ''}`}
       >
-        {!session && !currentMode ? (
+        {isInitializing || isGuidedWaiting ? (
+          <div className='flex h-full items-center justify-center'>
+            <LoaderIcon className={cn('size-4 animate-spin text-primary')} />
+          </div>
+        ) : !session && !currentConversation ? (
           // Welcome screen with health options
           <div className={styles.chat_container}>
             <div className={styles.greeting_section}>
@@ -193,23 +170,22 @@ const ChatboxPage = () => {
               </div> */}
             </div>
           </div>
-        ) : currentMode === 'ai-chat' ? (
+        ) : currentConversation ? (
           // AI Chat mode
           <div className={styles.chat_session} ref={chatContainerRef}>
             <div className={styles.chat_header}>
-              <h2>Chat với AI</h2>
               <Button
                 variant='outline'
                 className={styles.new_chat_button}
                 onClick={handleNewChat}
               >
                 <X className='h-5 w-5' />
-                Cuộc trò chuyện mới
+                Đóng chat
               </Button>
             </div>
 
             <div className={styles.messages_container}>
-              {qaMessages.length === 0 ? (
+              {qaMessages.length === 0 && !isQAWaiting ? (
                 <div className={styles.ai_welcome}>
                   <p className={styles.ai_welcome_text}>
                     Bạn có thể hỏi tôi bất kỳ câu hỏi nào về sức khỏe!
@@ -261,55 +237,10 @@ const ChatboxPage = () => {
               <div ref={messagesEndRef} />
             </div>
           </div>
-        ) : (
-          // Active chat session
-          <div className={styles.chat_session} ref={chatContainerRef}>
-            <div className={styles.chat_header}>
-              <h2>
-                {session?.healthOption === 'obesity-prediction'
-                  ? 'Dự đoán thừa cân, béo phì'
-                  : 'Gợi ý chế độ ăn'}
-              </h2>
-              <Button
-                variant='outline'
-                className={styles.new_chat_button}
-                onClick={handleNewChat}
-              >
-                <X className='h-5 w-5' />
-                Cuộc trò chuyện mới
-              </Button>
-            </div>
-
-            <div className={styles.messages_container}>
-              {session?.messages?.map(msg => (
-                <ChatMessage key={msg.id} message={msg} />
-              ))}
-
-              {currentChoices && !isWaitingForResponse && (
-                <QuickResponses
-                  choices={currentChoices}
-                  onSelect={handleQuickResponse}
-                />
-              )}
-
-              {isWaitingForResponse && (
-                <ChatMessage
-                  message={{
-                    id: 'loading',
-                    role: 'assistant',
-                    content: '',
-                    timestamp: new Date(),
-                    isLoading: true,
-                  }}
-                />
-              )}
-              <div ref={messagesEndRef} />
-            </div>
-          </div>
-        )}
+        ) : null}
 
         {/* Chat input - show for AI chat or active guided session (without quick responses) */}
-        {(currentMode === 'ai-chat' || (session && !currentChoices)) && (
+        {(currentConversation || !currentChoices) && (
           <div className={styles.chat_input_container}>
             <div className={styles.chat_input_wrapper}>
               <Textarea
@@ -318,7 +249,7 @@ const ChatboxPage = () => {
                   'shadow-none focus:border-none focus:ring-0 focus:outline-none focus-visible:ring-0'
                 )}
                 placeholder={
-                  currentMode === 'ai-chat'
+                  currentConversation
                     ? 'Nhập câu hỏi của bạn...'
                     : session?.healthOption === 'obesity-prediction'
                       ? 'Nhập câu trả lời của bạn...'
@@ -328,7 +259,7 @@ const ChatboxPage = () => {
                 onChange={e => setMessage(e.target.value)}
                 onKeyDown={handleKeyDown}
                 rows={1}
-                disabled={isWaitingForResponse}
+                disabled={isQAWaiting}
                 maxLength={1000}
               />
               <div className={styles.input_actions}>
@@ -337,7 +268,7 @@ const ChatboxPage = () => {
                   size='icon'
                   className={styles.attachment_button}
                   title='Đính kèm tài liệu'
-                  disabled={isWaitingForResponse}
+                  disabled={isQAWaiting}
                 >
                   <MoreVertical className='h-5 w-5' />
                 </Button>
@@ -352,16 +283,14 @@ const ChatboxPage = () => {
                   className={styles.send_button}
                   onClick={handleSendMessage}
                   disabled={
-                    !message.trim() ||
-                    isWaitingForResponse ||
-                    message.length > 1000
+                    !message.trim() || isQAWaiting || message.length > 1000
                   }
                 >
                   <Send className='h-5 w-5' />
                 </Button>
               </div>
             </div>
-            {qaError && currentMode === 'ai-chat' && (
+            {qaError && currentConversation && (
               <div className={styles.error_message}>{qaError}</div>
             )}
           </div>

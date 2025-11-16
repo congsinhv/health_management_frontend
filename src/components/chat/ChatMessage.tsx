@@ -170,7 +170,9 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
                   ),
                 }}
               >
-                {message.content}
+                {!message.content && message.role === 'assistant'
+                  ? 'Xin lỗi bạn! Dữ liệu chưa được cập nhật cho câu hỏi này.'
+                  : message.content}
               </ReactMarkdown>
             </div>
           )}
