@@ -62,10 +62,21 @@
   word-wrap: break-word;
   overflow-wrap: break-word;
 
+  // Make the last paragraph inline to allow cursor to appear next to it
+  > :last-child {
+    display: inline;
+    margin-bottom: 0;
+  }
+
+  > * {
+    display: inline;
+  }
+
   // Paragraphs
   .paragraph {
     margin: 0 0 1rem 0;
     line-height: 1.75;
+    display: inline;
 
     &:last-child {
       margin-bottom: 0;
@@ -424,6 +435,54 @@
   }
   40% {
     transform: scale(1);
+  }
+}
+
+// Streaming indicator styles
+.streaming_cursor {
+  display: inline-block;
+  margin-left: 2px;
+
+  .cursor_blink {
+    display: inline-block;
+    animation:
+      blink 1s step-end infinite,
+      gradientShift 3s ease-in-out infinite;
+    background: linear-gradient(
+      90deg,
+      #4fd1c7 0%,
+      #14b6e2 33%,
+      #9dffea 66%,
+      #4fd1c7 100%
+    );
+    background-size: 200% 100%;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: bold;
+  }
+}
+
+@keyframes blink {
+  0%,
+  50% {
+    opacity: 1;
+  }
+  51%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
   }
 }
 

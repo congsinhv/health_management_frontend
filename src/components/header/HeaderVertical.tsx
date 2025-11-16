@@ -34,20 +34,10 @@ const HeaderVertical = ({
     setIsExpanded(!isExpanded);
     setIsOpen?.(!isExpanded);
   };
-  const { switchConversation, createConversation } = useConversation();
+  const { switchConversation } = useConversation();
 
   const handleComeHome = () => {
     router.push('/');
-  };
-
-  // Handle conversation selection
-  const handleConversationSelect = async (conversationId: number) => {
-    switchConversation(conversationId);
-
-    // Navigate to chatbox if not already there
-    if (pathname !== '/chatbox') {
-      router.push('/chatbox');
-    }
   };
 
   // Handle new conversation creation

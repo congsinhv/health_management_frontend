@@ -52,7 +52,6 @@ export const ConversationList: React.FC<ConversationListProps> = ({
   // Load conversations when dropdown opens
   useEffect(() => {
     if (user && !conversations.length) {
-      console.log('Loading conversations...');
       setIsLoading(true);
       loadConversations({ limit: 10 }).finally(() => {
         setIsLoading(false);
@@ -118,7 +117,9 @@ export const ConversationList: React.FC<ConversationListProps> = ({
           <div className='max-h-64 overflow-y-auto'>
             {isLoading ? (
               <div className='flex h-20 items-center justify-center'>
-                <LoaderIcon className={cn('size-4 animate-spin text-primary')} />
+                <LoaderIcon
+                  className={cn('text-primary size-4 animate-spin')}
+                />
               </div>
             ) : (
               <>

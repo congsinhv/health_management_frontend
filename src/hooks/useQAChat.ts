@@ -2,10 +2,11 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useConversation } from '@/contexts/ConversationContext';
 import { conversationService } from '@/services/conversation';
 import { qaService } from '@/services/qa';
+import { qaStreamingService } from '@/services/qaStreaming';
 import { ChatMessage } from '@/types/chat';
 import type { QuestionResponse, ValidationError } from '@/types/qa';
 import { AxiosError } from 'axios';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 interface UseQAChatReturn {
   messages: ChatMessage[];
@@ -15,6 +16,12 @@ interface UseQAChatReturn {
   askQuestion: (question: string) => Promise<void>;
   editMessage: (messageId: string, newContent: string) => Promise<void>;
   clearMessages: () => void;
+  // Streaming properties
+  isStreaming: boolean;
+  streamingContent: string;
+  streamingMessageId: string | null;
+  streamingAnswers: Record<string, string[]> | null;
+  streamingTokenCount: number;
 }
 
 export const useQAChat = (): UseQAChatReturn => {
@@ -22,6 +29,22 @@ export const useQAChat = (): UseQAChatReturn => {
   const [isInitializing, setIsInitializing] = useState(false);
   const [isWaitingForResponse, setIsWaitingForResponse] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Streaming state
+  const [isStreaming, setIsStreaming] = useState(false);
+  const [streamingContent, setStreamingContent] = useState('');
+  const [streamingMessageId, setStreamingMessageId] = useState<string | null>(
+    null
+  );
+  const [streamingAnswers, setStreamingAnswers] = useState<Record<
+    string,
+    string[]
+  > | null>(null);
+  const [streamingTokenCount, setStreamingTokenCount] = useState(0);
+
+  // Refs for stable references
+  const streamAbortControllerRef = useRef<AbortController | null>(null);
+  const streamContentAccumulatorRef = useRef<string>('');
 
   const { user } = useAuth();
   const {
@@ -47,6 +70,75 @@ export const useQAChat = (): UseQAChatReturn => {
     },
     []
   );
+
+  /**
+   * Reset streaming state
+   */
+  const resetStreamingState = useCallback(() => {
+    setIsStreaming(false);
+    setStreamingContent('');
+    setStreamingMessageId(null);
+    setStreamingAnswers(null);
+    setStreamingTokenCount(0);
+    streamContentAccumulatorRef.current = '';
+  }, []);
+
+  /**
+   * Finalize streaming message and save to conversation
+   */
+  const finalizeStreamingMessage = useCallback(
+    async (summary: string, totalTokens: number) => {
+      // Save to conversation FIRST (if we have one)
+      if (currentConversation?.id && user) {
+        try {
+          await conversationService.createMessage({
+            conversation_id: currentConversation.id,
+            content: summary,
+            content_type: 'text',
+            user_id: Number(user.id),
+            metadata: {
+              source: 'ai_generated',
+              model_used: 'streaming-qa',
+              qa_results: streamingAnswers || undefined,
+              total_tokens: totalTokens,
+            },
+          });
+        } catch (convError) {
+          console.error('Failed to save streaming message:', convError);
+        }
+      }
+
+      // Add complete AI message to messages
+      addMessage(summary, 'assistant');
+
+      // Double requestAnimationFrame to ensure the new message is fully rendered
+      // First frame: React commits the new message to DOM
+      // Second frame: Browser paints the new message
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          resetStreamingState();
+          setIsWaitingForResponse(false);
+        });
+      });
+    },
+    [
+      addMessage,
+      currentConversation?.id,
+      user,
+      streamingAnswers,
+      resetStreamingState,
+    ]
+  );
+
+  // Cleanup streaming connection on unmount or conversation switch
+  useEffect(() => {
+    return () => {
+      if (streamAbortControllerRef.current) {
+        streamAbortControllerRef.current.abort();
+        streamAbortControllerRef.current = null;
+      }
+    };
+  }, [currentConversation?.id]); // Cleanup when conversation changes
 
   // Load conversation history when current conversation changes
   useEffect(() => {
@@ -84,7 +176,8 @@ export const useQAChat = (): UseQAChatReturn => {
     };
 
     loadConversationHistory();
-  }, [currentConversation?.id]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentConversation?.id, user]);
 
   const askQuestion = useCallback(
     async (question: string) => {
@@ -155,6 +248,118 @@ export const useQAChat = (): UseQAChatReturn => {
               convError
             );
             // Continue with QA service even if conversation storage fails
+          }
+        }
+
+        // NEW: Try streaming first
+        const ENABLE_STREAMING = true; // Feature flag
+
+        if (ENABLE_STREAMING) {
+          try {
+            // Reset any previous streaming state
+            resetStreamingState();
+            setIsStreaming(true);
+
+            // Start SSE streaming
+            const abortController = await qaStreamingService.askQuestionStream(
+              {
+                question,
+                threshold: 0.55,
+                top_k: 7,
+              },
+              {
+                // Handle content chunks
+                onChunk: (chunk: string, tokenCount: number) => {
+                  // Prevent memory leak by limiting accumulator size to ~50KB
+                  const MAX_CONTENT_LENGTH = 50000;
+                  const newContent =
+                    streamContentAccumulatorRef.current + chunk;
+
+                  if (newContent.length > MAX_CONTENT_LENGTH) {
+                    console.warn(
+                      'Streaming content exceeded max length, truncating...'
+                    );
+                    streamContentAccumulatorRef.current =
+                      newContent.slice(-MAX_CONTENT_LENGTH);
+                  } else {
+                    streamContentAccumulatorRef.current = newContent;
+                  }
+
+                  setStreamingContent(streamContentAccumulatorRef.current);
+                  setStreamingTokenCount(tokenCount);
+                },
+
+                // Handle answers
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                onAnswers: (
+                  answers: Record<string, string[]>,
+                ) => {
+                  setStreamingAnswers(answers);
+                },
+
+                // Handle completion
+                onComplete: (summary: string, totalTokens: number) => {
+                  finalizeStreamingMessage(summary, totalTokens);
+                  if (needUpdateTitle && conversationId) {
+                    loadConversations();
+                  }
+                },
+
+                // Handle errors (fallback to non-streaming)
+                onError: (err: Error) => {
+                  console.error(
+                    'Streaming error, falling back to non-streaming:',
+                    err
+                  );
+                  resetStreamingState();
+
+                  // Fallback to non-streaming (use existing logic below)
+                  qaService
+                    .askQuestion({ question, threshold: 0.55, top_k: 7 })
+                    .then(response => {
+                      addMessage(response.summary, 'assistant');
+
+                      if (conversationId) {
+                        conversationService
+                          .createMessage({
+                            conversation_id: conversationId,
+                            content: response.summary,
+                            content_type: 'text',
+                            user_id: Number(user?.id),
+                            metadata: {
+                              source: 'ai_generated',
+                              model_used: 'fallback-non-streaming',
+                              qa_results: response.answers,
+                            },
+                          })
+                          .catch(console.error);
+                      }
+                    })
+                    .catch(() => {
+                      setError('Đã xảy ra lỗi. Vui lòng thử lại.');
+                      addMessage(
+                        'Xin lỗi, đã xảy ra lỗi khi xử lý câu hỏi của bạn. Vui lòng thử lại sau.',
+                        'assistant'
+                      );
+                    })
+                    .finally(() => {
+                      setIsWaitingForResponse(false);
+                    });
+                },
+              },
+              {
+                getAccessToken: () => localStorage.getItem('access_token'),
+              }
+            );
+
+            streamAbortControllerRef.current = abortController;
+
+            // Streaming initiated successfully - return early
+            return;
+          } catch (streamingSetupError) {
+            console.error('Failed to setup streaming:', streamingSetupError);
+            resetStreamingState();
+            // Fall through to non-streaming logic below
           }
         }
 
@@ -233,6 +438,7 @@ export const useQAChat = (): UseQAChatReturn => {
         setIsWaitingForResponse(false);
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [
       addMessage,
       currentConversation,
@@ -344,5 +550,11 @@ export const useQAChat = (): UseQAChatReturn => {
     askQuestion,
     editMessage,
     clearMessages,
+    // Streaming properties
+    isStreaming,
+    streamingContent,
+    streamingMessageId,
+    streamingAnswers,
+    streamingTokenCount,
   };
 };
