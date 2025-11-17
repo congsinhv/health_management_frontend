@@ -103,10 +103,6 @@ function LoginContent() {
       setUrlError(null); // Clear any URL errors
       setUrlSuccess(null); // Clear any URL success messages
       await login(data);
-      // Small delay to show the success toast before redirecting
-      setTimeout(() => {
-        router.push(ROUTES.DASHBOARD);
-      }, 1000);
     } catch (error) {
       // Error is already handled by the AuthContext with toast
       logger.error(
