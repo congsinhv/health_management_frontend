@@ -51,10 +51,10 @@ function LoginContent() {
       const returnUrl = searchParams.get('returnUrl');
       if (returnUrl) {
         router.push(decodeURIComponent(returnUrl));
-        return;
+      } else {
+      router.push(ROUTES.DASHBOARD);
       }
     }
-    router.push(ROUTES.DASHBOARD);
   }, [isAuthenticated, router, searchParams]);
 
   // Handle URL parameters (errors and success messages)
