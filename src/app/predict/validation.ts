@@ -1,112 +1,37 @@
-import { PredictFormData, FormErrors } from './formHelper';
+import { PredictFormData } from './formHelper';
+import { z } from 'zod';
 
 /**
- * Validates the entire form and returns errors
+ * Zod schema for form validation
  */
-export const validateForm = (formData: PredictFormData): FormErrors => {
-  const errors: FormErrors = {};
+export const predictFormSchema = z.object({
+  // Demographics
+  name: z.string().min(1, 'Vui lòng nhập tên'),
+  gender: z.coerce.number().refine(val => val === 0 || val === 1, 'Vui lòng chọn giới tính'),
+  age: z.coerce.number().min(1, 'Tuổi không hợp lệ (1-120)').max(120, 'Tuổi không hợp lệ (1-120)'),
+  height: z.coerce.number().min(0.5, 'Chiều cao không hợp lệ (0.5-2.5 m)').max(2.5, 'Chiều cao không hợp lệ (0.5-2.5 m)'),
+  weight: z.coerce.number().min(20, 'Cân nặng không hợp lệ (20-300 kg)').max(300, 'Cân nặng không hợp lệ (20-300 kg)'),
+  family_history_with_overweight: z.enum(['yes', 'no'], { message: 'Vui lòng chọn tiền sử gia đình' }),
 
-  // Demographics validation
-  if (!formData.name?.trim()) {
-    errors.name = 'Vui lòng nhập tên';
-  }
+  // Eating habits
+  FAVC: z.enum(['yes', 'no'], { message: 'Vui lòng chọn' }),
+  SCC: z.coerce.number().refine(val => val >= 1 && val <= 3, 'Vui lòng chọn'),
+  FCVC: z.coerce.number().refine(val => val >= 1 && val <= 3, 'Vui lòng chọn'),
+  CH2O: z.coerce.number().refine(val => val >= 1 && val <= 3, 'Vui lòng chọn'),
+  NCP: z.coerce.number().min(1, 'Số bữa ăn không hợp lệ (1-10)').max(10, 'Số bữa ăn không hợp lệ (1-10)'),
+  CAEC: z.coerce.number().refine(val => val >= 0 && val <= 4, 'Vui lòng chọn'),
 
-  if (!formData.gender) {
-    errors.gender = 'Vui lòng chọn giới tính';
-  }
+  // Activity habits
+  FAF: z.coerce.number().refine(val => val >= 0 && val <= 3, 'Vui lòng chọn'),
+  TUE: z.coerce.number().refine(val => val >= 0 && val <= 2, 'Vui lòng chọn'),
+  MTRANS: z.coerce.number().refine(val => val >= 1 && val <= 5, 'Vui lòng chọn'),
 
-  if (!formData.age) {
-    errors.age = 'Vui lòng nhập tuổi';
-  } else {
-    const age = parseInt(formData.age.toString());
-    if (isNaN(age) || age < 1 || age > 120) {
-      errors.age = 'Tuổi không hợp lệ (1-120)';
-    }
-  }
+  // Other habits
+  SMOKE: z.enum(['yes', 'no'], { message: 'Vui lòng chọn' }),
+  CALC: z.coerce.number().refine(val => val >= 0 && val <= 4, 'Vui lòng chọn'),
+});
 
-  if (!formData.height) {
-    errors.height = 'Vui lòng nhập chiều cao';
-  } else {
-    const height = parseFloat(formData.height.toString());
-    if (isNaN(height) || height < 50 || height > 250) {
-      errors.height = 'Chiều cao không hợp lệ (50-250 cm)';
-    }
-  }
-
-  if (!formData.weight) {
-    errors.weight = 'Vui lòng nhập cân nặng';
-  } else {
-    const weight = parseFloat(formData.weight.toString());
-    if (isNaN(weight) || weight < 20 || weight > 300) {
-      errors.weight = 'Cân nặng không hợp lệ (20-300 kg)';
-    }
-  }
-
-  if (!formData.family_history_with_overweight) {
-    errors.family_history_with_overweight = 'Vui lòng chọn tiền sử gia đình';
-  }
-
-  // Eating habits validation
-  if (!formData.FAVC) {
-    errors.FAVC = 'Vui lòng chọn';
-  }
-
-  if (!formData.SCC) {
-    errors.SCC = 'Vui lòng chọn';
-  }
-
-  if (!formData.FCVC) {
-    errors.FCVC = 'Vui lòng chọn';
-  }
-
-  if (!formData.CH2O) {
-    errors.CH2O = 'Vui lòng chọn';
-  }
-
-  if (!formData.NCP) {
-    errors.NCP = 'Vui lòng nhập số bữa ăn';
-  } else {
-    const meals = parseInt(formData.NCP.toString());
-    if (isNaN(meals) || meals < 1 || meals > 10) {
-      errors.NCP = 'Số bữa ăn không hợp lệ (1-10)';
-    }
-  }
-
-  if (!formData.CAEC) {
-    errors.CAEC = 'Vui lòng chọn';
-  }
-
-  // Activity habits validation
-  if (!formData.FAF) {
-    errors.FAF = 'Vui lòng chọn';
-  }
-
-  if (!formData.TUE) {
-    errors.TUE = 'Vui lòng chọn';
-  }
-
-  if (!formData.MTRANS) {
-    errors.MTRANS = 'Vui lòng chọn';
-  }
-
-  // Other habits validation
-  if (!formData.SMOKE) {
-    errors.SMOKE = 'Vui lòng chọn';
-  }
-
-  if (!formData.CALC) {
-    errors.CALC = 'Vui lòng chọn';
-  }
-
-  return errors;
-};
-
-/**
- * Checks if the form has any errors
- */
-export const hasErrors = (errors: FormErrors): boolean => {
-  return Object.keys(errors).length > 0;
-};
+export type PredictFormSchema = z.infer<typeof predictFormSchema>;
 
 /**
  * Calculate BMI from height and weight
