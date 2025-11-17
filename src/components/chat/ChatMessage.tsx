@@ -13,6 +13,7 @@ interface ChatMessageProps {
   onCopy?: () => void;
   onEdit?: (messageId: string, newContent: string) => void;
   onRegenerate?: () => void;
+  isStreamingMessage?: boolean;
 }
 
 export const ChatMessage: React.FC<ChatMessageProps> = ({
@@ -20,6 +21,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
   onCopy,
   onEdit,
   onRegenerate,
+  isStreamingMessage = false,
 }) => {
   const isUser = message.role === 'user';
   const [showActions, setShowActions] = useState(false);
@@ -170,7 +172,9 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
                   ),
                 }}
               >
-                {!message.content && message.role === 'assistant'
+                {!message.content &&
+                message.role === 'assistant' &&
+                !isStreamingMessage
                   ? 'Xin lỗi bạn! Dữ liệu chưa được cập nhật cho câu hỏi này.'
                   : message.content}
               </ReactMarkdown>
@@ -179,7 +183,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
         </div>
       </div>
 
-      {!message.isLoading && !isEditMode && (
+      {!message.isLoading && !isEditMode && !isStreamingMessage && (
         <div className={styles.message_footer}>
           <div
             className={cn(

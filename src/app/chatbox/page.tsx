@@ -1,15 +1,16 @@
 'use client';
 
-import ChatMessage from '@/components/chat/ChatMessage';
+import ChatMessageComponent from '@/components/chat/ChatMessage';
 import HeaderVertical from '@/components/header/HeaderVertical';
+import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { useAuth } from '@/contexts/AuthContext';
 import { useConversation } from '@/contexts/ConversationContext';
 import { useChat } from '@/hooks/useChat';
 import { useQAChat } from '@/hooks/useQAChat';
 import { cn } from '@/lib/utils';
 import {
+  ChatMessage,
   DIET_RECOMMENDATION_FLOW,
   HealthOptionType,
   OBESITY_PREDICTION_FLOW,
@@ -18,7 +19,7 @@ import { LoaderIcon, MoreVertical, Send, X } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
 import styles from './page.module.scss';
 
-const ChatboxPage = () => {
+function ChatboxContent() {
   const [message, setMessage] = useState('');
   const [isHeaderOpen, setIsHeaderOpen] = useState(true);
 
@@ -27,7 +28,6 @@ const ChatboxPage = () => {
     session,
     isWaitingForResponse: isGuidedWaiting,
     startNewSession,
-    processUserResponse,
   } = useChat();
 
   // AI Q&A chat hook
@@ -39,21 +39,53 @@ const ChatboxPage = () => {
     askQuestion,
     editMessage,
     clearMessages,
+    // Streaming state
+    isStreaming,
+    streamingContent,
+    streamingMessageId,
   } = useQAChat();
 
   // Conversation context
-  const {
-    currentConversation,
-    switchConversation,
-  } = useConversation();
+  const { currentConversation, switchConversation } = useConversation();
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const userScrolledUpRef = useRef(false);
 
-  // Auto scroll to bottom when new messages arrive
+  // Detect if user scrolled up manually
+  useEffect(() => {
+    const container = messagesContainerRef.current;
+    if (!container) return;
+
+    const handleScroll = () => {
+      const { scrollTop, scrollHeight, clientHeight } = container;
+      const isAtBottom = scrollHeight - scrollTop - clientHeight < 100;
+      userScrolledUpRef.current = !isAtBottom;
+    };
+
+    container.addEventListener('scroll', handleScroll);
+    return () => container.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Auto-scroll to bottom when streaming content updates (only if user at bottom)
+  useEffect(() => {
+    if (isStreaming && !userScrolledUpRef.current) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [streamingContent, isStreaming]);
+
+  // Auto scroll to bottom when new finalized messages arrive
+  useEffect(() => {
+    if (!isStreaming && qaMessages.length > 0) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [qaMessages.length, isStreaming]);
+
+  // Auto scroll for guided chat messages
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [session?.messages, qaMessages]);
+  }, [session?.messages]);
 
   const handleHealthOptionClick = (option: HealthOptionType) => {
     if (option === 'ai-chat') {
@@ -70,7 +102,7 @@ const ChatboxPage = () => {
   };
 
   const handleSendMessage = async () => {
-    if (!message.trim() || isQAWaiting) return;
+    if (!message.trim() || isQAWaiting || isStreaming) return;
 
     const questionToSend = message.trim();
     // Clear input IMMEDIATELY before API call
@@ -80,11 +112,6 @@ const ChatboxPage = () => {
 
   const handleEditMessage = async (messageId: string, newContent: string) => {
     await editMessage(messageId, newContent);
-  };
-
-  const handleQuickResponse = async (choice: string) => {
-    if (!session || isQAWaiting) return;
-    await processUserResponse(choice);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -112,6 +139,21 @@ const ChatboxPage = () => {
 
   const currentChoices = getCurrentStepChoices();
 
+  // Create temporary streaming message for display
+  const streamingMessage: ChatMessage | null = isStreaming
+    ? {
+        id: streamingMessageId || 'streaming-temp',
+        role: 'assistant' as const,
+        content: streamingContent,
+        timestamp: new Date(),
+      }
+    : null;
+
+  // Combine finalized messages with streaming message
+  const displayMessages = streamingMessage
+    ? [...qaMessages, streamingMessage]
+    : qaMessages;
+
   return (
     <div className={styles.chatbox_page}>
       <HeaderVertical
@@ -125,7 +167,7 @@ const ChatboxPage = () => {
       >
         {isInitializing || isGuidedWaiting ? (
           <div className='flex h-full items-center justify-center'>
-            <LoaderIcon className={cn('size-4 animate-spin text-primary')} />
+            <LoaderIcon className={cn('text-primary size-4 animate-spin')} />
           </div>
         ) : !session && !currentConversation ? (
           // Welcome screen with health options
@@ -184,8 +226,11 @@ const ChatboxPage = () => {
               </Button>
             </div>
 
-            <div className={styles.messages_container}>
-              {qaMessages.length === 0 && !isQAWaiting ? (
+            <div
+              className={styles.messages_container}
+              ref={messagesContainerRef}
+            >
+              {displayMessages.length === 0 && !isQAWaiting && !isStreaming ? (
                 <div className={styles.ai_welcome}>
                   <p className={styles.ai_welcome_text}>
                     Bạn có thể hỏi tôi bất kỳ câu hỏi nào về sức khỏe!
@@ -214,17 +259,24 @@ const ChatboxPage = () => {
                   </div>
                 </div>
               ) : (
-                qaMessages.map(msg => (
-                  <ChatMessage
-                    key={msg.id}
-                    message={msg}
-                    onEdit={msg.role === 'user' ? handleEditMessage : undefined}
-                  />
-                ))
+                displayMessages.map((msg, index) => {
+                  const isStreamingMsg =
+                    isStreaming && index === displayMessages.length - 1;
+                  return (
+                    <ChatMessageComponent
+                      key={msg.id}
+                      message={msg}
+                      onEdit={
+                        msg.role === 'user' ? handleEditMessage : undefined
+                      }
+                      isStreamingMessage={isStreamingMsg}
+                    />
+                  );
+                })
               )}
 
-              {isQAWaiting && (
-                <ChatMessage
+              {isQAWaiting && !isStreaming && (
+                <ChatMessageComponent
                   message={{
                     id: 'loading',
                     role: 'assistant',
@@ -249,17 +301,19 @@ const ChatboxPage = () => {
                   'shadow-none focus:border-none focus:ring-0 focus:outline-none focus-visible:ring-0'
                 )}
                 placeholder={
-                  currentConversation
-                    ? 'Nhập câu hỏi của bạn...'
-                    : session?.healthOption === 'obesity-prediction'
-                      ? 'Nhập câu trả lời của bạn...'
-                      : 'Nhập thông tin của bạn...'
+                  isStreaming
+                    ? 'Đang nhận phản hồi...'
+                    : currentConversation
+                      ? 'Nhập câu hỏi của bạn...'
+                      : session?.healthOption === 'obesity-prediction'
+                        ? 'Nhập câu trả lời của bạn...'
+                        : 'Nhập thông tin của bạn...'
                 }
                 value={message}
                 onChange={e => setMessage(e.target.value)}
                 onKeyDown={handleKeyDown}
                 rows={1}
-                disabled={isQAWaiting}
+                disabled={isQAWaiting || isStreaming}
                 maxLength={1000}
               />
               <div className={styles.input_actions}>
@@ -268,7 +322,7 @@ const ChatboxPage = () => {
                   size='icon'
                   className={styles.attachment_button}
                   title='Đính kèm tài liệu'
-                  disabled={isQAWaiting}
+                  disabled={isQAWaiting || isStreaming}
                 >
                   <MoreVertical className='h-5 w-5' />
                 </Button>
@@ -283,10 +337,13 @@ const ChatboxPage = () => {
                   className={styles.send_button}
                   onClick={handleSendMessage}
                   disabled={
-                    !message.trim() || isQAWaiting || message.length > 1000
+                    !message.trim() ||
+                    isQAWaiting ||
+                    isStreaming ||
+                    message.length > 1000
                   }
                 >
-                  <Send className='h-5 w-5' />
+                  {isStreaming ? 'Đang xử lý...' : <Send className='h-5 w-5' />}
                 </Button>
               </div>
             </div>
@@ -298,6 +355,12 @@ const ChatboxPage = () => {
       </div>
     </div>
   );
-};
+}
 
-export default ChatboxPage;
+export default function ChatboxPage() {
+  return (
+    <ProtectedRoute>
+      <ChatboxContent />
+    </ProtectedRoute>
+  );
+}
