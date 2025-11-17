@@ -48,9 +48,14 @@ function LoginContent() {
   // Redirect to dashboard if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
-      router.push(ROUTES.DASHBOARD);
+      const returnUrl = searchParams.get('returnUrl');
+      if (returnUrl) {
+        router.push(decodeURIComponent(returnUrl));
+        return;
+      }
     }
-  }, [isAuthenticated, router]);
+    router.push(ROUTES.DASHBOARD);
+  }, [isAuthenticated, router, searchParams]);
 
   // Handle URL parameters (errors and success messages)
   useEffect(() => {
