@@ -106,7 +106,9 @@ export const qaStreamingService = {
     }
 
     // Determine base URL from environment (remove trailing slash)
-    const baseURL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/$/, '');
+    const baseURL = (
+      process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+    ).replace(/\/$/, '');
     const url = `${baseURL}/api/v1/qa/ask-stream`;
 
     try {

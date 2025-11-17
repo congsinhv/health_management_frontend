@@ -291,9 +291,7 @@ export const useQAChat = (): UseQAChatReturn => {
 
                 // Handle answers
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                onAnswers: (
-                  answers: Record<string, string[]>,
-                ) => {
+                onAnswers: (answers: Record<string, string[]>) => {
                   setStreamingAnswers(answers);
                 },
 

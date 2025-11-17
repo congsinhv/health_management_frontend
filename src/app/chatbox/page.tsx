@@ -142,11 +142,11 @@ function ChatboxContent() {
   // Create temporary streaming message for display
   const streamingMessage: ChatMessage | null = isStreaming
     ? {
-      id: streamingMessageId || 'streaming-temp',
-      role: 'assistant' as const,
-      content: streamingContent,
-      timestamp: new Date(),
-    }
+        id: streamingMessageId || 'streaming-temp',
+        role: 'assistant' as const,
+        content: streamingContent,
+        timestamp: new Date(),
+      }
     : null;
 
   // Combine finalized messages with streaming message
@@ -327,8 +327,9 @@ function ChatboxContent() {
                   <MoreVertical className='h-5 w-5' />
                 </Button>
                 <span
-                  className={`${styles.character_count} ${message.length > 1000 ? styles.character_count_error : ''
-                    }`}
+                  className={`${styles.character_count} ${
+                    message.length > 1000 ? styles.character_count_error : ''
+                  }`}
                 >
                   {message.length}/1000
                 </span>
