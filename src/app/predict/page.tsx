@@ -1,9 +1,9 @@
 'use client';
 
-import React from 'react';
-import Header from '@/components/header/Header';
 import Footer from '@/components/footer/Footer';
-import { usePredictForm } from './usePredictForm';
+import Header from '@/components/header/Header';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Form,
   FormControl,
@@ -13,6 +13,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import {
   Select,
   SelectContent,
@@ -20,21 +21,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Button } from '@/components/ui/button';
-import {
-  RadioGroup,
-  RadioGroupItem,
-} from '@/components/ui/radio-group';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { submitPrediction } from '@/services/prediction';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
 import {
   alcoholOptions,
   genderOptions,
+  initialFormData,
   physicalActivityOptions,
+  PredictFormData,
   screenTimeOptions,
   snackOptions,
   transportationOptions,
@@ -42,13 +39,12 @@ import {
   waterIntakeOptions,
   yesNoOptions,
 } from './formHelper';
-import { formatFormDataForAPI } from './validation';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { predictFormSchema } from './validation';
-import { initialFormData, PredictFormData } from './formHelper';
 
 const PredictPage = () => {
+  const router = useRouter();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const form = useForm<PredictFormData>({
     resolver: zodResolver(predictFormSchema) as any,
     defaultValues: initialFormData,
@@ -65,71 +61,77 @@ const PredictPage = () => {
   /**
    * Handle form submission
    */
-  const handleSubmit = async (
-    onSubmit: (data: PredictFormData) => Promise<void>
-  ) => {
-    console.log('Form submitted with data:', form.getValues());
-    return onSubmit(form.getValues());
-  };
-
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (data: PredictFormData) => {
     try {
+      setIsSubmitting(true);
       console.log('Form submitted with data:', data);
-      const formattedData = formatFormDataForAPI(data);
-      console.log('Formatted data for API:', formattedData);
 
-      // TODO: Add API call here
+      // Submit prediction and get result
+      const result = await submitPrediction(data);
 
-      alert('Form submitted successfully!');
+      // Store result in sessionStorage for the results page
+      sessionStorage.setItem('predictionResult', JSON.stringify(result));
+
+      // Navigate to results page
+      router.push('/predict/result');
     } catch (error) {
       console.error('Error submitting form:', error);
-      alert('Error submitting form. Please try again.');
+      alert('Có lỗi xảy ra khi xử lý dự đoán. Vui lòng thử lại.');
+      setIsSubmitting(false);
     }
   };
 
   return (
     <>
-      <Header className="sticky top-0 left-0 w-full z-50" />
-      <div className="min-h-screen pt-24">
-        <div className="">
-          <div className="text-center mb-12">
-            <h2 className="text-5xl font-semibold text-gray-900 mb-2">
+      <Header className='sticky top-0 left-0 z-50 w-full' />
+      <div className='min-h-screen pt-24'>
+        <div className=''>
+          <div className='mb-12 text-center'>
+            <h2 className='mb-2 text-5xl font-semibold text-gray-900'>
               Điền biểu mẫu sau để dự đoán sức khoẻ
             </h2>
-            <p className="text-gray-600 max-w-3xl mx-auto text-sm">
+            <p className='mx-auto max-w-3xl text-sm text-gray-600'>
               Trò chuyện trực tiếp với trợ lý sức khỏe, nhận gợi ý chế độ ăn cá
               nhân hoá và dự đoán nguy cơ thừa cân, béo phì Lorem Ipsum is
               simply dummy text of the printing and typesetting industry. Lorem
-              Ipsum has been the industry's standard dummy text ever since the
-              1500s
+              Ipsum has been the industry&apos;s standard dummy text ever since
+              the 1500s
             </p>
           </div>
 
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-10 bg-[#F5F4FA] pb-[5.5625rem]">
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              className='space-y-10 bg-[#F5F4FA] pb-[5.5625rem]'
+            >
               {/* Demographics */}
-              <Card className='bg-transparent w-[82.5%] mx-auto shadow-none border-none pt-[3.375rem]'>
-                <CardHeader className='pb-[1.375rem] border-b-[1px] border-[#B3B8C3] px-0'>
-                  <CardTitle className="font-medium">
+              <Card className='mx-auto w-[82.5%] border-none bg-transparent pt-[3.375rem] shadow-none'>
+                <CardHeader className='border-b-[1px] border-[#B3B8C3] px-0 pb-[1.375rem]'>
+                  <CardTitle className='font-medium'>
                     Thông tin nhân khẩu học (Demographic Information)
                   </CardTitle>
                 </CardHeader>
-                <CardContent className='px-0 flex justify-center-center gap-[4.25rem]'>
-                  <div className="w-[23%]">
+                <CardContent className='justify-center-center flex gap-[4.25rem] px-0'>
+                  <div className='w-[23%]'>
                     <h5 className='text-xl font-medium'>Basic</h5>
-                    <p>Having an up-to-date email address attached to your account is a great step toward improve account dsecutity.</p>
+                    <p>
+                      Having an up-to-date email address attached to your
+                      account is a great step toward improve account dsecutity.
+                    </p>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1">
+                  <div className='grid flex-1 grid-cols-1 gap-6 md:grid-cols-2'>
                     <FormField
                       control={form.control}
-                      name="name"
+                      name='name'
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className='text-[#6A7282] text-xs font-medium'>Tên người dùng</FormLabel>
+                          <FormLabel className='text-xs font-medium text-[#6A7282]'>
+                            Tên người dùng
+                          </FormLabel>
                           <FormControl>
                             <Input
-                              placeholder="VD: Nguyễn Văn A"
-                              className='bg-white rounded-[4px]'
+                              placeholder='VD: Nguyễn Văn A'
+                              className='rounded-[4px] bg-white'
                               {...field}
                             />
                           </FormControl>
@@ -140,23 +142,25 @@ const PredictPage = () => {
 
                     <FormField
                       control={form.control}
-                      name="gender"
+                      name='gender'
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className='text-[#6A7282] text-xs font-medium'>Giới tính</FormLabel>
+                          <FormLabel className='text-xs font-medium text-[#6A7282]'>
+                            Giới tính
+                          </FormLabel>
                           <Select
-                            onValueChange={(value) => field.onChange(parseInt(value))}
+                            onValueChange={value =>
+                              field.onChange(parseInt(value))
+                            }
                             defaultValue={field.value?.toString()}
                           >
                             <FormControl>
-                              <SelectTrigger
-                                className='bg-white rounded-[4px]'
-                              >
-                                <SelectValue placeholder="Chọn giới tính" />
+                              <SelectTrigger className='rounded-[4px] bg-white'>
+                                <SelectValue placeholder='Chọn giới tính' />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              {genderOptions.map((option) => (
+                              {genderOptions.map(option => (
                                 <SelectItem
                                   key={option.value}
                                   value={option.value}
@@ -173,18 +177,22 @@ const PredictPage = () => {
 
                     <FormField
                       control={form.control}
-                      name="age"
+                      name='age'
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className='text-[#6A7282] text-xs font-medium'>Tuổi</FormLabel>
+                          <FormLabel className='text-xs font-medium text-[#6A7282]'>
+                            Tuổi
+                          </FormLabel>
                           <FormControl>
                             <Input
-                              type="number"
-                              placeholder="VD: 20"
-                              className='bg-white rounded-[4px]'
+                              type='number'
+                              placeholder='VD: 20'
+                              className='rounded-[4px] bg-white'
                               {...field}
                               value={field.value ?? ''}
-                              onChange={(e) => field.onChange(parseInt(e.target.value) || null)}
+                              onChange={e =>
+                                field.onChange(parseInt(e.target.value) || null)
+                              }
                             />
                           </FormControl>
                           <FormMessage />
@@ -194,29 +202,30 @@ const PredictPage = () => {
 
                     <FormField
                       control={form.control}
-                      name="family_history_with_overweight"
+                      name='family_history_with_overweight'
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className='text-[#6A7282] text-xs font-medium'>
+                          <FormLabel className='text-xs font-medium text-[#6A7282]'>
                             Có người thân được chẩn đoán thừa cân/béo phì?
                           </FormLabel>
                           <FormControl>
                             <RadioGroup
                               onValueChange={field.onChange}
                               value={field.value}
-                              className="flex flex-row space-y-1 w-full"
+                              className='flex w-full flex-row space-y-1'
                             >
-                              {yesNoOptions.map((option) => (
+                              {yesNoOptions.map(option => (
                                 <FormItem
                                   key={option.value}
-                                  className="flex items-center space-x-3 space-y-0 bg-white rounded-[4px] flex-2 h-full px-[0.875rem] py-[0.625rem]"
+                                  className='flex h-full flex-2 items-center space-y-0 space-x-3 rounded-[4px] bg-white px-[0.875rem] py-[0.625rem]'
                                 >
                                   <FormControl>
-                                    <RadioGroupItem value={option.value}
+                                    <RadioGroupItem
+                                      value={option.value}
                                       className='cursor-pointer'
                                     />
                                   </FormControl>
-                                  <FormLabel className="font-normal">
+                                  <FormLabel className='font-normal'>
                                     {option.label}
                                   </FormLabel>
                                 </FormItem>
@@ -230,18 +239,22 @@ const PredictPage = () => {
 
                     <FormField
                       control={form.control}
-                      name="height"
+                      name='height'
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className='text-[#6A7282] text-xs font-medium'>Chiều cao (m)</FormLabel>
+                          <FormLabel className='text-xs font-medium text-[#6A7282]'>
+                            Chiều cao (m)
+                          </FormLabel>
                           <FormControl>
                             <Input
-                              type="number"
-                              step="0.01"
-                              className='bg-white rounded-[4px]'
-                              placeholder="VD: 1.65"
+                              type='number'
+                              step='0.01'
+                              className='rounded-[4px] bg-white'
+                              placeholder='VD: 1.65'
                               value={field.value ?? ''}
-                              onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                              onChange={e =>
+                                field.onChange(parseFloat(e.target.value) || 0)
+                              }
                             />
                           </FormControl>
                           <FormMessage />
@@ -251,18 +264,22 @@ const PredictPage = () => {
 
                     <FormField
                       control={form.control}
-                      name="weight"
+                      name='weight'
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className='text-[#6A7282] text-xs font-medium'>Cân nặng (kg)</FormLabel>
+                          <FormLabel className='text-xs font-medium text-[#6A7282]'>
+                            Cân nặng (kg)
+                          </FormLabel>
                           <FormControl>
                             <Input
-                              type="number"
-                              step="0.1"
-                              className='bg-white rounded-[4px]'
-                              placeholder="VD: 52"
+                              type='number'
+                              step='0.1'
+                              className='rounded-[4px] bg-white'
+                              placeholder='VD: 52'
                               value={field.value ?? ''}
-                              onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                              onChange={e =>
+                                field.onChange(parseFloat(e.target.value) || 0)
+                              }
                             />
                           </FormControl>
                           <FormMessage />
@@ -274,41 +291,47 @@ const PredictPage = () => {
               </Card>
 
               {/* Eating habits */}
-              <Card className='bg-transparent w-[82.5%] mx-auto shadow-none border-none pt-[3.375rem]'>
-                <CardHeader className='pb-[1.375rem] border-b-[1px] border-[#B3B8C3] px-0'>
-                  <CardTitle className="font-medium">
+              <Card className='mx-auto w-[82.5%] border-none bg-transparent pt-[3.375rem] shadow-none'>
+                <CardHeader className='border-b-[1px] border-[#B3B8C3] px-0 pb-[1.375rem]'>
+                  <CardTitle className='font-medium'>
                     Thói quen ăn uống
                   </CardTitle>
                 </CardHeader>
-                <CardContent className='px-0 flex justify-center-center gap-[4.25rem]'>
-                  <div className="w-[23%]">
+                <CardContent className='justify-center-center flex gap-[4.25rem] px-0'>
+                  <div className='w-[23%]'>
                     <h5 className='text-xl font-medium'>Basic</h5>
-                    <p>Having an up-to-date email address attached to your account is a great step toward improve account dsecutity.</p>
+                    <p>
+                      Having an up-to-date email address attached to your
+                      account is a great step toward improve account dsecutity.
+                    </p>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1">
+                  <div className='grid flex-1 grid-cols-1 gap-6 md:grid-cols-2'>
                     <FormField
                       control={form.control}
-                      name="FAVC"
+                      name='FAVC'
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className='text-[#6A7282] text-xs font-medium'>
+                          <FormLabel className='text-xs font-medium text-[#6A7282]'>
                             Bạn có thường xuyên ăn thức ăn nhiều calo không?
                           </FormLabel>
                           <FormControl>
                             <RadioGroup
                               onValueChange={field.onChange}
                               value={field.value}
-                              className="flex flex-row space-y-1 w-full"
+                              className='flex w-full flex-row space-y-1'
                             >
-                              {yesNoOptions.map((option) => (
+                              {yesNoOptions.map(option => (
                                 <FormItem
                                   key={option.value}
-                                  className="flex items-center space-x-3 space-y-0 bg-white rounded-[4px] flex-2 h-full px-[0.875rem] py-[0.625rem]"
+                                  className='flex h-full flex-2 items-center space-y-0 space-x-3 rounded-[4px] bg-white px-[0.875rem] py-[0.625rem]'
                                 >
                                   <FormControl>
-                                    <RadioGroupItem value={option.value} className='cursor-pointer' />
+                                    <RadioGroupItem
+                                      value={option.value}
+                                      className='cursor-pointer'
+                                    />
                                   </FormControl>
-                                  <FormLabel className="font-normal">
+                                  <FormLabel className='font-normal'>
                                     {option.label}
                                   </FormLabel>
                                 </FormItem>
@@ -322,21 +345,25 @@ const PredictPage = () => {
 
                     <FormField
                       control={form.control}
-                      name="FCVC"
+                      name='FCVC'
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className='text-[#6A7282] text-xs font-medium'>Có thường xuyên ăn rau củ không?</FormLabel>
+                          <FormLabel className='text-xs font-medium text-[#6A7282]'>
+                            Có thường xuyên ăn rau củ không?
+                          </FormLabel>
                           <Select
-                            onValueChange={(value) => field.onChange(parseInt(value))}
+                            onValueChange={value =>
+                              field.onChange(parseInt(value))
+                            }
                             defaultValue={field.value?.toString()}
                           >
                             <FormControl>
-                              <SelectTrigger className='bg-white rounded-[4px]'>
-                                <SelectValue placeholder="Chọn tần suất" />
+                              <SelectTrigger className='rounded-[4px] bg-white'>
+                                <SelectValue placeholder='Chọn tần suất' />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              {vegetableOptions.map((option) => (
+                              {vegetableOptions.map(option => (
                                 <SelectItem
                                   key={option.value}
                                   value={option.value}
@@ -353,21 +380,25 @@ const PredictPage = () => {
 
                     <FormField
                       control={form.control}
-                      name="CH2O"
+                      name='CH2O'
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className='text-[#6A7282] text-xs font-medium'>Uống bao nhiêu nước mỗi ngày?</FormLabel>
+                          <FormLabel className='text-xs font-medium text-[#6A7282]'>
+                            Uống bao nhiêu nước mỗi ngày?
+                          </FormLabel>
                           <Select
-                            onValueChange={(value) => field.onChange(parseInt(value))}
+                            onValueChange={value =>
+                              field.onChange(parseInt(value))
+                            }
                             defaultValue={field.value?.toString()}
                           >
                             <FormControl>
-                              <SelectTrigger className='bg-white rounded-[4px]'>
-                                <SelectValue placeholder="Chọn lượng nước" />
+                              <SelectTrigger className='rounded-[4px] bg-white'>
+                                <SelectValue placeholder='Chọn lượng nước' />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              {waterIntakeOptions.map((option) => (
+                              {waterIntakeOptions.map(option => (
                                 <SelectItem
                                   key={option.value}
                                   value={option.value}
@@ -384,17 +415,21 @@ const PredictPage = () => {
 
                     <FormField
                       control={form.control}
-                      name="NCP"
+                      name='NCP'
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className='text-[#6A7282] text-xs font-medium'>Số bữa ăn chính mỗi ngày</FormLabel>
+                          <FormLabel className='text-xs font-medium text-[#6A7282]'>
+                            Số bữa ăn chính mỗi ngày
+                          </FormLabel>
                           <FormControl>
                             <Input
-                              type="number"
-                              className='bg-white rounded-[4px]'
-                              placeholder="3"
+                              type='number'
+                              className='rounded-[4px] bg-white'
+                              placeholder='3'
                               value={field.value ?? ''}
-                              onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                              onChange={e =>
+                                field.onChange(parseInt(e.target.value) || 0)
+                              }
                             />
                           </FormControl>
                           <FormMessage />
@@ -404,25 +439,25 @@ const PredictPage = () => {
 
                     <FormField
                       control={form.control}
-                      name="CAEC"
+                      name='CAEC'
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className='text-[#6A7282] text-xs font-medium'>
+                          <FormLabel className='text-xs font-medium text-[#6A7282]'>
                             Có ăn vặt xen giữa các bữa chính không?
                           </FormLabel>
                           <Select
-                            onValueChange={(value) => field.onChange(parseInt(value))}
+                            onValueChange={value =>
+                              field.onChange(parseInt(value))
+                            }
                             defaultValue={field.value?.toString()}
                           >
                             <FormControl>
-                              <SelectTrigger
-                                className='bg-white rounded-[4px]'
-                              >
-                                <SelectValue placeholder="Chọn tần suất" />
+                              <SelectTrigger className='rounded-[4px] bg-white'>
+                                <SelectValue placeholder='Chọn tần suất' />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              {snackOptions.map((option) => (
+                              {snackOptions.map(option => (
                                 <SelectItem
                                   key={option.value}
                                   value={option.value}
@@ -441,35 +476,42 @@ const PredictPage = () => {
               </Card>
 
               {/* Activity habits */}
-              <Card className='bg-transparent w-[82.5%] mx-auto shadow-none border-none pt-[3.375rem]'>
-                <CardHeader className='pb-[1.375rem] border-b-[1px] border-[#B3B8C3] px-0'>
-                  <CardTitle className="font-semibold">
+              <Card className='mx-auto w-[82.5%] border-none bg-transparent pt-[3.375rem] shadow-none'>
+                <CardHeader className='border-b-[1px] border-[#B3B8C3] px-0 pb-[1.375rem]'>
+                  <CardTitle className='font-semibold'>
                     Thói quen vận động và sinh hoạt
                   </CardTitle>
                 </CardHeader>
-                <CardContent className='px-0 flex justify-center-center gap-[4.25rem]'>
-                  <div className="w-[23%]">
+                <CardContent className='justify-center-center flex gap-[4.25rem] px-0'>
+                  <div className='w-[23%]'>
                     <h5 className='text-xl font-medium'>Basic</h5>
-                    <p>Having an up-to-date email address attached to your account is a great step toward improve account dsecutity.</p>
+                    <p>
+                      Having an up-to-date email address attached to your
+                      account is a great step toward improve account dsecutity.
+                    </p>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1">
+                  <div className='grid flex-1 grid-cols-1 gap-6 md:grid-cols-2'>
                     <FormField
                       control={form.control}
-                      name="FAF"
+                      name='FAF'
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className='text-[#6A7282] text-xs font-medium'>Có thường xuyên tập thể dục không?</FormLabel>
+                          <FormLabel className='text-xs font-medium text-[#6A7282]'>
+                            Có thường xuyên tập thể dục không?
+                          </FormLabel>
                           <Select
-                            onValueChange={(value) => field.onChange(parseInt(value))}
+                            onValueChange={value =>
+                              field.onChange(parseInt(value))
+                            }
                             defaultValue={field.value?.toString()}
                           >
                             <FormControl>
-                              <SelectTrigger className='bg-white rounded-[4px]'>
-                                <SelectValue placeholder="Chọn mức độ" />
+                              <SelectTrigger className='rounded-[4px] bg-white'>
+                                <SelectValue placeholder='Chọn mức độ' />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              {physicalActivityOptions.map((option) => (
+                              {physicalActivityOptions.map(option => (
                                 <SelectItem
                                   key={option.value}
                                   value={option.value}
@@ -486,23 +528,25 @@ const PredictPage = () => {
 
                     <FormField
                       control={form.control}
-                      name="TUE"
+                      name='TUE'
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className='text-[#6A7282] text-xs font-medium'>
+                          <FormLabel className='text-xs font-medium text-[#6A7282]'>
                             Mức độ sử dụng thiết bị điện tử hằng ngày
                           </FormLabel>
                           <Select
-                            onValueChange={(value) => field.onChange(parseInt(value))}
+                            onValueChange={value =>
+                              field.onChange(parseInt(value))
+                            }
                             defaultValue={field.value?.toString()}
                           >
                             <FormControl>
-                              <SelectTrigger className='bg-white rounded-[4px]'>
-                                <SelectValue placeholder="Chọn mức độ" />
+                              <SelectTrigger className='rounded-[4px] bg-white'>
+                                <SelectValue placeholder='Chọn mức độ' />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              {screenTimeOptions.map((option) => (
+                              {screenTimeOptions.map(option => (
                                 <SelectItem
                                   key={option.value}
                                   value={option.value}
@@ -519,21 +563,25 @@ const PredictPage = () => {
 
                     <FormField
                       control={form.control}
-                      name="MTRANS"
+                      name='MTRANS'
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className='text-[#6A7282] text-xs font-medium'>Phương tiện di chuyển thường dùng</FormLabel>
+                          <FormLabel className='text-xs font-medium text-[#6A7282]'>
+                            Phương tiện di chuyển thường dùng
+                          </FormLabel>
                           <Select
-                            onValueChange={(value) => field.onChange(parseInt(value))}
+                            onValueChange={value =>
+                              field.onChange(parseInt(value))
+                            }
                             defaultValue={field.value?.toString()}
                           >
                             <FormControl>
-                              <SelectTrigger className='bg-white rounded-[4px]'>
-                                <SelectValue placeholder="Chọn phương tiện" />
+                              <SelectTrigger className='rounded-[4px] bg-white'>
+                                <SelectValue placeholder='Chọn phương tiện' />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              {transportationOptions.map((option) => (
+                              {transportationOptions.map(option => (
                                 <SelectItem
                                   key={option.value}
                                   value={option.value}
@@ -552,38 +600,45 @@ const PredictPage = () => {
               </Card>
 
               {/* Other habits */}
-              <Card className='bg-transparent w-[82.5%] mx-auto shadow-none border-none pt-[3.375rem]'>
-                <CardHeader className='pb-[1.375rem] border-b-[1px] border-[#B3B8C3] px-0'>
-                  <CardTitle className="font-medium">Thói quen khác</CardTitle>
+              <Card className='mx-auto w-[82.5%] border-none bg-transparent pt-[3.375rem] shadow-none'>
+                <CardHeader className='border-b-[1px] border-[#B3B8C3] px-0 pb-[1.375rem]'>
+                  <CardTitle className='font-medium'>Thói quen khác</CardTitle>
                 </CardHeader>
-                <CardContent className='px-0 flex justify-center-center gap-[4.25rem]'>
-                  <div className="w-[23%]">
+                <CardContent className='justify-center-center flex gap-[4.25rem] px-0'>
+                  <div className='w-[23%]'>
                     <h5 className='text-xl font-medium'>Basic</h5>
-                    <p>Having an up-to-date email address attached to your account is a great step toward improve account dsecutity.</p>
+                    <p>
+                      Having an up-to-date email address attached to your
+                      account is a great step toward improve account dsecutity.
+                    </p>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1 items-start">
+                  <div className='grid flex-1 grid-cols-1 items-start gap-6 md:grid-cols-2'>
                     <FormField
                       control={form.control}
-                      name="SMOKE"
+                      name='SMOKE'
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className='text-[#6A7282] text-xs font-medium h-fit'>Bạn có hút thuốc không?</FormLabel>
+                          <FormLabel className='h-fit text-xs font-medium text-[#6A7282]'>
+                            Bạn có hút thuốc không?
+                          </FormLabel>
                           <FormControl>
                             <RadioGroup
                               onValueChange={field.onChange}
                               value={field.value}
-                              className="flex flex-row space-y-1 w-full"
+                              className='flex w-full flex-row space-y-1'
                             >
-                              {yesNoOptions.map((option) => (
+                              {yesNoOptions.map(option => (
                                 <FormItem
                                   key={option.value}
-                                  className="flex items-center space-x-3 space-y-0 bg-white rounded-[4px] flex-2 h-full px-[0.875rem] py-[0.75rem]"
+                                  className='flex h-full flex-2 items-center space-y-0 space-x-3 rounded-[4px] bg-white px-[0.875rem] py-[0.75rem]'
                                 >
                                   <FormControl>
-                                    <RadioGroupItem value={option.value} className='cursor-pointer' />
-
+                                    <RadioGroupItem
+                                      value={option.value}
+                                      className='cursor-pointer'
+                                    />
                                   </FormControl>
-                                  <FormLabel className="font-normal leading-[1.25rem]">
+                                  <FormLabel className='leading-[1.25rem] font-normal'>
                                     {option.label}
                                   </FormLabel>
                                 </FormItem>
@@ -597,25 +652,25 @@ const PredictPage = () => {
 
                     <FormField
                       control={form.control}
-                      name="CALC"
+                      name='CALC'
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className='text-[#6A7282] text-xs font-medium h-fit'>
+                          <FormLabel className='h-fit text-xs font-medium text-[#6A7282]'>
                             Bạn có thường xuyên sử dụng thức uống có cồn không?
                           </FormLabel>
                           <Select
-                            onValueChange={(value) => field.onChange(parseInt(value))}
+                            onValueChange={value =>
+                              field.onChange(parseInt(value))
+                            }
                             defaultValue={field.value?.toString()}
                           >
                             <FormControl>
-                              <SelectTrigger
-                                className='bg-white rounded-[4px]'
-                              >
-                                <SelectValue placeholder="Chọn mức độ" />
+                              <SelectTrigger className='rounded-[4px] bg-white'>
+                                <SelectValue placeholder='Chọn mức độ' />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              {alcoholOptions.map((option) => (
+                              {alcoholOptions.map(option => (
                                 <SelectItem
                                   key={option.value}
                                   value={option.value}
@@ -633,15 +688,17 @@ const PredictPage = () => {
                 </CardContent>
               </Card>
 
-              <div className="flex justify-end items-end w-[82.5%] mx-auto gap-[1.25rem]">
-                <div className="w-full h-[1px] bg-[#B3B8C3]" />
+              <div className='mx-auto flex w-[82.5%] items-end justify-end gap-[1.25rem]'>
+                <div className='h-[1px] w-full bg-[#B3B8C3]' />
                 <Button
-                  type="submit"
-                  onClick={() => handleSubmit(onSubmit)}
-                  disabled={form.formState.isSubmitting}
-                  className="w-full md:w-auto px-[4.25rem] py-[0.8125rem] bg-black text-white rounded-none hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  type='submit'
+                  disabled={isSubmitting}
+                  onClick={() => {
+                    onSubmit(form.getValues());
+                  }}
+                  className='w-full rounded-none bg-black px-[4.25rem] py-[0.8125rem] text-white transition-colors hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50 md:w-auto'
                 >
-                  {form.formState.isSubmitting ? 'Đang xử lý...' : 'Submit'}
+                  {isSubmitting ? 'Đang xử lý...' : 'Dự đoán'}
                 </Button>
               </div>
             </form>
