@@ -6,6 +6,11 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --grey-50: #f9fafa;
+  --grey-100: #f7f7f7;
+  --grey-200: #efefef;
+  --grey-300: #d5d5d5;
+  --grey-400: #b3b8c3;
   --font-sans: var(--font-gilroy);
   --font-display: var(--font-gilroy);
   --font-mono: var(--font-gilroy);
