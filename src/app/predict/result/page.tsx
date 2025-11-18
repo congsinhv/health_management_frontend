@@ -134,7 +134,7 @@ const PredictionResultPage = () => {
             <div className='col-span-17 space-y-6'>
               <div className='flex gap-2'>
                 {/* Prediction Result Card */}
-                <div className='rounded-3xl border-2 border-[#EFEFEF] bg-white px-4 py-6 flex-2'>
+                <div className='flex-2 rounded-3xl border-2 border-[#EFEFEF] bg-white px-4 py-6'>
                   <h2 className='mb-6 flex justify-between font-semibold text-[#1E1E1E]'>
                     Kết quả dự đoán
                     <span className='text-xs font-medium text-[#1E1E1E] before:mr-1 before:inline-block before:h-2 before:w-2 before:rounded-full before:bg-[#70DACC] before:content-[""]'>
@@ -144,35 +144,32 @@ const PredictionResultPage = () => {
                   <PredictionResultCard result={resultData.prediction} />
                 </div>
                 {/* Health Metrics Cards */}
-                <div className='rounded-3xl border-2 border-[#EFEFEF] bg-white px-4 py-6 flex-2'>
+                <div className='flex-2 rounded-3xl border-2 border-[#EFEFEF] bg-white px-4 py-6'>
                   <h2 className='mb-4 font-semibold text-[#1E1E1E]'>
                     Các chỉ số sức khoẻ
                   </h2>
-                  <HealthMetricsCard metrics={resultData.healthMetrics}/>
+                  <HealthMetricsCard metrics={resultData.healthMetrics} />
                 </div>
               </div>
 
               {/* Health Analysis Section */}
-              <div className='rounded-lg border border-[#EFEFEF] bg-white p-6'>
-                <h2 className='mb-6 border-b border-gray-200 pb-4 text-xl font-semibold'>
-                  Phân tích sức khỏe
+              <div className='rounded-3xl border-2 border-[#EFEFEF] bg-white px-4 py-6'>
+                <h2 className='mb-6 flex justify-between pb-4 font-semibold'>
+                  Phân tích sức khoẻ dựa trên kết quả dự đoán
+                  <span className='text-xs font-normal text-[#1E1E1E]'>
+                    * Phân tích chỉ mang tính tham khảo
+                  </span>
                 </h2>
-                <HealthAnalysisSection analysis={resultData.healthAnalysis}/>
+                <HealthAnalysisSection analysis={resultData.healthAnalysis} />
               </div>
 
               {/* Diet Plan Section */}
-              <div className='rounded-lg border border-[#EFEFEF] bg-white p-6'>
-                <h2 className='mb-6 border-b border-gray-200 pb-4 text-xl font-semibold'>
-                  Kế hoạch dinh dưỡng 7 ngày
-                </h2>
-                <DietPlanSection dietPlan={resultData.dietPlan}/>
+              <div className='rounded-3xl border-2 border-[#EFEFEF] bg-white px-4 py-6'>
+                <DietPlanSection dietPlan={resultData.dietPlan} />
               </div>
 
               {/* Workout Plan Section */}
-              <div className='rounded-lg border border-[#EFEFEF] bg-white p-6'>
-                <h2 className='mb-6 border-b border-gray-200 pb-4 text-xl font-semibold'>
-                  Kế hoạch tập luyện 7 ngày
-                </h2>
+              <div className='rounded-3xl border-2 border-[#EFEFEF] bg-white px-4 py-6'>
                 <WorkoutPlanSection workoutPlan={resultData.workoutPlan} />
               </div>
             </div>

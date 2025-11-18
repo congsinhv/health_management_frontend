@@ -8,7 +8,7 @@ interface HealthMetricsCardProps {
 
 const HealthMetricsCard: React.FC<HealthMetricsCardProps> = ({ metrics }) => {
   return (
-    <div className='grid gap-4 grid-cols-3'>
+    <div className='grid grid-cols-3 gap-4'>
       {/* Weight Card */}
       <MetricCard
         icon={<WeightIcon />}
@@ -60,15 +60,22 @@ const MetricCard: React.FC<MetricCardProps> = ({
   right,
 }) => {
   return (
-    <div className='rounded-2xl bg-[#97FFDC]/50 transition-shadow hover:shadow-md aspect-[0.85]'>
+    <div className='aspect-[0.85] rounded-2xl bg-[#97FFDC]/50 transition-shadow hover:shadow-md'>
       <div className='flex flex-col'>
-        <div className={cn('my-4 min-h-[4.25rem]', right && 'ml-auto', center && 'mx-auto', left && 'mr-auto')}>{icon}</div>
+        <div
+          className={cn(
+            'my-4 min-h-[4.25rem]',
+            right && 'ml-auto',
+            center && 'mx-auto',
+            left && 'mr-auto'
+          )}
+        >
+          {icon}
+        </div>
         <div className='pl-4'>
-          <p className='font-semibold text-gray-900 '>{label}</p>
+          <p className='font-semibold text-gray-900'>{label}</p>
           <div className='flex items-baseline gap-1'>
-            <span className='text-sm text-gray-900'>
-              {value.toFixed(1)}
-            </span>
+            <span className='text-sm text-gray-900'>{value.toFixed(1)}</span>
             <span className='text-gray-600'>{unit}</span>
           </div>
         </div>

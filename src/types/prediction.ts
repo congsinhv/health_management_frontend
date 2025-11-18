@@ -173,4 +173,3 @@ export interface PredictionAPIResponse {
   bmi: number;
   // Add other API response fields as they become known
 }
-

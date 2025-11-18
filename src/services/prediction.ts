@@ -1,8 +1,8 @@
-import { 
-  PredictionResultData, 
+import {
+  PredictionResultData,
   PredictionAPIRequest,
   UserInputData,
-  PredictionLevel 
+  PredictionLevel,
 } from '@/types/prediction';
 import { PredictFormData } from '@/app/predict/formHelper';
 
@@ -15,7 +15,9 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 /**
  * Transform form data to API request format
  */
-export function transformFormDataToAPIRequest(formData: PredictFormData): PredictionAPIRequest {
+export function transformFormDataToAPIRequest(
+  formData: PredictFormData
+): PredictionAPIRequest {
   return {
     Gender: formData.gender ?? 0,
     Age: formData.age ?? 0,
@@ -39,14 +41,17 @@ export function transformFormDataToAPIRequest(formData: PredictFormData): Predic
 /**
  * Transform form data to display format
  */
-export function transformFormDataToUserInput(formData: PredictFormData): UserInputData {
+export function transformFormDataToUserInput(
+  formData: PredictFormData
+): UserInputData {
   return {
     name: formData.name,
     gender: formData.gender === 1 ? 'Nam' : 'Nữ',
     age: formData.age ?? 0,
     height: formData.height ?? 0,
     weight: formData.weight ?? 0,
-    familyHistory: formData.family_history_with_overweight === 'yes' ? 'Có' : 'Không',
+    familyHistory:
+      formData.family_history_with_overweight === 'yes' ? 'Có' : 'Không',
     highCalorieFood: formData.FAVC === 'yes' ? 'Có' : 'Không',
     vegetableFrequency: getVegetableFrequencyLabel(formData.FCVC),
     waterIntake: getWaterIntakeLabel(formData.CH2O),
@@ -134,10 +139,12 @@ function getAlcoholLabel(value: number | null): string {
 /**
  * Submit prediction request to API
  */
-export async function submitPrediction(formData: PredictFormData): Promise<PredictionResultData> {
+export async function submitPrediction(
+  formData: PredictFormData
+): Promise<PredictionResultData> {
   try {
     const apiRequest = transformFormDataToAPIRequest(formData);
-    
+
     const response = await fetch(`${API_BASE_URL}/api/predict`, {
       method: 'POST',
       headers: {
@@ -151,7 +158,7 @@ export async function submitPrediction(formData: PredictFormData): Promise<Predi
     }
 
     const apiResponse = await response.json();
-    
+
     // Transform API response to full result data
     return generateResultData(formData, apiResponse);
   } catch (error) {
@@ -164,9 +171,12 @@ export async function submitPrediction(formData: PredictFormData): Promise<Predi
 /**
  * Generate result data from API response
  */
-function generateResultData(formData: PredictFormData, apiResponse: any): PredictionResultData {
+function generateResultData(
+  formData: PredictFormData,
+  apiResponse: any
+): PredictionResultData {
   const bmi = calculateBMI(formData.weight ?? 0, formData.height ?? 0);
-  
+
   return {
     id: Date.now().toString(),
     timestamp: new Date().toISOString(),
@@ -176,7 +186,12 @@ function generateResultData(formData: PredictFormData, apiResponse: any): Predic
       confidence: apiResponse.confidence ?? 80,
       bmi: bmi,
       status: apiResponse.status || 'Normal Weight',
-      reliability: apiResponse.confidence > 85 ? 'high' : apiResponse.confidence > 70 ? 'medium' : 'low',
+      reliability:
+        apiResponse.confidence > 85
+          ? 'high'
+          : apiResponse.confidence > 70
+            ? 'medium'
+            : 'low',
     },
     healthMetrics: {
       weight: {
@@ -204,10 +219,12 @@ function generateResultData(formData: PredictFormData, apiResponse: any): Predic
 /**
  * Generate mock result data for development/fallback
  */
-export function generateMockResultData(formData: PredictFormData): PredictionResultData {
+export function generateMockResultData(
+  formData: PredictFormData
+): PredictionResultData {
   const bmi = calculateBMI(formData.weight ?? 0, formData.height ?? 0);
   const predictedLevel = getPredictionLevelFromBMI(bmi);
-  
+
   return {
     id: Date.now().toString(),
     timestamp: new Date().toISOString(),
@@ -268,13 +285,13 @@ function getPredictionLevelFromBMI(bmi: number): PredictionLevel {
  */
 function getLevelDisplayText(level: PredictionLevel): string {
   const levelMap: Record<PredictionLevel, string> = {
-    'Insufficient_Weight': 'Thiếu cân',
-    'Normal_Weight': 'Cân nặng bình thường',
-    'Overweight_Level_I': 'Thừa cân mức I',
-    'Overweight_Level_II': 'Thừa cân mức II',
-    'Obesity_Type_I': 'Béo phì độ I',
-    'Obesity_Type_II': 'Béo phì độ II',
-    'Obesity_Type_III': 'Béo phì độ III',
+    Insufficient_Weight: 'Thiếu cân',
+    Normal_Weight: 'Cân nặng bình thường',
+    Overweight_Level_I: 'Thừa cân mức I',
+    Overweight_Level_II: 'Thừa cân mức II',
+    Obesity_Type_I: 'Béo phì độ I',
+    Obesity_Type_II: 'Béo phì độ II',
+    Obesity_Type_III: 'Béo phì độ III',
   };
   return levelMap[level];
 }
@@ -284,21 +301,22 @@ function getLevelDisplayText(level: PredictionLevel): string {
  */
 function generateHealthAnalysis(level: PredictionLevel, bmi: number): any {
   const analyses: Record<string, string[]> = {
-    'Normal_Weight': [
+    Normal_Weight: [
       `Chỉ số BMI của bạn là ${bmi.toFixed(1)}, nằm trong khoảng bình thường (18.5 - 24.9). Đây là một dấu hiệu tích cực cho sức khỏe tổng thể của bạn.`,
       'Để duy trì cân nặng khỏe mạnh, bạn nên tiếp tục chế độ ăn uống cân bằng và tập thể dục đều đặn. Đảm bảo bạn ăn đủ các nhóm thực phẩm và duy trì lối sống năng động.',
       'Nên theo dõi cân nặng định kỳ và duy trì thói quen sinh hoạt lành mạnh. Nếu có bất kỳ thay đổi bất thường nào về cân nặng, hãy tham khảo ý kiến bác sĩ.',
     ],
-    'Overweight_Level_I': [
+    Overweight_Level_I: [
       `Chỉ số BMI của bạn là ${bmi.toFixed(1)}, cho thấy bạn đang ở mức thừa cân nhẹ. Đây là lúc cần chú ý điều chỉnh lối sống để ngăn ngừa các vấn đề sức khỏe.`,
       'Nên giảm lượng calo nạp vào hàng ngày khoảng 300-500 kcal và tăng cường hoạt động thể chất. Tập trung vào việc ăn nhiều rau củ, trái cây và giảm thực phẩm chế biến sẵn.',
       'Khuyến nghị tập thể dục ít nhất 150 phút mỗi tuần với cường độ vừa phải. Kết hợp cả bài tập cardio và rèn luyện sức mạnh để đạt hiệu quả tốt nhất.',
     ],
   };
-  
+
   return {
     paragraphs: analyses[level] || analyses['Normal_Weight'],
-    disclaimer: 'Phân tích này chỉ mang tính tham khảo. Để có đánh giá chính xác và kế hoạch điều trị phù hợp, vui lòng tham khảo ý kiến bác sĩ hoặc chuyên gia dinh dưỡng.',
+    disclaimer:
+      'Phân tích này chỉ mang tính tham khảo. Để có đánh giá chính xác và kế hoạch điều trị phù hợp, vui lòng tham khảo ý kiến bác sĩ hoặc chuyên gia dinh dưỡng.',
   };
 }
 
@@ -310,7 +328,11 @@ function generateDietPlan(level: PredictionLevel): any {
   const weeklyPlans = Array.from({ length: 7 }, (_, i) => ({
     day: i + 1,
     breakfast: [
-      { name: 'Bánh mì nguyên cám', calories: 250, description: '2 lát với bơ đậu phộng' },
+      {
+        name: 'Bánh mì nguyên cám',
+        calories: 250,
+        description: '2 lát với bơ đậu phộng',
+      },
       { name: 'Trứng luộc', calories: 150, description: '2 quả' },
       { name: 'Sữa tươi không đường', calories: 100, description: '200ml' },
     ],
@@ -344,7 +366,8 @@ function generateDietPlan(level: PredictionLevel): any {
       'Bánh kẹo, snack nhiều đường và muối',
       'Thịt đỏ và thịt chế biến',
     ],
-    disclaimer: 'Kế hoạch dinh dưỡng này là gợi ý chung. Nên tham khảo chuyên gia dinh dưỡng để có kế hoạch phù hợp với tình trạng sức khỏe cụ thể của bạn.',
+    disclaimer:
+      'Kế hoạch dinh dưỡng này là gợi ý chung. Nên tham khảo chuyên gia dinh dưỡng để có kế hoạch phù hợp với tình trạng sức khỏe cụ thể của bạn.',
   };
 }
 
@@ -357,32 +380,79 @@ function generateWorkoutPlan(level: PredictionLevel): any {
     const day = i + 1;
     let exercises;
     let difficulty: 'easy' | 'medium' | 'hard' = 'medium';
-    
+
     if (day === 1 || day === 4) {
       exercises = [
-        { name: 'Khởi động', duration: '5 phút', description: 'Giãn cơ và khởi động nhẹ' },
-        { name: 'Đi bộ nhanh', duration: '20 phút', description: 'Tốc độ vừa phải' },
+        {
+          name: 'Khởi động',
+          duration: '5 phút',
+          description: 'Giãn cơ và khởi động nhẹ',
+        },
+        {
+          name: 'Đi bộ nhanh',
+          duration: '20 phút',
+          description: 'Tốc độ vừa phải',
+        },
         { name: 'Squat', sets: 3, reps: 12, description: 'Gập bụng đứng' },
-        { name: 'Push-up', sets: 3, reps: 10, description: 'Hít đất (có thể chống tường)' },
-        { name: 'Plank', duration: '30 giây', sets: 3, description: 'Chống đẩy tĩnh' },
-        { name: 'Thả lỏng', duration: '5 phút', description: 'Giãn cơ và hồi phục' },
+        {
+          name: 'Push-up',
+          sets: 3,
+          reps: 10,
+          description: 'Hít đất (có thể chống tường)',
+        },
+        {
+          name: 'Plank',
+          duration: '30 giây',
+          sets: 3,
+          description: 'Chống đẩy tĩnh',
+        },
+        {
+          name: 'Thả lỏng',
+          duration: '5 phút',
+          description: 'Giãn cơ và hồi phục',
+        },
       ];
     } else if (day === 2 || day === 5) {
       exercises = [
-        { name: 'Khởi động', duration: '5 phút', description: 'Giãn cơ toàn thân' },
-        { name: 'Đạp xe hoặc chạy bộ', duration: '25 phút', description: 'Cường độ vừa phải' },
+        {
+          name: 'Khởi động',
+          duration: '5 phút',
+          description: 'Giãn cơ toàn thân',
+        },
+        {
+          name: 'Đạp xe hoặc chạy bộ',
+          duration: '25 phút',
+          description: 'Cường độ vừa phải',
+        },
         { name: 'Lunges', sets: 3, reps: 10, description: 'Mỗi chân' },
-        { name: 'Mountain Climbers', sets: 3, reps: 15, description: 'Leo núi' },
-        { name: 'Giãn cơ', duration: '5 phút', description: 'Thả lỏng toàn thân' },
+        {
+          name: 'Mountain Climbers',
+          sets: 3,
+          reps: 15,
+          description: 'Leo núi',
+        },
+        {
+          name: 'Giãn cơ',
+          duration: '5 phút',
+          description: 'Thả lỏng toàn thân',
+        },
       ];
     } else {
       exercises = [
-        { name: 'Yoga nhẹ hoặc đi bộ', duration: '30 phút', description: 'Hoạt động phục hồi' },
-        { name: 'Giãn cơ', duration: '10 phút', description: 'Thả lỏng cơ thể' },
+        {
+          name: 'Yoga nhẹ hoặc đi bộ',
+          duration: '30 phút',
+          description: 'Hoạt động phục hồi',
+        },
+        {
+          name: 'Giãn cơ',
+          duration: '10 phút',
+          description: 'Thả lỏng cơ thể',
+        },
       ];
       difficulty = 'easy';
     }
-    
+
     return {
       day,
       exercises,
@@ -393,7 +463,7 @@ function generateWorkoutPlan(level: PredictionLevel): any {
 
   return {
     weeklyPlans,
-    disclaimer: 'Kế hoạch tập luyện này là gợi ý chung. Nên tham khảo huấn luyện viên hoặc bác sĩ trước khi bắt đầu chương trình tập luyện mới, đặc biệt nếu bạn có vấn đề sức khỏe.',
+    disclaimer:
+      'Kế hoạch tập luyện này là gợi ý chung. Nên tham khảo huấn luyện viên hoặc bác sĩ trước khi bắt đầu chương trình tập luyện mới, đặc biệt nếu bạn có vấn đề sức khỏe.',
   };
 }
-

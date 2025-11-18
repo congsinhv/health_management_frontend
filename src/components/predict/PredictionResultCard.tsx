@@ -1,5 +1,5 @@
-import React from 'react';
 import { PredictionResult } from '@/types/prediction';
+import React from 'react';
 
 interface PredictionResultCardProps {
   result: PredictionResult;
@@ -49,21 +49,21 @@ const PredictionResultCard: React.FC<PredictionResultCardProps> = ({
   return (
     <div className='flex flex-col items-center justify-center gap-8 md:flex-row'>
       {/* Half Circle Progress Indicator */}
-      <div className='relative flex-shrink-0 flex items-center justify-center'>
-        <svg width='300' height='180' viewBox='0 0 300 180'>
+      <div className='relative flex flex-shrink-0 items-center justify-center'>
+        <svg width='330' height='198' viewBox='0 0 330 198'>
           {/* Background half circle */}
           <path
-            d='M 40 150 A 110 110 0 0 1 260 150'
+            d='M 44 165 A 121 121 0 0 1 286 165'
             stroke='#E5E7EB'
-            strokeWidth='24'
+            strokeWidth='26'
             fill='none'
             strokeLinecap='round'
           />
           {/* Progress half circle - teal gradient */}
           <path
-            d='M 40 150 A 110 110 0 0 1 260 150'
+            d='M 44 165 A 121 121 0 0 1 286 165'
             stroke='url(#progressGradient)'
-            strokeWidth='24'
+            strokeWidth='26'
             fill='none'
             strokeDasharray={circumference}
             strokeDashoffset={strokeDashoffset}
@@ -91,7 +91,7 @@ const PredictionResultCard: React.FC<PredictionResultCardProps> = ({
             {Math.round(result.confidence)}%
           </div>
           <div className='text-sm text-gray-600'>Dự đoán</div>
-          <div className='text-center text-xl font-bold text-gray-900'>
+          <div className='text-center text-lg font-bold text-gray-900'>
             {getLevelDisplayText(result.level)}
           </div>
         </div>

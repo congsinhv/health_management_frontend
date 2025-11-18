@@ -9,4 +9,3 @@ export { default as HealthMetricsCard } from './HealthMetricsCard';
 export { default as HealthAnalysisSection } from './HealthAnalysisSection';
 export { default as DietPlanSection } from './DietPlanSection';
 export { default as WorkoutPlanSection } from './WorkoutPlanSection';
-

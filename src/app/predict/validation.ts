@@ -7,24 +7,42 @@ import { z } from 'zod';
 export const predictFormSchema = z.object({
   // Demographics
   name: z.string().min(1, 'Vui lòng nhập tên'),
-  gender: z.coerce.number().refine(val => val === 0 || val === 1, 'Vui lòng chọn giới tính'),
-  age: z.coerce.number().min(1, 'Tuổi không hợp lệ (1-120)').max(120, 'Tuổi không hợp lệ (1-120)'),
-  height: z.coerce.number().min(0.5, 'Chiều cao không hợp lệ (0.5-2.5 m)').max(2.5, 'Chiều cao không hợp lệ (0.5-2.5 m)'),
-  weight: z.coerce.number().min(20, 'Cân nặng không hợp lệ (20-300 kg)').max(300, 'Cân nặng không hợp lệ (20-300 kg)'),
-  family_history_with_overweight: z.enum(['yes', 'no'], { message: 'Vui lòng chọn tiền sử gia đình' }),
+  gender: z.coerce
+    .number()
+    .refine(val => val === 0 || val === 1, 'Vui lòng chọn giới tính'),
+  age: z.coerce
+    .number()
+    .min(1, 'Tuổi không hợp lệ (1-120)')
+    .max(120, 'Tuổi không hợp lệ (1-120)'),
+  height: z.coerce
+    .number()
+    .min(0.5, 'Chiều cao không hợp lệ (0.5-2.5 m)')
+    .max(2.5, 'Chiều cao không hợp lệ (0.5-2.5 m)'),
+  weight: z.coerce
+    .number()
+    .min(20, 'Cân nặng không hợp lệ (20-300 kg)')
+    .max(300, 'Cân nặng không hợp lệ (20-300 kg)'),
+  family_history_with_overweight: z.enum(['yes', 'no'], {
+    message: 'Vui lòng chọn tiền sử gia đình',
+  }),
 
   // Eating habits
   FAVC: z.enum(['yes', 'no'], { message: 'Vui lòng chọn' }),
   SCC: z.coerce.number().refine(val => val >= 1 && val <= 3, 'Vui lòng chọn'),
   FCVC: z.coerce.number().refine(val => val >= 1 && val <= 3, 'Vui lòng chọn'),
   CH2O: z.coerce.number().refine(val => val >= 1 && val <= 3, 'Vui lòng chọn'),
-  NCP: z.coerce.number().min(1, 'Số bữa ăn không hợp lệ (1-10)').max(10, 'Số bữa ăn không hợp lệ (1-10)'),
+  NCP: z.coerce
+    .number()
+    .min(1, 'Số bữa ăn không hợp lệ (1-10)')
+    .max(10, 'Số bữa ăn không hợp lệ (1-10)'),
   CAEC: z.coerce.number().refine(val => val >= 0 && val <= 4, 'Vui lòng chọn'),
 
   // Activity habits
   FAF: z.coerce.number().refine(val => val >= 0 && val <= 3, 'Vui lòng chọn'),
   TUE: z.coerce.number().refine(val => val >= 0 && val <= 2, 'Vui lòng chọn'),
-  MTRANS: z.coerce.number().refine(val => val >= 1 && val <= 5, 'Vui lòng chọn'),
+  MTRANS: z.coerce
+    .number()
+    .refine(val => val >= 1 && val <= 5, 'Vui lòng chọn'),
 
   // Other habits
   SMOKE: z.enum(['yes', 'no'], { message: 'Vui lòng chọn' }),
