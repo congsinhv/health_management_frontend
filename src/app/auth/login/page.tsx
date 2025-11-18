@@ -52,7 +52,7 @@ function LoginContent() {
       if (returnUrl) {
         router.push(decodeURIComponent(returnUrl));
       } else {
-        router.push(ROUTES.DASHBOARD);
+        router.push(ROUTES.HOME);
       }
     }
   }, [isAuthenticated, router, searchParams]);
