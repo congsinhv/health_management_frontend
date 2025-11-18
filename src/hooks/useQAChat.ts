@@ -87,15 +87,15 @@ export const useQAChat = (): UseQAChatReturn => {
    * Finalize streaming message and save to conversation
    */
   const finalizeStreamingMessage = useCallback(
-    async (summary: string, totalTokens: number) => {
+    async (summary: string, totalTokens: number, userId: string, conversationId: number) => {
       // Save to conversation FIRST (if we have one)
-      if (currentConversation?.id && user) {
+      if (conversationId && userId) {
         try {
           await conversationService.createMessage({
-            conversation_id: currentConversation.id,
+            conversation_id: conversationId,
             content: summary,
             content_type: 'text',
-            user_id: Number(user.id),
+            user_id: Number(userId),
             metadata: {
               source: 'ai_generated',
               model_used: 'streaming-qa',
@@ -121,13 +121,7 @@ export const useQAChat = (): UseQAChatReturn => {
         });
       });
     },
-    [
-      addMessage,
-      currentConversation?.id,
-      user,
-      streamingAnswers,
-      resetStreamingState,
-    ]
+    [addMessage, streamingAnswers, resetStreamingState]
   );
 
   // Cleanup streaming connection on unmount or conversation switch
@@ -297,7 +291,7 @@ export const useQAChat = (): UseQAChatReturn => {
 
                 // Handle completion
                 onComplete: (summary: string, totalTokens: number) => {
-                  finalizeStreamingMessage(summary, totalTokens);
+                  finalizeStreamingMessage(summary, totalTokens, user?.id || '', conversationId || 0);
                   if (needUpdateTitle && conversationId) {
                     loadConversations();
                   }
