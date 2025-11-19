@@ -87,7 +87,12 @@ export const useQAChat = (): UseQAChatReturn => {
    * Finalize streaming message and save to conversation
    */
   const finalizeStreamingMessage = useCallback(
-    async (summary: string, totalTokens: number, userId: string, conversationId: number) => {
+    async (
+      summary: string,
+      totalTokens: number,
+      userId: string,
+      conversationId: number
+    ) => {
       // Save to conversation FIRST (if we have one)
       if (conversationId && userId) {
         try {
@@ -291,7 +296,12 @@ export const useQAChat = (): UseQAChatReturn => {
 
                 // Handle completion
                 onComplete: (summary: string, totalTokens: number) => {
-                  finalizeStreamingMessage(summary, totalTokens, user?.id || '', conversationId || 0);
+                  finalizeStreamingMessage(
+                    summary,
+                    totalTokens,
+                    user?.id || '',
+                    conversationId || 0
+                  );
                   if (needUpdateTitle && conversationId) {
                     loadConversations();
                   }
