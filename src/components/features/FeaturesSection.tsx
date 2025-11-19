@@ -17,7 +17,7 @@ const features: FeatureCard[] = [
     description:
       'AI phân tích tuổi, giới, số đo và thói quen để ước tính nguy cơ trong 3–12 tháng tới.',
     linkText: 'Dự đoán ngay',
-    href: './chatbox',
+    href: './predict',
   },
   {
     title: 'Đề xuất chế độ ăn uống & tập luyện',

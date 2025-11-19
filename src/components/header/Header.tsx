@@ -16,7 +16,11 @@ import {
 } from '@/components/ui/popover';
 import { AVATAR_CONFIG } from '@/lib/constants';
 
-const Header = () => {
+interface HeaderProps {
+  className?: string;
+}
+
+const Header = ({ className }: HeaderProps) => {
   const { user, logout, isAuthenticated } = useAuth();
   const router = useRouter();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -41,7 +45,7 @@ const Header = () => {
   };
 
   return (
-    <div className={styles.header}>
+    <div className={`${styles.header} ${className}`}>
       <div className={styles.container}>
         <Link href='/'>
           <div className={styles.logo}>

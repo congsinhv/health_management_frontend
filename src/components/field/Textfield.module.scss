@@ -1,0 +1,26 @@
+.textfield {
+  width: 100%;
+  display: flex;
+  gap: 0.25rem;
+  &_label {
+    font-size: 0.6rem;
+    font-weight: 400;
+    color: #6a7282;
+  }
+  &_input {
+    padding: 8px 16px;
+    background-color: var(--white);
+    border: 0.5px solid var(--grey-300);
+    border-radius: 4px;
+    ::placeholder {
+      color: #b3b8c3;
+    }
+    &:focus {
+      outline: none;
+      border-color: none;
+    }
+  }
+  &_suffix {
+    color: #b3b8c3;
+  }
+}

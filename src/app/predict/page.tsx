@@ -1,0 +1,713 @@
+'use client';
+
+import Footer from '@/components/footer/Footer';
+import Header from '@/components/header/Header';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { submitPrediction } from '@/services/prediction';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import {
+  alcoholOptions,
+  genderOptions,
+  initialFormData,
+  physicalActivityOptions,
+  PredictFormData,
+  screenTimeOptions,
+  snackOptions,
+  transportationOptions,
+  vegetableOptions,
+  waterIntakeOptions,
+  yesNoOptions,
+} from './formHelper';
+import { predictFormSchema } from './validation';
+
+const PredictPage = () => {
+  const router = useRouter();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const form = useForm<PredictFormData>({
+    resolver: zodResolver(predictFormSchema) as any,
+    defaultValues: initialFormData,
+    mode: 'onChange',
+  });
+
+  /**
+   * Reset the form to initial state
+   */
+  const resetForm = () => {
+    form.reset(initialFormData);
+  };
+
+  /**
+   * Handle form submission
+   */
+  const onSubmit = async (data: PredictFormData) => {
+    try {
+      setIsSubmitting(true);
+      console.log('Form submitted with data:', data);
+
+      // Submit prediction and get result
+      const result = await submitPrediction(data);
+
+      // Store result in sessionStorage for the results page
+      sessionStorage.setItem('predictionResult', JSON.stringify(result));
+
+      // Navigate to results page
+      router.push('/predict/result');
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      alert('Có lỗi xảy ra khi xử lý dự đoán. Vui lòng thử lại.');
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <>
+      <Header className='sticky top-0 left-0 z-50 w-full' />
+      <div className='min-h-screen pt-24'>
+        <div className=''>
+          <div className='mb-12 text-center'>
+            <h2 className='mb-2 text-5xl font-semibold text-gray-900'>
+              Điền biểu mẫu sau để dự đoán sức khoẻ
+            </h2>
+            <p className='mx-auto max-w-3xl text-sm text-gray-600'>
+              Trò chuyện trực tiếp với trợ lý sức khỏe, nhận gợi ý chế độ ăn cá
+              nhân hoá và dự đoán nguy cơ thừa cân, béo phì Lorem Ipsum is
+              simply dummy text of the printing and typesetting industry. Lorem
+              Ipsum has been the industry&apos;s standard dummy text ever since
+              the 1500s
+            </p>
+          </div>
+
+          <Form {...form}>
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              className='space-y-10 bg-[#F5F4FA] pb-[5.5625rem]'
+            >
+              {/* Demographics */}
+              <Card className='mx-auto w-[82.5%] border-none bg-transparent pt-[3.375rem] shadow-none'>
+                <CardHeader className='border-b-[1px] border-[#B3B8C3] px-0 pb-[1.375rem]'>
+                  <CardTitle className='font-medium'>
+                    Thông tin nhân khẩu học (Demographic Information)
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className='justify-center-center flex gap-[4.25rem] px-0'>
+                  <div className='w-[23%]'>
+                    <h5 className='text-xl font-medium'>Basic</h5>
+                    <p>
+                      Having an up-to-date email address attached to your
+                      account is a great step toward improve account dsecutity.
+                    </p>
+                  </div>
+                  <div className='grid flex-1 grid-cols-1 gap-6 md:grid-cols-2'>
+                    <FormField
+                      control={form.control}
+                      name='name'
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className='text-xs font-medium text-[#6A7282]'>
+                            Tên người dùng
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder='VD: Nguyễn Văn A'
+                              className='rounded-[4px] bg-white'
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name='gender'
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className='text-xs font-medium text-[#6A7282]'>
+                            Giới tính
+                          </FormLabel>
+                          <Select
+                            onValueChange={value =>
+                              field.onChange(parseInt(value))
+                            }
+                            defaultValue={field.value?.toString()}
+                          >
+                            <FormControl>
+                              <SelectTrigger className='rounded-[4px] bg-white'>
+                                <SelectValue placeholder='Chọn giới tính' />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {genderOptions.map(option => (
+                                <SelectItem
+                                  key={option.value}
+                                  value={option.value}
+                                >
+                                  {option.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name='age'
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className='text-xs font-medium text-[#6A7282]'>
+                            Tuổi
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              type='number'
+                              placeholder='VD: 20'
+                              className='rounded-[4px] bg-white'
+                              {...field}
+                              value={field.value ?? ''}
+                              onChange={e =>
+                                field.onChange(parseInt(e.target.value) || null)
+                              }
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name='family_history_with_overweight'
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className='text-xs font-medium text-[#6A7282]'>
+                            Có người thân được chẩn đoán thừa cân/béo phì?
+                          </FormLabel>
+                          <FormControl>
+                            <RadioGroup
+                              onValueChange={field.onChange}
+                              value={field.value}
+                              className='flex w-full flex-row space-y-1'
+                            >
+                              {yesNoOptions.map(option => (
+                                <FormItem
+                                  key={option.value}
+                                  className='flex h-full flex-2 items-center space-y-0 space-x-3 rounded-[4px] bg-white px-[0.875rem] py-[0.625rem]'
+                                >
+                                  <FormControl>
+                                    <RadioGroupItem
+                                      value={option.value}
+                                      className='cursor-pointer'
+                                    />
+                                  </FormControl>
+                                  <FormLabel className='font-normal'>
+                                    {option.label}
+                                  </FormLabel>
+                                </FormItem>
+                              ))}
+                            </RadioGroup>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name='height'
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className='text-xs font-medium text-[#6A7282]'>
+                            Chiều cao (m)
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              type='number'
+                              step='0.01'
+                              className='rounded-[4px] bg-white'
+                              placeholder='VD: 1.65'
+                              value={field.value ?? ''}
+                              onChange={e =>
+                                field.onChange(parseFloat(e.target.value) || 0)
+                              }
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name='weight'
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className='text-xs font-medium text-[#6A7282]'>
+                            Cân nặng (kg)
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              type='number'
+                              step='0.1'
+                              className='rounded-[4px] bg-white'
+                              placeholder='VD: 52'
+                              value={field.value ?? ''}
+                              onChange={e =>
+                                field.onChange(parseFloat(e.target.value) || 0)
+                              }
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Eating habits */}
+              <Card className='mx-auto w-[82.5%] border-none bg-transparent pt-[3.375rem] shadow-none'>
+                <CardHeader className='border-b-[1px] border-[#B3B8C3] px-0 pb-[1.375rem]'>
+                  <CardTitle className='font-medium'>
+                    Thói quen ăn uống
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className='justify-center-center flex gap-[4.25rem] px-0'>
+                  <div className='w-[23%]'>
+                    <h5 className='text-xl font-medium'>Basic</h5>
+                    <p>
+                      Having an up-to-date email address attached to your
+                      account is a great step toward improve account dsecutity.
+                    </p>
+                  </div>
+                  <div className='grid flex-1 grid-cols-1 gap-6 md:grid-cols-2'>
+                    <FormField
+                      control={form.control}
+                      name='FAVC'
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className='text-xs font-medium text-[#6A7282]'>
+                            Bạn có thường xuyên ăn thức ăn nhiều calo không?
+                          </FormLabel>
+                          <FormControl>
+                            <RadioGroup
+                              onValueChange={field.onChange}
+                              value={field.value}
+                              className='flex w-full flex-row space-y-1'
+                            >
+                              {yesNoOptions.map(option => (
+                                <FormItem
+                                  key={option.value}
+                                  className='flex h-full flex-2 items-center space-y-0 space-x-3 rounded-[4px] bg-white px-[0.875rem] py-[0.625rem]'
+                                >
+                                  <FormControl>
+                                    <RadioGroupItem
+                                      value={option.value}
+                                      className='cursor-pointer'
+                                    />
+                                  </FormControl>
+                                  <FormLabel className='font-normal'>
+                                    {option.label}
+                                  </FormLabel>
+                                </FormItem>
+                              ))}
+                            </RadioGroup>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name='FCVC'
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className='text-xs font-medium text-[#6A7282]'>
+                            Có thường xuyên ăn rau củ không?
+                          </FormLabel>
+                          <Select
+                            onValueChange={value =>
+                              field.onChange(parseInt(value))
+                            }
+                            defaultValue={field.value?.toString()}
+                          >
+                            <FormControl>
+                              <SelectTrigger className='rounded-[4px] bg-white'>
+                                <SelectValue placeholder='Chọn tần suất' />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {vegetableOptions.map(option => (
+                                <SelectItem
+                                  key={option.value}
+                                  value={option.value}
+                                >
+                                  {option.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name='CH2O'
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className='text-xs font-medium text-[#6A7282]'>
+                            Uống bao nhiêu nước mỗi ngày?
+                          </FormLabel>
+                          <Select
+                            onValueChange={value =>
+                              field.onChange(parseInt(value))
+                            }
+                            defaultValue={field.value?.toString()}
+                          >
+                            <FormControl>
+                              <SelectTrigger className='rounded-[4px] bg-white'>
+                                <SelectValue placeholder='Chọn lượng nước' />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {waterIntakeOptions.map(option => (
+                                <SelectItem
+                                  key={option.value}
+                                  value={option.value}
+                                >
+                                  {option.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name='NCP'
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className='text-xs font-medium text-[#6A7282]'>
+                            Số bữa ăn chính mỗi ngày
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              type='number'
+                              className='rounded-[4px] bg-white'
+                              placeholder='3'
+                              value={field.value ?? ''}
+                              onChange={e =>
+                                field.onChange(parseInt(e.target.value) || 0)
+                              }
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name='CAEC'
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className='text-xs font-medium text-[#6A7282]'>
+                            Có ăn vặt xen giữa các bữa chính không?
+                          </FormLabel>
+                          <Select
+                            onValueChange={value =>
+                              field.onChange(parseInt(value))
+                            }
+                            defaultValue={field.value?.toString()}
+                          >
+                            <FormControl>
+                              <SelectTrigger className='rounded-[4px] bg-white'>
+                                <SelectValue placeholder='Chọn tần suất' />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {snackOptions.map(option => (
+                                <SelectItem
+                                  key={option.value}
+                                  value={option.value}
+                                >
+                                  {option.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Activity habits */}
+              <Card className='mx-auto w-[82.5%] border-none bg-transparent pt-[3.375rem] shadow-none'>
+                <CardHeader className='border-b-[1px] border-[#B3B8C3] px-0 pb-[1.375rem]'>
+                  <CardTitle className='font-semibold'>
+                    Thói quen vận động và sinh hoạt
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className='justify-center-center flex gap-[4.25rem] px-0'>
+                  <div className='w-[23%]'>
+                    <h5 className='text-xl font-medium'>Basic</h5>
+                    <p>
+                      Having an up-to-date email address attached to your
+                      account is a great step toward improve account dsecutity.
+                    </p>
+                  </div>
+                  <div className='grid flex-1 grid-cols-1 gap-6 md:grid-cols-2'>
+                    <FormField
+                      control={form.control}
+                      name='FAF'
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className='text-xs font-medium text-[#6A7282]'>
+                            Có thường xuyên tập thể dục không?
+                          </FormLabel>
+                          <Select
+                            onValueChange={value =>
+                              field.onChange(parseInt(value))
+                            }
+                            defaultValue={field.value?.toString()}
+                          >
+                            <FormControl>
+                              <SelectTrigger className='rounded-[4px] bg-white'>
+                                <SelectValue placeholder='Chọn mức độ' />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {physicalActivityOptions.map(option => (
+                                <SelectItem
+                                  key={option.value}
+                                  value={option.value}
+                                >
+                                  {option.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name='TUE'
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className='text-xs font-medium text-[#6A7282]'>
+                            Mức độ sử dụng thiết bị điện tử hằng ngày
+                          </FormLabel>
+                          <Select
+                            onValueChange={value =>
+                              field.onChange(parseInt(value))
+                            }
+                            defaultValue={field.value?.toString()}
+                          >
+                            <FormControl>
+                              <SelectTrigger className='rounded-[4px] bg-white'>
+                                <SelectValue placeholder='Chọn mức độ' />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {screenTimeOptions.map(option => (
+                                <SelectItem
+                                  key={option.value}
+                                  value={option.value}
+                                >
+                                  {option.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name='MTRANS'
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className='text-xs font-medium text-[#6A7282]'>
+                            Phương tiện di chuyển thường dùng
+                          </FormLabel>
+                          <Select
+                            onValueChange={value =>
+                              field.onChange(parseInt(value))
+                            }
+                            defaultValue={field.value?.toString()}
+                          >
+                            <FormControl>
+                              <SelectTrigger className='rounded-[4px] bg-white'>
+                                <SelectValue placeholder='Chọn phương tiện' />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {transportationOptions.map(option => (
+                                <SelectItem
+                                  key={option.value}
+                                  value={option.value}
+                                >
+                                  {option.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Other habits */}
+              <Card className='mx-auto w-[82.5%] border-none bg-transparent pt-[3.375rem] shadow-none'>
+                <CardHeader className='border-b-[1px] border-[#B3B8C3] px-0 pb-[1.375rem]'>
+                  <CardTitle className='font-medium'>Thói quen khác</CardTitle>
+                </CardHeader>
+                <CardContent className='justify-center-center flex gap-[4.25rem] px-0'>
+                  <div className='w-[23%]'>
+                    <h5 className='text-xl font-medium'>Basic</h5>
+                    <p>
+                      Having an up-to-date email address attached to your
+                      account is a great step toward improve account dsecutity.
+                    </p>
+                  </div>
+                  <div className='grid flex-1 grid-cols-1 items-start gap-6 md:grid-cols-2'>
+                    <FormField
+                      control={form.control}
+                      name='SMOKE'
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className='h-fit text-xs font-medium text-[#6A7282]'>
+                            Bạn có hút thuốc không?
+                          </FormLabel>
+                          <FormControl>
+                            <RadioGroup
+                              onValueChange={field.onChange}
+                              value={field.value}
+                              className='flex w-full flex-row space-y-1'
+                            >
+                              {yesNoOptions.map(option => (
+                                <FormItem
+                                  key={option.value}
+                                  className='flex h-full flex-2 items-center space-y-0 space-x-3 rounded-[4px] bg-white px-[0.875rem] py-[0.75rem]'
+                                >
+                                  <FormControl>
+                                    <RadioGroupItem
+                                      value={option.value}
+                                      className='cursor-pointer'
+                                    />
+                                  </FormControl>
+                                  <FormLabel className='leading-[1.25rem] font-normal'>
+                                    {option.label}
+                                  </FormLabel>
+                                </FormItem>
+                              ))}
+                            </RadioGroup>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name='CALC'
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className='h-fit text-xs font-medium text-[#6A7282]'>
+                            Bạn có thường xuyên sử dụng thức uống có cồn không?
+                          </FormLabel>
+                          <Select
+                            onValueChange={value =>
+                              field.onChange(parseInt(value))
+                            }
+                            defaultValue={field.value?.toString()}
+                          >
+                            <FormControl>
+                              <SelectTrigger className='rounded-[4px] bg-white'>
+                                <SelectValue placeholder='Chọn mức độ' />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {alcoholOptions.map(option => (
+                                <SelectItem
+                                  key={option.value}
+                                  value={option.value}
+                                >
+                                  {option.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <div className='mx-auto flex w-[82.5%] items-end justify-end gap-[1.25rem]'>
+                <div className='h-[1px] w-full bg-[#B3B8C3]' />
+                <Button
+                  type='submit'
+                  disabled={isSubmitting}
+                  onClick={() => {
+                    onSubmit(form.getValues());
+                  }}
+                  className='w-full rounded-none bg-black px-[4.25rem] py-[0.8125rem] text-white transition-colors hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50 md:w-auto'
+                >
+                  {isSubmitting ? 'Đang xử lý...' : 'Dự đoán'}
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </div>
+      </div>
+      <Footer />
+    </>
+  );
+};
+
+export default PredictPage;
