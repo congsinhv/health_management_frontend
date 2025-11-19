@@ -16,7 +16,10 @@ const DietPlanSection: React.FC<DietPlanSectionProps> = ({ dietPlan }) => {
 
   return (
     <div className='space-y-4'>
-      <Tabs defaultValue='DAY_1'>
+      <Tabs
+        defaultValue='DAY_1'
+        onValueChange={value => setSelectedDay(parseInt(value.split('_')[1]))}
+      >
         <div className='flex justify-between'>
           <h2 className='mb-6 flex flex-col pb-4 font-semibold'>
             Chế độ ăn uống đề xuất cho bạn
@@ -27,49 +30,49 @@ const DietPlanSection: React.FC<DietPlanSectionProps> = ({ dietPlan }) => {
           <TabsList className='h-auto gap-4 bg-transparent'>
             <TabsTrigger
               value='DAY_1'
-              className='flex flex-col items-center gap-2 rounded-full border border-[#EFEFEF] bg-transparent px-2 py-4 data-[state=active]:bg-[#1E1E1E] data-[state=active]:text-white'
+              className='flex flex-col items-center gap-2 rounded-full border border-[#EFEFEF] bg-transparent px-2 py-4 transition duration-300 ease-in-out hover:border-[#1E1E1E] data-[state=active]:bg-[#1E1E1E] data-[state=active]:text-white'
             >
               <span className='text-xs'>Ngày</span>
               <span className='text-sm'>1</span>
             </TabsTrigger>
             <TabsTrigger
               value='DAY_2'
-              className='flex flex-col items-center gap-2 rounded-full border border-[#EFEFEF] bg-transparent px-2 py-4 data-[state=active]:bg-[#1E1E1E] data-[state=active]:text-white'
+              className='flex flex-col items-center gap-2 rounded-full border border-[#EFEFEF] bg-transparent px-2 py-4 transition duration-300 ease-in-out hover:border-[#1E1E1E] data-[state=active]:bg-[#1E1E1E] data-[state=active]:text-white'
             >
               <span className='text-xs'>Ngày</span>
               <span className='text-sm'>2</span>
             </TabsTrigger>
             <TabsTrigger
               value='DAY_3'
-              className='flex flex-col items-center gap-2 rounded-full border border-[#EFEFEF] bg-transparent px-2 py-4 data-[state=active]:bg-[#1E1E1E] data-[state=active]:text-white'
+              className='flex flex-col items-center gap-2 rounded-full border border-[#EFEFEF] bg-transparent px-2 py-4 transition duration-300 ease-in-out hover:border-[#1E1E1E] data-[state=active]:bg-[#1E1E1E] data-[state=active]:text-white'
             >
               <span className='text-xs'>Ngày</span>
               <span className='text-sm'>3</span>
             </TabsTrigger>
             <TabsTrigger
               value='DAY_4'
-              className='flex flex-col items-center gap-2 rounded-full border border-[#EFEFEF] bg-transparent px-2 py-4 data-[state=active]:bg-[#1E1E1E] data-[state=active]:text-white'
+              className='flex flex-col items-center gap-2 rounded-full border border-[#EFEFEF] bg-transparent px-2 py-4 transition duration-300 ease-in-out hover:border-[#1E1E1E] data-[state=active]:bg-[#1E1E1E] data-[state=active]:text-white'
             >
               <span className='text-xs'>Ngày</span>
               <span className='text-sm'>4</span>
             </TabsTrigger>
             <TabsTrigger
               value='DAY_5'
-              className='flex flex-col items-center gap-2 rounded-full border border-[#EFEFEF] bg-transparent px-2 py-4 data-[state=active]:bg-[#1E1E1E] data-[state=active]:text-white'
+              className='flex flex-col items-center gap-2 rounded-full border border-[#EFEFEF] bg-transparent px-2 py-4 transition duration-300 ease-in-out hover:border-[#1E1E1E] data-[state=active]:bg-[#1E1E1E] data-[state=active]:text-white'
             >
               <span className='text-xs'>Ngày</span>
               <span className='text-sm'>5</span>
             </TabsTrigger>
             <TabsTrigger
               value='DAY_6'
-              className='flex flex-col items-center gap-2 rounded-full border border-[#EFEFEF] bg-transparent px-2 py-4 data-[state=active]:bg-[#1E1E1E] data-[state=active]:text-white'
+              className='flex flex-col items-center gap-2 rounded-full border border-[#EFEFEF] bg-transparent px-2 py-4 transition duration-300 ease-in-out hover:border-[#1E1E1E] data-[state=active]:bg-[#1E1E1E] data-[state=active]:text-white'
             >
               <span className='text-xs'>Ngày</span>
               <span className='text-sm'>6</span>
             </TabsTrigger>
             <TabsTrigger
               value='DAY_7'
-              className='flex flex-col items-center gap-2 rounded-full border border-[#EFEFEF] bg-transparent px-2 py-4 data-[state=active]:bg-[#1E1E1E] data-[state=active]:text-white'
+              className='flex flex-col items-center gap-2 rounded-full border border-[#EFEFEF] bg-transparent px-2 py-4 transition duration-300 ease-in-out hover:border-[#1E1E1E] data-[state=active]:bg-[#1E1E1E] data-[state=active]:text-white'
             >
               <span className='text-xs'>Ngày</span>
               <span className='text-sm'>7</span>
@@ -93,22 +96,26 @@ const DietPlanSection: React.FC<DietPlanSectionProps> = ({ dietPlan }) => {
       </Tabs>
 
       {/* Recommended Foods */}
-      {dietPlan.recommendedFoods.length > 0 && (
+      {currentDayPlan?.recommendedFoods && (
         <div className='bg-[#F9FAFA] p-4'>
           <h4 className='mb-2 text-sm font-semibold text-[#1E1E1E]'>
             Loại thực phẩm nên ăn
           </h4>
-          <p className='text-sm text-[#1E1E1E]'>{dietPlan.recommendedFoods}</p>
+          <p className='text-sm text-[#1E1E1E]'>
+            {currentDayPlan.recommendedFoods}
+          </p>
         </div>
       )}
 
       {/* Foods to Limit */}
-      {dietPlan.recommendedFoods.length > 0 && (
+      {currentDayPlan?.foodsToLimit && (
         <div className='rounded-b-2xl bg-[#F9FAFA] p-4'>
           <h4 className='mb-2 text-sm font-semibold text-[#1E1E1E]'>
             Loại thực phẩm cần hạn chế
           </h4>
-          <p className='text-sm text-[#1E1E1E]'>{dietPlan.foodsToLimit}</p>
+          <p className='text-sm text-[#1E1E1E]'>
+            {currentDayPlan.foodsToLimit}
+          </p>
         </div>
       )}
     </div>
@@ -138,7 +145,7 @@ const MealColumn: React.FC<MealColumnProps> = ({ title, meals }) => {
             key={index}
             className='ml-2 leading-relaxed before:mr-2 before:text-[#1E1E1E] before:content-["•"]'
           >
-            {meal.name} ({meal.calories} kcal)
+            {meal.count} {meal.unit} {meal.name} ({meal.calories} kcal)
           </li>
         ))}
       </ul>

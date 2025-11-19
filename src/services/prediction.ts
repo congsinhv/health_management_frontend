@@ -10,7 +10,7 @@ import { PredictFormData } from '@/app/predict/formHelper';
  * API Service for Health Prediction
  */
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://0.0.0.0:8080';
 
 /**
  * Transform form data to API request format
@@ -19,22 +19,21 @@ export function transformFormDataToAPIRequest(
   formData: PredictFormData
 ): PredictionAPIRequest {
   return {
-    Gender: formData.gender ?? 0,
-    Age: formData.age ?? 0,
-    Height: formData.height ?? 0,
-    Weight: formData.weight ?? 0,
-    family_history_with_overweight: formData.family_history_with_overweight,
-    FAVC: formData.FAVC,
-    FCVC: formData.FCVC ?? 0,
-    NCP: formData.NCP ?? 0,
-    CAEC: formData.CAEC ?? 0,
-    SMOKE: formData.SMOKE,
-    CH2O: formData.CH2O ?? 0,
-    SCC: formData.SCC ?? 0,
+    name: formData.name,
+    gender: formData.gender === 1 ? 'Male' : 'Female',
+    age: formData.age ?? 0,
+    height: formData.height ?? 0,
+    weight: formData.weight ?? 0,
+    family_history: formData.family_history_with_overweight === 'yes',
     FAF: formData.FAF ?? 0,
     TUE: formData.TUE ?? 0,
+    NCP: formData.NCP ?? 0,
+    FCVC: formData.FCVC ?? 0,
+    CH2O: formData.CH2O ?? 0,
+    FAVC: formData.FAVC === 'yes' ? 1 : 0,
     CALC: formData.CALC ?? 0,
-    MTRANS: formData.MTRANS ?? 0,
+    CAEC: formData.CAEC ?? 0,
+    MTRANS_Calorie: formData.MTRANS ?? 0,
   };
 }
 
@@ -145,7 +144,7 @@ export async function submitPrediction(
   try {
     const apiRequest = transformFormDataToAPIRequest(formData);
 
-    const response = await fetch(`${API_BASE_URL}/api/predict`, {
+    const response = await fetch(`${API_BASE_URL}predict/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -159,61 +158,27 @@ export async function submitPrediction(
 
     const apiResponse = await response.json();
 
-    // Transform API response to full result data
-    return generateResultData(formData, apiResponse);
+    // The API now returns the full result data, so we can return it directly
+    const result = apiResponse as PredictionResultData;
+
+    // Ensure consistency between user input and health metrics
+    if (result.healthMetrics) {
+      if (result.healthMetrics.height) {
+        result.healthMetrics.height.value =
+          formData.height ?? result.healthMetrics.height.value;
+      }
+      if (result.healthMetrics.weight) {
+        result.healthMetrics.weight.value =
+          formData.weight ?? result.healthMetrics.weight.value;
+      }
+    }
+
+    return result;
   } catch (error) {
     console.error('Error submitting prediction:', error);
     // Return mock data as fallback
     return generateMockResultData(formData);
   }
-}
-
-/**
- * Generate result data from API response
- */
-function generateResultData(
-  formData: PredictFormData,
-  apiResponse: any
-): PredictionResultData {
-  const bmi = calculateBMI(formData.weight ?? 0, formData.height ?? 0);
-
-  return {
-    id: Date.now().toString(),
-    timestamp: new Date().toISOString(),
-    userInput: transformFormDataToUserInput(formData),
-    prediction: {
-      level: apiResponse.predicted_class as PredictionLevel,
-      confidence: apiResponse.confidence ?? 80,
-      bmi: bmi,
-      status: apiResponse.status || 'Normal Weight',
-      reliability:
-        apiResponse.confidence > 85
-          ? 'high'
-          : apiResponse.confidence > 70
-            ? 'medium'
-            : 'low',
-    },
-    healthMetrics: {
-      weight: {
-        label: 'Cân nặng',
-        value: formData.weight ?? 0,
-        unit: 'kg',
-      },
-      bmi: {
-        label: 'BMI',
-        value: bmi,
-        unit: '',
-      },
-      height: {
-        label: 'Chiều cao',
-        value: formData.height ?? 0,
-        unit: 'm',
-      },
-    },
-    healthAnalysis: generateHealthAnalysis(apiResponse.predicted_class, bmi),
-    dietPlan: generateDietPlan(apiResponse.predicted_class),
-    workoutPlan: generateWorkoutPlan(apiResponse.predicted_class),
-  };
 }
 
 /**
@@ -315,8 +280,6 @@ function generateHealthAnalysis(level: PredictionLevel, bmi: number): any {
 
   return {
     paragraphs: analyses[level] || analyses['Normal_Weight'],
-    disclaimer:
-      'Phân tích này chỉ mang tính tham khảo. Để có đánh giá chính xác và kế hoạch điều trị phù hợp, vui lòng tham khảo ý kiến bác sĩ hoặc chuyên gia dinh dưỡng.',
   };
 }
 
@@ -328,46 +291,27 @@ function generateDietPlan(level: PredictionLevel): any {
   const weeklyPlans = Array.from({ length: 7 }, (_, i) => ({
     day: i + 1,
     breakfast: [
-      {
-        name: 'Bánh mì nguyên cám',
-        calories: 250,
-        description: '2 lát với bơ đậu phộng',
-      },
-      { name: 'Trứng luộc', calories: 150, description: '2 quả' },
-      { name: 'Sữa tươi không đường', calories: 100, description: '200ml' },
+      { name: 'Bánh mì đen', calories: 120, count: 2, unit: 'lát' },
+      { name: 'Trứng luộc', calories: 90, count: 2, unit: 'quả' },
+      { name: 'Sữa chua không đường', calories: 60, count: 1, unit: 'hộp' },
     ],
     lunch: [
-      { name: 'Cơm gạo lứt', calories: 200, description: '1 chén' },
-      { name: 'Ức gà luộc', calories: 250, description: '150g' },
-      { name: 'Rau xào', calories: 100, description: 'Hỗn hợp rau củ' },
-      { name: 'Canh rau', calories: 50, description: '1 bát' },
+      { name: 'Cơm gạo lứt', calories: 150, count: 1, unit: 'bát' },
+      { name: 'Ức gà luộc', calories: 120, count: 100, unit: 'g' },
+      { name: 'Rau luộc', calories: 50, count: 200, unit: 'g' },
     ],
     dinner: [
-      { name: 'Cá hấp', calories: 200, description: '150g cá thu/cá hồi' },
-      { name: 'Cơm gạo lứt', calories: 150, description: '3/4 chén' },
-      { name: 'Rau luộc', calories: 80, description: 'Bông cải xanh, cà rốt' },
+      { name: 'Salad cá ngừ', calories: 200, count: 1, unit: 'đĩa' },
+      { name: 'Canh bí đao', calories: 40, count: 1, unit: 'bát' },
     ],
-    totalCalories: 1530,
+    recommendedFoods:
+      'Danh sách thực phẩm khuyến nghị bao gồm rau xanh tươi, trái cây ít ngọt, các nguồn protein nạc, ngũ cốc nguyên hạt, cùng với các loại hạt và hạt giống.',
+    foodsToLimit:
+      'Danh sách thực phẩm cần hạn chế bao gồm thực phẩm chế biến sẵn, đồ ngọt và nước có gas, thực phẩm nhiều dầu mỡ, rượu bia và thực phẩm nhanh.',
   }));
 
   return {
     weeklyPlans,
-    recommendedFoods: [
-      'Ngũ cốc nguyên hạt (gạo lứt, yến mạch, quinoa)',
-      'Rau xanh đậm (cải bó xôi, súp lơ xanh, cải kale)',
-      'Trái cây tươi (táo, chuối, cam, dâu)',
-      'Protein nạc (ức gà, cá, đậu phụ)',
-      'Các loại hạt (hạnh nhân, óc chó, hạt chia)',
-    ],
-    foodsToLimit: [
-      'Đồ ăn nhanh và thức ăn chế biến sẵn',
-      'Đồ uống có đường (nước ngọt, trà sữa)',
-      'Thực phẩm chiên rán nhiều dầu mỡ',
-      'Bánh kẹo, snack nhiều đường và muối',
-      'Thịt đỏ và thịt chế biến',
-    ],
-    disclaimer:
-      'Kế hoạch dinh dưỡng này là gợi ý chung. Nên tham khảo chuyên gia dinh dưỡng để có kế hoạch phù hợp với tình trạng sức khỏe cụ thể của bạn.',
   };
 }
 
@@ -385,68 +329,53 @@ function generateWorkoutPlan(level: PredictionLevel): any {
       exercises = [
         {
           name: 'Khởi động',
-          duration: '5 phút',
+          duration: 5,
           description: 'Giãn cơ và khởi động nhẹ',
+          unit: 'phút',
         },
         {
           name: 'Đi bộ nhanh',
-          duration: '20 phút',
+          duration: 20,
+          unit: 'phút',
           description: 'Tốc độ vừa phải',
-        },
-        { name: 'Squat', sets: 3, reps: 12, description: 'Gập bụng đứng' },
-        {
-          name: 'Push-up',
           sets: 3,
           reps: 10,
-          description: 'Hít đất (có thể chống tường)',
         },
         {
-          name: 'Plank',
-          duration: '30 giây',
-          sets: 3,
-          description: 'Chống đẩy tĩnh',
-        },
-        {
-          name: 'Thả lỏng',
-          duration: '5 phút',
-          description: 'Giãn cơ và hồi phục',
+          name: 'Squat',
+          duration: 30,
+          unit: 'giây',
+          description: 'Gập bụng đứng',
         },
       ];
     } else if (day === 2 || day === 5) {
       exercises = [
         {
           name: 'Khởi động',
-          duration: '5 phút',
+          duration: 5,
+          unit: 'phút',
           description: 'Giãn cơ toàn thân',
         },
         {
           name: 'Đạp xe hoặc chạy bộ',
-          duration: '25 phút',
+          duration: 25,
+          unit: 'phút',
           description: 'Cường độ vừa phải',
         },
-        { name: 'Lunges', sets: 3, reps: 10, description: 'Mỗi chân' },
-        {
-          name: 'Mountain Climbers',
-          sets: 3,
-          reps: 15,
-          description: 'Leo núi',
-        },
-        {
-          name: 'Giãn cơ',
-          duration: '5 phút',
-          description: 'Thả lỏng toàn thân',
-        },
+        { name: 'Lunges', duration: 30, unit: 'giây', description: 'Mỗi chân' },
       ];
     } else {
       exercises = [
         {
           name: 'Yoga nhẹ hoặc đi bộ',
-          duration: '30 phút',
+          duration: 30,
+          unit: 'phút',
           description: 'Hoạt động phục hồi',
         },
         {
           name: 'Giãn cơ',
-          duration: '10 phút',
+          duration: 10,
+          unit: 'phút',
           description: 'Thả lỏng cơ thể',
         },
       ];
@@ -454,16 +383,14 @@ function generateWorkoutPlan(level: PredictionLevel): any {
     }
 
     return {
+      name: 'Tập toàn thân (Full Body Workout)',
       day,
       exercises,
-      totalDuration: '40-45 phút',
       difficulty,
     };
   });
 
   return {
     weeklyPlans,
-    disclaimer:
-      'Kế hoạch tập luyện này là gợi ý chung. Nên tham khảo huấn luyện viên hoặc bác sĩ trước khi bắt đầu chương trình tập luyện mới, đặc biệt nếu bạn có vấn đề sức khỏe.',
   };
 }

@@ -47,7 +47,6 @@ export interface HealthMetrics {
 
 export interface HealthAnalysis {
   paragraphs: string[];
-  disclaimer: string;
 }
 
 // ===============================
@@ -57,6 +56,8 @@ export interface HealthAnalysis {
 export interface MealItem {
   name: string;
   calories: number;
+  count: number;
+  unit: string;
   description?: string;
 }
 
@@ -65,14 +66,12 @@ export interface DailyMealPlan {
   breakfast: MealItem[];
   lunch: MealItem[];
   dinner: MealItem[];
-  totalCalories: number;
+  recommendedFoods: string;
+  foodsToLimit: string;
 }
 
 export interface DietPlan {
   weeklyPlans: DailyMealPlan[];
-  recommendedFoods: string[];
-  foodsToLimit: string[];
-  disclaimer: string;
 }
 
 // ===============================
@@ -83,20 +82,20 @@ export interface ExerciseItem {
   name: string;
   sets?: number;
   reps?: number;
-  duration?: string; // e.g., "30 minutes"
+  duration?: number;
+  unit?: string;
   description?: string;
 }
 
 export interface DailyWorkoutPlan {
   day: number; // 1-7
+  name?: string;
   exercises: ExerciseItem[];
-  totalDuration: string;
-  difficulty: 'easy' | 'medium' | 'hard';
 }
 
 export interface WorkoutPlan {
   weeklyPlans: DailyWorkoutPlan[];
-  disclaimer: string;
+  disclaimer?: string;
 }
 
 // ===============================
@@ -149,27 +148,21 @@ export interface PredictionResultData {
 // ===============================
 
 export interface PredictionAPIRequest {
-  Gender: number;
-  Age: number;
-  Height: number;
-  Weight: number;
-  family_history_with_overweight: string;
-  FAVC: string;
-  FCVC: number;
-  NCP: number;
-  CAEC: number;
-  SMOKE: string;
-  CH2O: number;
-  SCC: number;
+  name: string;
+  gender: string;
+  age: number;
+  height: number;
+  weight: number;
+  family_history: boolean;
   FAF: number;
   TUE: number;
+  NCP: number;
+  FCVC: number;
+  CH2O: number;
+  FAVC: number;
   CALC: number;
-  MTRANS: number;
+  CAEC: number;
+  MTRANS_Calorie: number;
 }
 
-export interface PredictionAPIResponse {
-  predicted_class: PredictionLevel;
-  confidence: number;
-  bmi: number;
-  // Add other API response fields as they become known
-}
+export interface PredictionAPIResponse extends PredictionResultData {}

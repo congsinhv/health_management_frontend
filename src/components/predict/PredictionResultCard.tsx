@@ -41,7 +41,7 @@ const PredictionResultCard: React.FC<PredictionResultCardProps> = ({
     return '#6B7280';
   };
 
-  const radius = 90;
+  const radius = 121;
   const circumference = Math.PI * radius; // Half circle circumference
   const strokeDashoffset =
     circumference - (result.confidence / 100) * circumference;
