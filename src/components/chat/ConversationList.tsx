@@ -57,7 +57,7 @@ export const ConversationList: React.FC<ConversationListProps> = ({
         setIsLoading(false);
       });
     }
-  }, [user]);
+  }, [user, conversations.length, loadConversations]);
 
   // Handle conversation selection
   const handleConversationSelect = async (conversationId: number) => {

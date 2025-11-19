@@ -16,26 +16,6 @@ const WorkoutPlanSection: React.FC<WorkoutPlanSectionProps> = ({
     plan => plan.day === selectedDay
   );
 
-  // Get difficulty color
-  const getDifficultyColor = (difficulty: string): string => {
-    const colorMap: Record<string, string> = {
-      easy: '#10B981',
-      medium: '#F59E0B',
-      hard: '#EF4444',
-    };
-    return colorMap[difficulty] || '#6B7280';
-  };
-
-  // Get difficulty label
-  const getDifficultyLabel = (difficulty: string): string => {
-    const labelMap: Record<string, string> = {
-      easy: 'Dễ',
-      medium: 'Trung bình',
-      hard: 'Khó',
-    };
-    return labelMap[difficulty] || difficulty;
-  };
-
   return (
     <div className='space-y-6'>
       <Tabs

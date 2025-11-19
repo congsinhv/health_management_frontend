@@ -69,8 +69,7 @@ export const transformFormDataToAPI = (formData: any): PredictionAPIRequest => {
 };
 
 export const transformAPIToResult = (
-  apiResponse: PredictionAPIResponse,
-  userInput: any
+  apiResponse: PredictionAPIResponse
 ): PredictionResultData => {
   return apiResponse;
 };

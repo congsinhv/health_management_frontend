@@ -165,4 +165,4 @@ export interface PredictionAPIRequest {
   MTRANS_Calorie: number;
 }
 
-export interface PredictionAPIResponse extends PredictionResultData {}
+export type PredictionAPIResponse = PredictionResultData;

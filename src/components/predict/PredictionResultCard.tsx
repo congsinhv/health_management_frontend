@@ -32,15 +32,6 @@ const PredictionResultCard: React.FC<PredictionResultCardProps> = ({
     return colorMap[reliability] || '#10B981';
   };
 
-  // Get color based on prediction level
-  const getLevelColor = (level: string): string => {
-    if (level.includes('Normal')) return '#10B981';
-    if (level.includes('Insufficient')) return '#F59E0B';
-    if (level.includes('Overweight') || level.includes('Obesity'))
-      return '#EF4444';
-    return '#6B7280';
-  };
-
   const radius = 121;
   const circumference = Math.PI * radius; // Half circle circumference
   const strokeDashoffset =

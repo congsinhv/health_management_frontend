@@ -52,13 +52,6 @@ const PredictPage = () => {
   });
 
   /**
-   * Reset the form to initial state
-   */
-  const resetForm = () => {
-    form.reset(initialFormData);
-  };
-
-  /**
    * Handle form submission
    */
   const onSubmit = async (data: PredictFormData) => {
