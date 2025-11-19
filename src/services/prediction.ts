@@ -143,7 +143,7 @@ export async function submitPrediction(
   try {
     const apiRequest = transformFormDataToAPIRequest(formData);
 
-    const response = await fetch(`${API_BASE_URL}predict/`, {
+    const response = await fetch(`${API_BASE_URL}/predict/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
