@@ -17,7 +17,7 @@ export interface ConversationResponse {
   is_pinned: boolean;
   is_archived: boolean;
   message_count?: number;
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
   created_at: string;
   updated_at?: string;
 }
@@ -31,7 +31,7 @@ export interface MessageResponse {
   user_id: number;
   content: string;
   content_type: 'text' | 'image' | 'file' | 'system';
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
   version_number?: number;
   created_at: string;
   updated_at: string;
@@ -45,7 +45,7 @@ export interface MessageVersionResponse {
   message_id: number;
   version_number: number;
   content: string;
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
   created_at: string;
 }
 
@@ -59,7 +59,7 @@ export interface MessageVersionResponse {
 export interface CreateConversationRequest {
   title?: string;
   user_id?: number;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 /**
@@ -69,7 +69,7 @@ export interface UpdateConversationRequest {
   title?: string;
   is_pinned?: boolean;
   is_archived?: boolean;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 /**
@@ -79,7 +79,7 @@ export interface CreateMessageRequest {
   conversation_id: number;
   content: string;
   content_type?: 'text' | 'image' | 'file' | 'system';
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   user_id?: number;
 }
 
@@ -88,7 +88,7 @@ export interface CreateMessageRequest {
  */
 export interface UpdateMessageRequest {
   content: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 /**
@@ -115,7 +115,7 @@ export interface UpdateConversationPinRequest {
 export interface AIGenerateRequest {
   conversation_id: number;
   prompt: string;
-  context?: Record<string, any>;
+  context?: Record<string, unknown>;
   user_id: number;
 }
 
@@ -124,7 +124,7 @@ export interface AIGenerateRequest {
  */
 export interface AIGenerateResponse {
   content: string;
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
   model_used?: string;
   tokens_used?: number;
 }
@@ -268,7 +268,7 @@ export interface ConversationError {
 export interface ConversationMetadata {
   health_option?: string;
   flow_type?: string;
-  user_preferences?: Record<string, any>;
+  user_preferences?: Record<string, unknown>;
   ai_model?: string;
   tokens_used?: number;
 }
@@ -314,11 +314,13 @@ export interface ConversationContextType {
 
   // Actions
   loadConversations: (params?: ConversationListParams) => Promise<void>;
-  createConversation: (request: CreateConversationRequest) => Promise<any>;
+  createConversation: (
+    request: CreateConversationRequest
+  ) => Promise<ExtendedConversation>;
   updateConversation: (
     id: number,
     request: UpdateConversationRequest
-  ) => Promise<any>;
+  ) => Promise<ExtendedConversation>;
   deleteConversation: (id: number) => Promise<boolean>;
   switchConversation: (conversationId: number | null) => void;
   clearError: () => void;

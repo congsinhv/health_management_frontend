@@ -8,7 +8,7 @@
 import React, { useState } from 'react';
 import { ConversationResponse } from '@/types/conversation';
 import { conversationService } from '@/services/conversation';
-import { useConversation } from '@/contexts/ConversationContext';
+import { useConversation } from '@/contexts/conversation';
 import { Pin, Trash2, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';

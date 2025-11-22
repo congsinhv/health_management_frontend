@@ -135,6 +135,40 @@ function getAlcoholLabel(value: number | null): string {
 }
 
 /**
+ * Export prediction result as PDF
+ * @param predictionId - The prediction ID from PredictionResponse.id
+ * @returns Promise with PDF URL
+ */
+export async function exportPredictionPDF(
+  predictionId: string
+): Promise<string> {
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/api/v1/predict/export/${predictionId}`,
+      {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json',
+        },
+      }
+    );
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        throw new Error('Prediction not found');
+      }
+      throw new Error(`Failed to export PDF: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data.pdf_url;
+  } catch (error) {
+    console.error('Error exporting prediction PDF:', error);
+    throw error;
+  }
+}
+
+/**
  * Submit prediction request to API
  */
 export async function submitPrediction(
@@ -143,7 +177,7 @@ export async function submitPrediction(
   try {
     const apiRequest = transformFormDataToAPIRequest(formData);
 
-    const response = await fetch(`${API_BASE_URL}/predict/`, {
+    const response = await fetch(`${API_BASE_URL}/api/v1/predict/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

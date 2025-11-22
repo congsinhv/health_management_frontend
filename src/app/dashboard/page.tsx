@@ -8,9 +8,9 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Navigation } from '@/components/Navigation';
-import { useAuth } from '@/contexts/AuthContext';
-import { ProtectedRoute } from '@/components/ProtectedRoute';
+import { Navigation } from '@/components/shared/Navigation';
+import { useAuth } from '@/contexts/auth';
+import { ProtectedRoute } from '@/components/shared/ProtectedRoute';
 
 function DashboardContent() {
   const { user } = useAuth();

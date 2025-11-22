@@ -18,10 +18,10 @@ export type SSEEventType =
  * Generic SSE event wrapper (backend format)
  * All events follow this structure
  */
-export interface SSEEvent<T = any> {
+export interface SSEEvent<T = unknown> {
   event_type: SSEEventType;
   data: T;
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
   timestamp: string; // ISO 8601 format
 }
 

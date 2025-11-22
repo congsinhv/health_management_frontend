@@ -8,7 +8,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { ConversationResponse } from '@/types/conversation';
-import { useConversation } from '@/contexts/ConversationContext';
+import { useConversation } from '@/contexts/conversation';
 import { conversationService } from '@/services/conversation';
 import { ChevronDown, Plus, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';

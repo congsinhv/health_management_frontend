@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/card';
 import { authService } from '@/services/auth';
 import { logger } from '@/lib/logger';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/auth';
 import { CheckCircle, XCircle, Loader2, Mail, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 

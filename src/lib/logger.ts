@@ -60,6 +60,7 @@ class Logger {
     const entry = this.createLogEntry('debug', message, context);
 
     if (this.shouldLog('debug')) {
+      // eslint-disable-next-line no-console
       console.debug(this.formatMessage(entry));
     }
   }
@@ -68,6 +69,7 @@ class Logger {
     const entry = this.createLogEntry('info', message, context);
 
     if (this.shouldLog('info')) {
+      // eslint-disable-next-line no-console
       console.info(this.formatMessage(entry));
     }
 

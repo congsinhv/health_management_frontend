@@ -6,15 +6,14 @@
 'use client';
 
 import { Input } from '@/components/ui/input';
-import { useAuth } from '@/contexts/AuthContext';
-import { useConversation } from '@/contexts/ConversationContext';
+import { useAuth } from '@/contexts/auth';
+import { useConversation } from '@/contexts/conversation';
 import { cn } from '@/lib/utils';
 import { conversationService } from '@/services/conversation';
 import { ConversationResponse } from '@/types/conversation';
 import { LoaderIcon, MessageCircle, Pin, Search } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
-import styles from '../header/HeaderVertical.module.scss';
 import HistoryIcon from '../icons/history';
 
 interface ConversationListProps {
@@ -53,7 +52,7 @@ export const ConversationList: React.FC<ConversationListProps> = ({
   useEffect(() => {
     if (user && !conversations.length) {
       setIsLoading(true);
-      loadConversations({ limit: 10 }).finally(() => {
+      loadConversations({ limit: 11 }).finally(() => {
         setIsLoading(false);
       });
     }
@@ -75,24 +74,24 @@ export const ConversationList: React.FC<ConversationListProps> = ({
     .slice(0, 3);
   const regularConversations = filteredConversations
     .filter(c => !c.is_pinned)
-    .slice(0, 5);
+    .slice(0, 10);
 
   const hasMoreConversations =
     filteredConversations.filter(c => c.is_pinned).length > 3 ||
-    filteredConversations.filter(c => !c.is_pinned).length > 5;
+    filteredConversations.filter(c => !c.is_pinned).length > 10;
 
   return !isExpanded ? (
     <>
-      <div className={styles.header_vertical_icon}>
+      <div className='flex h-10 w-10 w-full cursor-pointer items-center justify-center transition-all duration-300 hover:scale-120'>
         <HistoryIcon />
       </div>
     </>
   ) : (
     <div className=''>
       <div
-        className={`${styles.header_vertical_content} conversation-dropdown-container`}
+        className={`flex w-full cursor-pointer items-center gap-2 hover:bg-gray-50 ${isExpanded ? 'justify-start' : 'justify-center'} conversation-dropdown-container`}
       >
-        <div className={styles.header_vertical_icon}>
+        <div className='flex h-10 w-10 cursor-pointer items-center justify-center transition-all duration-300 hover:scale-120'>
           <HistoryIcon />
         </div>
         <p>Lịch sử chat</p>
@@ -114,7 +113,7 @@ export const ConversationList: React.FC<ConversationListProps> = ({
           </div>
 
           {/* Conversation List */}
-          <div className='max-h-64 overflow-y-auto'>
+          <div className='h-full max-h-[calc(100vh-200px)] overflow-y-auto'>
             {isLoading ? (
               <div className='flex h-20 items-center justify-center'>
                 <LoaderIcon

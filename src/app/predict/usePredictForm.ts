@@ -1,12 +1,12 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { predictFormSchema } from './validation';
-import { initialFormData, PredictFormData } from './formHelper';
+import { PredictFormData } from './formHelper';
 
 export const usePredictForm = () => {
   const form = useForm<PredictFormData>({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: zodResolver(predictFormSchema) as any,
-    defaultValues: initialFormData,
     mode: 'onChange',
   });
 
@@ -14,7 +14,7 @@ export const usePredictForm = () => {
    * Reset the form to initial state
    */
   const resetForm = () => {
-    form.reset(initialFormData);
+    form.reset();
   };
 
   /**
@@ -23,7 +23,8 @@ export const usePredictForm = () => {
   const handleSubmit = async (
     onSubmit: (data: PredictFormData) => Promise<void>
   ) => {
-    return form.handleSubmit(onSubmit)();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return form.handleSubmit(onSubmit as any)();
   };
 
   return {

@@ -14,6 +14,7 @@ interface ImageValidationResult {
  */
 export function validateAvatarImage(file: File): ImageValidationResult {
   // Validate file type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   if (!AVATAR_CONFIG.VALID_IMAGE_TYPES.includes(file.type as any)) {
     return {
       isValid: false,

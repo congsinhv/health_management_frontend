@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 import localFont from 'next/font/local';
 import './globals.css';
-import { AuthProvider } from '@/contexts/AuthContext';
-import { ConversationProvider } from '@/contexts/ConversationContext';
+import { AuthProvider } from '@/contexts/auth';
+import { ConversationProvider } from '@/contexts/conversation';
 import { ReactQueryProvider } from '@/lib/react-query';
 import { Toaster } from '@/components/ui/sonner';
 import ChatFloatingButton from '@/components/chat/ChatFloatingButton';

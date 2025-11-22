@@ -1,12 +1,14 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import Header from '@/components/header/Header';
-import Footer from '@/components/footer/Footer';
+import Header from '@/components/layout/Header';
+import Footer from '@/components/layout/Footer';
 import { PredictionResultData } from '@/types/prediction';
 import { Button } from '@/components/ui/button';
-import { Download } from 'lucide-react';
+import { Download, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
+import { exportPredictionPDF } from '@/services/prediction';
 import UserInfoSection from '@/components/predict/UserInfoSection';
 import PredictionResultCard from '@/components/predict/PredictionResultCard';
 import HealthMetricsCard from '@/components/predict/HealthMetricsCard';
@@ -20,6 +22,7 @@ const PredictionResultPage = () => {
     null
   );
   const [isLoading, setIsLoading] = useState(true);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   useEffect(() => {
     // Retrieve prediction result from sessionStorage
@@ -77,24 +80,45 @@ const PredictionResultPage = () => {
     );
   }
 
-  const handleDownload = () => {
-    // TODO: Implement PDF/JSON export functionality
-    console.log('Download functionality to be implemented');
+  const handleDownload = async () => {
+    if (!resultData?.id) {
+      toast.error('Không tìm thấy ID dự đoán. Vui lòng thực hiện dự đoán lại.');
+      return;
+    }
+
+    setIsDownloading(true);
+    try {
+      const pdfUrl = await exportPredictionPDF(resultData.id);
+
+      // Open the PDF in a new tab
+      window.open(pdfUrl, '_blank');
+
+      toast.success('Đã tải xuống kết quả dự đoán');
+    } catch (error) {
+      console.error('Error downloading PDF:', error);
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : 'Không thể tải xuống kết quả. Vui lòng thử lại sau.'
+      );
+    } finally {
+      setIsDownloading(false);
+    }
   };
 
   return (
     <>
       <Header className='sticky top-0 left-0 z-50 w-full' />
-      <div className='min-h-screen bg-white px-[1.5rem]'>
+      <div className='min-h-screen bg-white px-6'>
         {/* Title Banner */}
         <div
-          className='mb-8 rounded-2xl px-[3.5rem] py-[4.375rem]'
+          className='mb-8 rounded-2xl px-14 py-17.5'
           style={{
             background:
               'linear-gradient(185deg, #32F6B4 0%, #9DFFEA 32%, #3AD0C5 68%, #50C79F 100%)',
           }}
         >
-          <div className='mx-auto max-w-[90rem] px-4 md:px-6 lg:px-8'>
+          <div className='mx-auto max-w-360 px-4 md:px-6 lg:px-8'>
             <h1 className='text-3xl font-bold text-white md:text-4xl'>
               Kết quả dự đoán
             </h1>
@@ -118,11 +142,21 @@ const PredictionResultPage = () => {
                   <div>
                     <Button
                       onClick={handleDownload}
-                      className='w-full rounded-full bg-[#1E1E1E] px-4! py-2! text-white hover:bg-[#1E1E1E]/80'
+                      disabled={isDownloading}
+                      className='w-full rounded-full bg-[#1E1E1E] px-4! py-2! text-white hover:bg-[#1E1E1E]/80 disabled:opacity-50'
                       variant='default'
                     >
-                      <Download className='h-4 w-4' />
-                      Tải về
+                      {isDownloading ? (
+                        <>
+                          <Loader2 className='h-4 w-4 animate-spin' />
+                          Đang tải...
+                        </>
+                      ) : (
+                        <>
+                          <Download className='h-4 w-4' />
+                          Tải về
+                        </>
+                      )}
                     </Button>
                   </div>
                 </h2>

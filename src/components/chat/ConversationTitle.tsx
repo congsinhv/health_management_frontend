@@ -7,7 +7,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { ConversationResponse } from '@/types/conversation';
-import { useConversation } from '@/contexts/ConversationContext';
+import { useConversation } from '@/contexts/conversation';
 import { Edit2, Check, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

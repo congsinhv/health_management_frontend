@@ -1,9 +1,9 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 'use client';
 
-import { AvatarFill } from '@/components/avatar/Avatar.fill';
-import Header from '@/components/header/Header';
-import { ProtectedRoute } from '@/components/ProtectedRoute';
+import { AvatarFill } from '@/components/shared/AvatarFill';
+import Header from '@/components/layout/Header';
+import { ProtectedRoute } from '@/components/shared/ProtectedRoute';
 import { Button } from '@/components/ui/button';
 import { DatePicker } from '@/components/ui/date-picker';
 import {
@@ -24,7 +24,7 @@ import {
 } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/auth';
 import { AVATAR_IMAGE_ACCEPT } from '@/lib/constants';
 import { logger } from '@/lib/logger';
 import { validateAvatarImage } from '@/lib/utils/avatar';

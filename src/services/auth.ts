@@ -6,52 +6,16 @@
 import apiClient from './api';
 import { tokenStorage } from '@/lib/storage';
 import type { UserData } from '@/types/user';
-
-export interface TokenPair {
-  access_token: string;
-  refresh_token: string;
-  token_type: 'bearer';
-}
-
-export interface AuthResponse {
-  access_token: string;
-  refresh_token: string;
-  user?: UserData;
-}
-
-export interface GoogleAuthResponse {
-  authorization_url: string;
-  state: string;
-}
-
-export interface LoginCredentials {
-  email: string;
-  password: string;
-}
-
-export interface RegisterData {
-  email: string;
-  first_name: string;
-  last_name: string;
-  password: string;
-  provider?: string;
-  is_active?: boolean;
-  email_verified?: boolean;
-}
-
-export interface PasswordResetRequest {
-  email: string;
-}
-
-export interface PasswordResetData {
-  token: string;
-  new_password: string;
-}
-
-export interface ChangePasswordData {
-  current_password: string;
-  new_password: string;
-}
+import type {
+  TokenPair,
+  AuthResponse,
+  GoogleAuthResponse,
+  LoginCredentials,
+  RegisterData,
+  PasswordResetRequest,
+  PasswordResetData,
+  ChangePasswordData,
+} from '@/types/auth';
 
 export const authService = {
   /**
@@ -201,10 +165,12 @@ export const authService = {
   /**
    * Request password reset
    */
-  requestPasswordReset: async (email: string): Promise<{ message: string }> => {
+  requestPasswordReset: async (
+    data: PasswordResetRequest
+  ): Promise<{ message: string }> => {
     const response = await apiClient.post<{ message: string }>(
       '/api/v1/auth/request-password-reset',
-      { email }
+      data
     );
     return response.data;
   },

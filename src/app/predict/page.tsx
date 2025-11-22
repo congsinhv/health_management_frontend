@@ -1,7 +1,8 @@
 'use client';
 
-import Footer from '@/components/footer/Footer';
-import Header from '@/components/header/Header';
+import Footer from '@/components/layout/Footer';
+import Header from '@/components/layout/Header';
+import { LoadingOverlay } from '@/components/shared/LoadingOverlay';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -29,7 +30,6 @@ import { useForm } from 'react-hook-form';
 import {
   alcoholOptions,
   genderOptions,
-  initialFormData,
   physicalActivityOptions,
   PredictFormData,
   screenTimeOptions,
@@ -46,8 +46,8 @@ const PredictPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<PredictFormData>({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: zodResolver(predictFormSchema) as any,
-    defaultValues: initialFormData,
     mode: 'onChange',
   });
 
@@ -56,8 +56,10 @@ const PredictPage = () => {
    */
   const onSubmit = async (data: PredictFormData) => {
     try {
+      if (!form.formState.isValid && !form.formState.errors) {
+        return;
+      }
       setIsSubmitting(true);
-      console.log('Form submitted with data:', data);
 
       // Submit prediction and get result
       const result = await submitPrediction(data);
@@ -95,16 +97,16 @@ const PredictPage = () => {
           <Form {...form}>
             <form
               onSubmit={form.handleSubmit(onSubmit)}
-              className='space-y-10 bg-[#F5F4FA] pb-[5.5625rem]'
+              className='space-y-10 bg-[#F5F4FA] pb-22.25'
             >
               {/* Demographics */}
-              <Card className='mx-auto w-[82.5%] border-none bg-transparent pt-[3.375rem] shadow-none'>
-                <CardHeader className='border-b-[1px] border-[#B3B8C3] px-0 pb-[1.375rem]'>
+              <Card className='mx-auto w-[82.5%] border-none bg-transparent pt-13.5 shadow-none'>
+                <CardHeader className='border-b border-[#B3B8C3] px-0 pb-5.5'>
                   <CardTitle className='font-medium'>
                     Thông tin nhân khẩu học (Demographic Information)
                   </CardTitle>
                 </CardHeader>
-                <CardContent className='justify-center-center flex gap-[4.25rem] px-0'>
+                <CardContent className='justify-center-center flex gap-17 px-0'>
                   <div className='w-[23%]'>
                     <h5 className='text-xl font-medium'>Basic</h5>
                     <p>
@@ -117,7 +119,7 @@ const PredictPage = () => {
                       control={form.control}
                       name='name'
                       render={({ field }) => (
-                        <FormItem>
+                        <FormItem className='min-h-[88px]'>
                           <FormLabel className='text-xs font-medium text-[#6A7282]'>
                             Tên người dùng
                           </FormLabel>
@@ -137,7 +139,7 @@ const PredictPage = () => {
                       control={form.control}
                       name='gender'
                       render={({ field }) => (
-                        <FormItem>
+                        <FormItem className='min-h-[88px]'>
                           <FormLabel className='text-xs font-medium text-[#6A7282]'>
                             Giới tính
                           </FormLabel>
@@ -172,7 +174,7 @@ const PredictPage = () => {
                       control={form.control}
                       name='age'
                       render={({ field }) => (
-                        <FormItem>
+                        <FormItem className='min-h-[88px]'>
                           <FormLabel className='text-xs font-medium text-[#6A7282]'>
                             Tuổi
                           </FormLabel>
@@ -197,7 +199,7 @@ const PredictPage = () => {
                       control={form.control}
                       name='family_history_with_overweight'
                       render={({ field }) => (
-                        <FormItem>
+                        <FormItem className='min-h-[88px]'>
                           <FormLabel className='text-xs font-medium text-[#6A7282]'>
                             Có người thân được chẩn đoán thừa cân/béo phì?
                           </FormLabel>
@@ -210,7 +212,7 @@ const PredictPage = () => {
                               {yesNoOptions.map(option => (
                                 <FormItem
                                   key={option.value}
-                                  className='flex h-full flex-2 items-center space-y-0 space-x-3 rounded-[4px] bg-white px-[0.875rem] py-[0.625rem]'
+                                  className='flex h-[48px] flex-2 flex-row items-center space-y-0 space-x-3 rounded-[4px] bg-white px-3.5 py-2.5 shadow-xs'
                                 >
                                   <FormControl>
                                     <RadioGroupItem
@@ -234,7 +236,7 @@ const PredictPage = () => {
                       control={form.control}
                       name='height'
                       render={({ field }) => (
-                        <FormItem>
+                        <FormItem className='min-h-[88px]'>
                           <FormLabel className='text-xs font-medium text-[#6A7282]'>
                             Chiều cao (m)
                           </FormLabel>
@@ -243,7 +245,7 @@ const PredictPage = () => {
                               type='number'
                               step='0.01'
                               className='rounded-[4px] bg-white'
-                              placeholder='VD: 1.65'
+                              placeholder='VD: 1.70'
                               value={field.value ?? ''}
                               onChange={e =>
                                 field.onChange(parseFloat(e.target.value) || 0)
@@ -259,7 +261,7 @@ const PredictPage = () => {
                       control={form.control}
                       name='weight'
                       render={({ field }) => (
-                        <FormItem>
+                        <FormItem className='min-h-[88px]'>
                           <FormLabel className='text-xs font-medium text-[#6A7282]'>
                             Cân nặng (kg)
                           </FormLabel>
@@ -284,13 +286,13 @@ const PredictPage = () => {
               </Card>
 
               {/* Eating habits */}
-              <Card className='mx-auto w-[82.5%] border-none bg-transparent pt-[3.375rem] shadow-none'>
-                <CardHeader className='border-b-[1px] border-[#B3B8C3] px-0 pb-[1.375rem]'>
+              <Card className='mx-auto w-[82.5%] border-none bg-transparent pt-13.5 shadow-none'>
+                <CardHeader className='border-b border-[#B3B8C3] px-0 pb-5.5'>
                   <CardTitle className='font-medium'>
                     Thói quen ăn uống
                   </CardTitle>
                 </CardHeader>
-                <CardContent className='justify-center-center flex gap-[4.25rem] px-0'>
+                <CardContent className='justify-center-center flex gap-17 px-0'>
                   <div className='w-[23%]'>
                     <h5 className='text-xl font-medium'>Basic</h5>
                     <p>
@@ -303,7 +305,7 @@ const PredictPage = () => {
                       control={form.control}
                       name='FAVC'
                       render={({ field }) => (
-                        <FormItem>
+                        <FormItem className='min-h-[88px]'>
                           <FormLabel className='text-xs font-medium text-[#6A7282]'>
                             Bạn có thường xuyên ăn thức ăn nhiều calo không?
                           </FormLabel>
@@ -316,7 +318,7 @@ const PredictPage = () => {
                               {yesNoOptions.map(option => (
                                 <FormItem
                                   key={option.value}
-                                  className='flex h-full flex-2 items-center space-y-0 space-x-3 rounded-[4px] bg-white px-[0.875rem] py-[0.625rem]'
+                                  className='flex h-[48px] flex-2 flex-row items-center space-y-0 space-x-3 rounded-[4px] bg-white px-3.5 py-2.5 shadow-xs'
                                 >
                                   <FormControl>
                                     <RadioGroupItem
@@ -340,7 +342,7 @@ const PredictPage = () => {
                       control={form.control}
                       name='FCVC'
                       render={({ field }) => (
-                        <FormItem>
+                        <FormItem className='min-h-[88px]'>
                           <FormLabel className='text-xs font-medium text-[#6A7282]'>
                             Có thường xuyên ăn rau củ không?
                           </FormLabel>
@@ -375,7 +377,7 @@ const PredictPage = () => {
                       control={form.control}
                       name='CH2O'
                       render={({ field }) => (
-                        <FormItem>
+                        <FormItem className='min-h-[88px]'>
                           <FormLabel className='text-xs font-medium text-[#6A7282]'>
                             Uống bao nhiêu nước mỗi ngày?
                           </FormLabel>
@@ -410,7 +412,7 @@ const PredictPage = () => {
                       control={form.control}
                       name='NCP'
                       render={({ field }) => (
-                        <FormItem>
+                        <FormItem className='min-h-[88px]'>
                           <FormLabel className='text-xs font-medium text-[#6A7282]'>
                             Số bữa ăn chính mỗi ngày
                           </FormLabel>
@@ -434,7 +436,7 @@ const PredictPage = () => {
                       control={form.control}
                       name='CAEC'
                       render={({ field }) => (
-                        <FormItem>
+                        <FormItem className='min-h-[88px]'>
                           <FormLabel className='text-xs font-medium text-[#6A7282]'>
                             Có ăn vặt xen giữa các bữa chính không?
                           </FormLabel>
@@ -469,13 +471,13 @@ const PredictPage = () => {
               </Card>
 
               {/* Activity habits */}
-              <Card className='mx-auto w-[82.5%] border-none bg-transparent pt-[3.375rem] shadow-none'>
-                <CardHeader className='border-b-[1px] border-[#B3B8C3] px-0 pb-[1.375rem]'>
+              <Card className='mx-auto w-[82.5%] border-none bg-transparent pt-13.5 shadow-none'>
+                <CardHeader className='border-b border-[#B3B8C3] px-0 pb-5.5'>
                   <CardTitle className='font-semibold'>
                     Thói quen vận động và sinh hoạt
                   </CardTitle>
                 </CardHeader>
-                <CardContent className='justify-center-center flex gap-[4.25rem] px-0'>
+                <CardContent className='justify-center-center flex gap-17 px-0'>
                   <div className='w-[23%]'>
                     <h5 className='text-xl font-medium'>Basic</h5>
                     <p>
@@ -488,7 +490,7 @@ const PredictPage = () => {
                       control={form.control}
                       name='FAF'
                       render={({ field }) => (
-                        <FormItem>
+                        <FormItem className='min-h-[88px]'>
                           <FormLabel className='text-xs font-medium text-[#6A7282]'>
                             Có thường xuyên tập thể dục không?
                           </FormLabel>
@@ -523,7 +525,7 @@ const PredictPage = () => {
                       control={form.control}
                       name='TUE'
                       render={({ field }) => (
-                        <FormItem>
+                        <FormItem className='min-h-[88px]'>
                           <FormLabel className='text-xs font-medium text-[#6A7282]'>
                             Mức độ sử dụng thiết bị điện tử hằng ngày
                           </FormLabel>
@@ -558,7 +560,7 @@ const PredictPage = () => {
                       control={form.control}
                       name='MTRANS'
                       render={({ field }) => (
-                        <FormItem>
+                        <FormItem className='min-h-[88px]'>
                           <FormLabel className='text-xs font-medium text-[#6A7282]'>
                             Phương tiện di chuyển thường dùng
                           </FormLabel>
@@ -593,11 +595,11 @@ const PredictPage = () => {
               </Card>
 
               {/* Other habits */}
-              <Card className='mx-auto w-[82.5%] border-none bg-transparent pt-[3.375rem] shadow-none'>
-                <CardHeader className='border-b-[1px] border-[#B3B8C3] px-0 pb-[1.375rem]'>
+              <Card className='mx-auto w-[82.5%] border-none bg-transparent pt-13.5 shadow-none'>
+                <CardHeader className='border-b border-[#B3B8C3] px-0 pb-5.5'>
                   <CardTitle className='font-medium'>Thói quen khác</CardTitle>
                 </CardHeader>
-                <CardContent className='justify-center-center flex gap-[4.25rem] px-0'>
+                <CardContent className='justify-center-center flex gap-17 px-0'>
                   <div className='w-[23%]'>
                     <h5 className='text-xl font-medium'>Basic</h5>
                     <p>
@@ -610,7 +612,7 @@ const PredictPage = () => {
                       control={form.control}
                       name='SMOKE'
                       render={({ field }) => (
-                        <FormItem>
+                        <FormItem className='min-h-[88px]'>
                           <FormLabel className='h-fit text-xs font-medium text-[#6A7282]'>
                             Bạn có hút thuốc không?
                           </FormLabel>
@@ -623,7 +625,7 @@ const PredictPage = () => {
                               {yesNoOptions.map(option => (
                                 <FormItem
                                   key={option.value}
-                                  className='flex h-full flex-2 items-center space-y-0 space-x-3 rounded-[4px] bg-white px-[0.875rem] py-[0.75rem]'
+                                  className='flex h-[48px] flex-2 flex-row items-center space-y-0 space-x-3 rounded-[4px] bg-white px-3.5 py-3 shadow-xs'
                                 >
                                   <FormControl>
                                     <RadioGroupItem
@@ -631,7 +633,7 @@ const PredictPage = () => {
                                       className='cursor-pointer'
                                     />
                                   </FormControl>
-                                  <FormLabel className='leading-[1.25rem] font-normal'>
+                                  <FormLabel className='leading-5 font-normal'>
                                     {option.label}
                                   </FormLabel>
                                 </FormItem>
@@ -647,7 +649,7 @@ const PredictPage = () => {
                       control={form.control}
                       name='CALC'
                       render={({ field }) => (
-                        <FormItem>
+                        <FormItem className='min-h-[88px]'>
                           <FormLabel className='h-fit text-xs font-medium text-[#6A7282]'>
                             Bạn có thường xuyên sử dụng thức uống có cồn không?
                           </FormLabel>
@@ -681,15 +683,15 @@ const PredictPage = () => {
                 </CardContent>
               </Card>
 
-              <div className='mx-auto flex w-[82.5%] items-end justify-end gap-[1.25rem]'>
-                <div className='h-[1px] w-full bg-[#B3B8C3]' />
+              <div className='mx-auto flex w-[82.5%] items-end justify-end gap-5'>
+                <div className='h-px w-full bg-[#B3B8C3]' />
                 <Button
                   type='submit'
                   disabled={isSubmitting}
                   onClick={() => {
                     onSubmit(form.getValues());
                   }}
-                  className='w-full rounded-none bg-black px-[4.25rem] py-[0.8125rem] text-white transition-colors hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50 md:w-auto'
+                  className='w-full rounded-none bg-black px-17 py-3.25 text-white transition-colors hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50 md:w-auto'
                 >
                   {isSubmitting ? 'Đang xử lý...' : 'Dự đoán'}
                 </Button>
@@ -699,6 +701,7 @@ const PredictPage = () => {
         </div>
       </div>
       <Footer />
+      <LoadingOverlay isVisible={isSubmitting} />
     </>
   );
 };

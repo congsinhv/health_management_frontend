@@ -1,4 +1,3 @@
-import { PredictFormData } from './formHelper';
 import { z } from 'zod';
 
 /**
@@ -6,47 +5,73 @@ import { z } from 'zod';
  */
 export const predictFormSchema = z.object({
   // Demographics
-  name: z.string().min(1, 'Vui lòng nhập tên'),
+  name: z.string({ error: 'Vui lòng nhập tên' }).min(1, 'Vui lòng nhập tên'),
   gender: z.coerce
-    .number()
+    .number({ error: 'Vui lòng chọn giới tính' })
     .refine(val => val === 0 || val === 1, 'Vui lòng chọn giới tính'),
   age: z.coerce
-    .number()
+    .number({ error: 'Tuổi không hợp lệ (1-120)' })
     .min(1, 'Tuổi không hợp lệ (1-120)')
     .max(120, 'Tuổi không hợp lệ (1-120)'),
   height: z.coerce
-    .number()
+    .number({ error: 'Chiều cao không hợp lệ (0.5-2.5 m)' })
     .min(0.5, 'Chiều cao không hợp lệ (0.5-2.5 m)')
     .max(2.5, 'Chiều cao không hợp lệ (0.5-2.5 m)'),
   weight: z.coerce
-    .number()
+    .number({ error: 'Cân nặng không hợp lệ (20-300 kg)' })
     .min(20, 'Cân nặng không hợp lệ (20-300 kg)')
     .max(300, 'Cân nặng không hợp lệ (20-300 kg)'),
-  family_history_with_overweight: z.enum(['yes', 'no'], {
-    message: 'Vui lòng chọn tiền sử gia đình',
-  }),
+  family_history_with_overweight: z
+    .enum(['', 'yes', 'no'], { error: 'Vui lòng chọn tiền sử gia đình' })
+    .refine(val => val !== '', {
+      message: 'Vui lòng chọn tiền sử gia đình',
+    }),
 
   // Eating habits
-  FAVC: z.enum(['yes', 'no'], { message: 'Vui lòng chọn' }),
-  SCC: z.coerce.number().refine(val => val >= 1 && val <= 3, 'Vui lòng chọn'),
-  FCVC: z.coerce.number().refine(val => val >= 1 && val <= 3, 'Vui lòng chọn'),
-  CH2O: z.coerce.number().refine(val => val >= 1 && val <= 3, 'Vui lòng chọn'),
+  FAVC: z
+    .enum(['', 'yes', 'no'], { error: 'Vui lòng chọn thói quen ăn uống' })
+    .refine(val => val !== '', { message: 'Vui lòng chọn thói quen ăn uống' }),
+  SCC: z.coerce
+    .number({ error: 'Vui lòng chọn số lần theo dõi calo' })
+    .refine(val => val >= 1 && val <= 3, 'Vui lòng chọn số lần theo dõi calo'),
+  FCVC: z.coerce
+    .number({ error: 'Vui lòng chọn số lần ăn rau củ' })
+    .refine(val => val >= 1 && val <= 3, 'Vui lòng chọn số lần ăn rau củ'),
+  CH2O: z.coerce
+    .number({ error: 'Vui lòng chọn số lần uống nước' })
+    .refine(val => val >= 1 && val <= 3, 'Vui lòng chọn số lần uống nước'),
   NCP: z.coerce
-    .number()
+    .number({ error: 'Số bữa ăn không hợp lệ (1-10)' })
     .min(1, 'Số bữa ăn không hợp lệ (1-10)')
     .max(10, 'Số bữa ăn không hợp lệ (1-10)'),
-  CAEC: z.coerce.number().refine(val => val >= 0 && val <= 4, 'Vui lòng chọn'),
+  CAEC: z.coerce
+    .number({ error: 'Vui lòng chọn số lần ăn vặt' })
+    .refine(val => val >= 0 && val <= 4, 'Vui lòng chọn số lần ăn vặt'),
 
   // Activity habits
-  FAF: z.coerce.number().refine(val => val >= 0 && val <= 3, 'Vui lòng chọn'),
-  TUE: z.coerce.number().refine(val => val >= 0 && val <= 2, 'Vui lòng chọn'),
+  FAF: z.coerce
+    .number({ error: 'Vui lòng chọn số lần tập thể dục' })
+    .refine(val => val >= 0 && val <= 3, 'Vui lòng chọn số lần tập thể dục'),
+  TUE: z.coerce
+    .number({ error: 'Vui lòng chọn số lần sử dụng thiết bị điện tử' })
+    .refine(
+      val => val >= 0 && val <= 2,
+      'Vui lòng chọn số lần sử dụng thiết bị điện tử'
+    ),
   MTRANS: z.coerce
-    .number()
-    .refine(val => val >= 1 && val <= 5, 'Vui lòng chọn'),
+    .number({ error: 'Vui lòng chọn phương tiện di chuyển' })
+    .refine(val => val >= 1 && val <= 5, 'Vui lòng chọn phương tiện di chuyển'),
 
   // Other habits
-  SMOKE: z.enum(['yes', 'no'], { message: 'Vui lòng chọn' }),
-  CALC: z.coerce.number().refine(val => val >= 0 && val <= 4, 'Vui lòng chọn'),
+  SMOKE: z
+    .enum(['', 'yes', 'no'], { error: 'Vui lòng chọn hút thuốc' })
+    .refine(val => val !== '', { message: 'Vui lòng chọn hút thuốc' }),
+  CALC: z.coerce
+    .number({ error: 'Vui lòng chọn sử dụng thức uống có cồn' })
+    .refine(
+      val => val >= 0 && val <= 4,
+      'Vui lòng chọn sử dụng thức uống có cồn'
+    ),
 });
 
 export type PredictFormSchema = z.infer<typeof predictFormSchema>;
@@ -83,7 +108,7 @@ export const getBMICategory = (bmi: number): string => {
 /**
  * Format form data for API submission
  */
-export const formatFormDataForAPI = (formData: PredictFormData) => {
+export const formatFormDataForAPI = (formData: PredictFormSchema) => {
   return {
     demographics: {
       name: formData.name,
@@ -103,7 +128,7 @@ export const formatFormDataForAPI = (formData: PredictFormData) => {
       vegetableConsumption: formData.FCVC,
       waterIntake: formData.CH2O,
       mainMeals: formData.NCP?.toString() || '0',
-      snacking: formData.CAEC?.toString() === 'yes',
+      snacking: formData.CAEC, // CAEC is numeric (0-4), not yes/no
     },
     activityHabits: {
       exercise: formData.FAF,

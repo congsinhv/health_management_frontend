@@ -34,10 +34,40 @@ export interface RegisterCredentials {
   [key: string]: unknown;
 }
 
-export interface AuthResponse {
-  user: User;
+export interface RegisterData {
+  email: string;
+  first_name: string;
+  last_name: string;
+  password: string;
+  provider?: string;
+  is_active?: boolean;
+  email_verified?: boolean;
+}
+
+export interface PasswordResetRequest {
+  email: string;
+}
+
+export interface PasswordResetData {
   token: string;
-  refreshToken: string;
+  new_password: string;
+}
+
+export interface ChangePasswordData {
+  current_password: string;
+  new_password: string;
+}
+
+export interface AuthResponse {
+  access_token: string;
+  refresh_token: string;
+  user?: User;
+}
+
+export interface TokenPair {
+  access_token: string;
+  refresh_token: string;
+  token_type: 'bearer';
 }
 
 export interface GoogleAuthResponse {

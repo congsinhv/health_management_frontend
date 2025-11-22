@@ -2,56 +2,11 @@
 // Predict Form Data Types (Updated)
 // ===============================
 
-export interface PredictFormData {
-  // Demographics
-  name: string;
-  gender: 1 | 0 | null; // 1: male, 0: female
-  age: number | null;
-  height: number | null; // meters
-  weight: number | null; // kg
-  family_history_with_overweight: 'yes' | 'no' | '';
+// Import the schema type from validation - this ensures type safety
+import type { PredictFormSchema } from './validation';
 
-  // Eating habits
-  FAVC: 'yes' | 'no' | ''; //Có thường xuyên ăn thức ăn nhiều calo không
-  FCVC: 1 | 2 | 3 | null; // Frequency of vegetables
-  NCP: 1 | 2 | 3 | null; // Main meals per day
-  CAEC: 0 | 1 | 2 | 3 | 4 | null; // Eating between meals
-
-  // Other habits
-  SMOKE: 'yes' | 'no' | '';
-  CH2O: 1 | 2 | 3 | null; // Water consumption
-  SCC: 1 | 2 | 3 | null; // Calorie monitoring
-
-  // Activity habits
-  FAF: 0 | 1 | 2 | 3 | null; // Physical activity frequency
-  TUE: 0 | 1 | 2 | null; // Technology usage
-  CALC: 0 | 1 | 2 | 3 | 4 | null; // Alcohol consumption
-  MTRANS: 1 | 2 | 3 | 4 | 5 | null; // Transportation
-}
-
-export const initialFormData: PredictFormData = {
-  // Demographics
-  name: '',
-  gender: null,
-  age: null,
-  height: null,
-  weight: null,
-  family_history_with_overweight: '',
-
-  FAVC: '',
-  FCVC: null,
-  NCP: null,
-  CAEC: null,
-
-  SMOKE: '',
-  CH2O: null,
-  SCC: null,
-
-  FAF: null,
-  TUE: null,
-  CALC: null,
-  MTRANS: null,
-};
+// Use the Zod-inferred type as the source of truth
+export type PredictFormData = PredictFormSchema;
 
 // ===============================
 // Selection Options

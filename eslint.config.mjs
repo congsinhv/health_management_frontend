@@ -17,12 +17,32 @@ const eslintConfig = [
       '.next/**',
       'out/**',
       'build/**',
+      'dist/**',
       'next-env.d.ts',
+      '.claude/**',
+      'plans/**',
+      'docs/**',
     ],
   },
   {
     rules: {
-      '@typescript-eslint/no-explicit-any': 'off',
+      // TypeScript rules
+      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-unused-vars': [
+        'warn',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+        },
+      ],
+      '@typescript-eslint/ban-ts-comment': 'off',
+
+      // General code quality
+      'no-console': ['warn', { allow: ['warn', 'error'] }],
+      'prefer-const': 'error',
+
+      // React rules
+      'react/no-unescaped-entities': 'off',
     },
   },
 ];

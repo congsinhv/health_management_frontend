@@ -3,7 +3,7 @@
 import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Logo } from '@/components/Logo';
+import { Logo } from '@/components/shared/Logo';
 import { authService } from '@/services/auth';
 import { logger } from '@/lib/logger';
 import { CheckCircle, XCircle, Loader2, Mail } from 'lucide-react';

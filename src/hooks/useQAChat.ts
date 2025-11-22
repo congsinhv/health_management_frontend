@@ -1,5 +1,5 @@
-import { useAuth } from '@/contexts/AuthContext';
-import { useConversation } from '@/contexts/ConversationContext';
+import { useAuth } from '@/contexts/auth';
+import { useConversation } from '@/contexts/conversation';
 import { conversationService } from '@/services/conversation';
 import { qaService } from '@/services/qa';
 import { qaStreamingService } from '@/services/qaStreaming';

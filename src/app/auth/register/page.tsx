@@ -1,7 +1,7 @@
 'use client';
 
 import { Google } from '@/components/icons';
-import { Logo } from '@/components/Logo';
+import { Logo } from '@/components/shared/Logo';
 import { Button } from '@/components/ui/button';
 import {
   Form,
@@ -12,7 +12,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/auth';
 import { logger } from '@/lib/logger';
 import { ROUTES } from '@/lib/constants';
 import { registerFormSchema, type RegisterFormValues } from '@/lib/schemas';

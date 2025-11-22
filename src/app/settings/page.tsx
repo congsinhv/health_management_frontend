@@ -19,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ProtectedRoute } from '@/components/ProtectedRoute';
+import { ProtectedRoute } from '@/components/shared/ProtectedRoute';
 
 function SettingsContent() {
   const [notifications, setNotifications] = useState({

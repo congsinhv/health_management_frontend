@@ -218,7 +218,7 @@ export const conversationService = {
     params: MessageListParams = {}
   ): Promise<MessageListResponse> => {
     const { limit = 50, before } = params;
-    const queryParams: any = { limit };
+    const queryParams: Record<string, number> = { limit };
     if (before) {
       queryParams.before = before;
     }

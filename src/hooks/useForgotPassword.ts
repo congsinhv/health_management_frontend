@@ -33,7 +33,7 @@ export function useForgotPassword(): UseForgotPasswordReturn {
     try {
       logger.debug('Yêu cầu đặt lại mật khẩu', { email });
 
-      await authService.requestPasswordReset(email);
+      await authService.requestPasswordReset({ email });
       setIsSuccess(true);
 
       logger.authSuccess('Yêu cầu đặt lại mật khẩu thành công', { email });
