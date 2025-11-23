@@ -26,7 +26,7 @@ import { submitPrediction } from '@/services/prediction';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, UseFormReturn } from 'react-hook-form';
 import {
   alcoholOptions,
   genderOptions,
@@ -45,6 +45,11 @@ const PredictPage = () => {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const validateAllFields = async (form: UseFormReturn<PredictFormData>) => {
+    await form.trigger();
+    return Object.keys(form.formState.errors).length > 0;
+  };
+
   const form = useForm<PredictFormData>({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: zodResolver(predictFormSchema) as any,
@@ -56,12 +61,12 @@ const PredictPage = () => {
    */
   const onSubmit = async (data: PredictFormData) => {
     try {
-      if (
-        !form.formState.isValid &&
-        Object.keys(form.formState.errors).length > 0
-      ) {
+      const isInvalid = await validateAllFields(form);
+
+      if (isInvalid) {
         return;
       }
+
       setIsSubmitting(true);
 
       // Submit prediction and get result
