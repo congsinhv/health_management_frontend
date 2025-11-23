@@ -40,6 +40,7 @@ import {
   yesNoOptions,
 } from './formHelper';
 import { predictFormSchema } from './validation';
+import { toast } from 'sonner';
 
 const PredictPage = () => {
   const router = useRouter();
@@ -79,7 +80,7 @@ const PredictPage = () => {
       router.push('/predict/result');
     } catch (error) {
       console.error('Error submitting form:', error);
-      alert('Có lỗi xảy ra khi xử lý dự đoán. Vui lòng thử lại.');
+      toast.error('Có lỗi xảy ra khi xử lý dự đoán. Vui lòng thử lại.');
       setIsSubmitting(false);
     }
   };

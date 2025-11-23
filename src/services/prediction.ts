@@ -209,7 +209,6 @@ export async function submitPrediction(
     return result;
   } catch (error) {
     console.error('Error submitting prediction:', error);
-    // Return mock data as fallback
-    return {} as PredictionResultData;
+    throw error;
   }
 }
