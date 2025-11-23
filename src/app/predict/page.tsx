@@ -56,7 +56,10 @@ const PredictPage = () => {
    */
   const onSubmit = async (data: PredictFormData) => {
     try {
-      if (!form.formState.isValid && !form.formState.errors) {
+      if (
+        !form.formState.isValid &&
+        Object.keys(form.formState.errors).length > 0
+      ) {
         return;
       }
       setIsSubmitting(true);
