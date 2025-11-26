@@ -250,119 +250,116 @@ export const useQAChat = (): UseQAChatReturn => {
           }
         }
 
-        // NEW: Try streaming first
-        const ENABLE_STREAMING = true; // Feature flag
+        try {
+          // Reset any previous streaming state
+          resetStreamingState();
 
-        if (ENABLE_STREAMING) {
-          try {
-            // Reset any previous streaming state
-            resetStreamingState();
-            setIsStreaming(true);
+          // Start SSE streaming
+          const abortController = await qaStreamingService.askQuestionStream(
+            {
+              question,
+              threshold: 0.55,
+              top_k: 7,
+            },
+            {
+              // Handle content chunks
+              onChunk: (chunk: string, tokenCount: number) => {
+                if (!isStreaming) {
+                  setIsStreaming(true);
+                }
+                // Prevent memory leak by limiting accumulator size to ~50KB
+                const MAX_CONTENT_LENGTH = 50000;
+                const newContent = streamContentAccumulatorRef.current + chunk;
 
-            // Start SSE streaming
-            const abortController = await qaStreamingService.askQuestionStream(
-              {
-                question,
-                threshold: 0.55,
-                top_k: 7,
+                if (newContent.length > MAX_CONTENT_LENGTH) {
+                  console.warn(
+                    'Streaming content exceeded max length, truncating...'
+                  );
+                  streamContentAccumulatorRef.current =
+                    newContent.slice(-MAX_CONTENT_LENGTH);
+                } else {
+                  streamContentAccumulatorRef.current = newContent;
+                }
+
+                setStreamingContent(streamContentAccumulatorRef.current);
+                setStreamingTokenCount(tokenCount);
               },
-              {
-                // Handle content chunks
-                onChunk: (chunk: string, tokenCount: number) => {
-                  // Prevent memory leak by limiting accumulator size to ~50KB
-                  const MAX_CONTENT_LENGTH = 50000;
-                  const newContent =
-                    streamContentAccumulatorRef.current + chunk;
 
-                  if (newContent.length > MAX_CONTENT_LENGTH) {
-                    console.warn(
-                      'Streaming content exceeded max length, truncating...'
+              // Handle answers
+              // Handle answers
+              onAnswers: (answers: Record<string, string[]>) => {
+                setStreamingAnswers(answers);
+              },
+
+              // Handle completion
+              onComplete: (summary: string, totalTokens: number) => {
+                console.warn('Streaming complete');
+                finalizeStreamingMessage(
+                  summary,
+                  totalTokens,
+                  user?.id || '',
+                  conversationId || 0
+                );
+                if (needUpdateTitle && conversationId) {
+                  loadConversations();
+                }
+              },
+
+              // Handle errors (fallback to non-streaming)
+              onError: (err: Error) => {
+                console.error(
+                  'Streaming error, falling back to non-streaming:',
+                  err
+                );
+                resetStreamingState();
+
+                // Fallback to non-streaming (use existing logic below)
+                qaService
+                  .askQuestion({ question, threshold: 0.55, top_k: 7 })
+                  .then(response => {
+                    addMessage(response.summary, 'assistant');
+
+                    if (conversationId) {
+                      conversationService
+                        .createMessage({
+                          conversation_id: conversationId,
+                          content: response.summary,
+                          content_type: 'text',
+                          user_id: Number(user?.id),
+                          metadata: {
+                            source: 'ai_generated',
+                            model_used: 'fallback-non-streaming',
+                            qa_results: response.answers,
+                          },
+                        })
+                        .catch(console.error);
+                    }
+                  })
+                  .catch(() => {
+                    setError('Đã xảy ra lỗi. Vui lòng thử lại.');
+                    addMessage(
+                      'Xin lỗi, đã xảy ra lỗi khi xử lý câu hỏi của bạn. Vui lòng thử lại sau.',
+                      'assistant'
                     );
-                    streamContentAccumulatorRef.current =
-                      newContent.slice(-MAX_CONTENT_LENGTH);
-                  } else {
-                    streamContentAccumulatorRef.current = newContent;
-                  }
-
-                  setStreamingContent(streamContentAccumulatorRef.current);
-                  setStreamingTokenCount(tokenCount);
-                },
-
-                // Handle answers
-                // Handle answers
-                onAnswers: (answers: Record<string, string[]>) => {
-                  setStreamingAnswers(answers);
-                },
-
-                // Handle completion
-                onComplete: (summary: string, totalTokens: number) => {
-                  finalizeStreamingMessage(
-                    summary,
-                    totalTokens,
-                    user?.id || '',
-                    conversationId || 0
-                  );
-                  if (needUpdateTitle && conversationId) {
-                    loadConversations();
-                  }
-                },
-
-                // Handle errors (fallback to non-streaming)
-                onError: (err: Error) => {
-                  console.error(
-                    'Streaming error, falling back to non-streaming:',
-                    err
-                  );
-                  resetStreamingState();
-
-                  // Fallback to non-streaming (use existing logic below)
-                  qaService
-                    .askQuestion({ question, threshold: 0.55, top_k: 7 })
-                    .then(response => {
-                      addMessage(response.summary, 'assistant');
-
-                      if (conversationId) {
-                        conversationService
-                          .createMessage({
-                            conversation_id: conversationId,
-                            content: response.summary,
-                            content_type: 'text',
-                            user_id: Number(user?.id),
-                            metadata: {
-                              source: 'ai_generated',
-                              model_used: 'fallback-non-streaming',
-                              qa_results: response.answers,
-                            },
-                          })
-                          .catch(console.error);
-                      }
-                    })
-                    .catch(() => {
-                      setError('Đã xảy ra lỗi. Vui lòng thử lại.');
-                      addMessage(
-                        'Xin lỗi, đã xảy ra lỗi khi xử lý câu hỏi của bạn. Vui lòng thử lại sau.',
-                        'assistant'
-                      );
-                    })
-                    .finally(() => {
-                      setIsWaitingForResponse(false);
-                    });
-                },
+                  })
+                  .finally(() => {
+                    setIsWaitingForResponse(false);
+                  });
               },
-              {
-                getAccessToken: () => localStorage.getItem('access_token'),
-              }
-            );
+            },
+            {
+              getAccessToken: () => localStorage.getItem('access_token'),
+            }
+          );
 
-            streamAbortControllerRef.current = abortController;
+          streamAbortControllerRef.current = abortController;
 
-            // Streaming initiated successfully - return early
-            return;
-          } catch (streamingSetupError) {
-            console.error('Failed to setup streaming:', streamingSetupError);
-            resetStreamingState();
-            // Fall through to non-streaming logic below
-          }
+          // Streaming initiated successfully - return early
+          return;
+        } catch (streamingSetupError) {
+          console.error('Failed to setup streaming:', streamingSetupError);
+          resetStreamingState();
+          // Fall through to non-streaming logic below
         }
 
         // Call the Q&A API
