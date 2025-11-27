@@ -281,20 +281,6 @@ pipeline {
                     }
                 }
 
-                stage('Approve Deployment') {
-                    when {
-                        expression { return params.ENVIRONMENT == 'prod' }
-                    }
-                    steps {
-                        script {
-                            echo 'Production deployment - Manual approval required'
-                            input message: 'Deploy to PRODUCTION?',
-                                  ok: 'Deploy',
-                                  submitter: 'admin'
-                        }
-                    }
-                }
-
                 stage('Terraform Apply') {
                     steps {
                         dir('terraform') {
