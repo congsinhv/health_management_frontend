@@ -1,11 +1,11 @@
 output "cloud_run_url" {
   description = "URL of the Cloud Run service"
-  value       = google_cloud_run_service.frontend.status[0].url
+  value       = try(google_cloud_run_service.frontend.status[0].url, null)
 }
 
 output "service_url" {
   description = "Service URL (alias for cloud_run_url)"
-  value       = google_cloud_run_service.frontend.status[0].url
+  value       = try(google_cloud_run_service.frontend.status[0].url, null)
 }
 
 output "service_name" {

@@ -264,6 +264,34 @@ pipeline {
                     }
                 }
 
+                stage('Validate Docker Image') {
+                    steps {
+                        script {
+                            echo 'Validating Docker image exists...'
+                            def imageExists = sh(
+                                script: """
+                                    gcloud artifacts docker images describe ${IMAGE_FULL} \
+                                        --project=${GCP_PROJECT_ID} \
+                                        >/dev/null 2>&1 && echo 'true' || echo 'false'
+                                """,
+                                returnStdout: true
+                            ).trim()
+
+                            if (imageExists == 'false') {
+                                echo "WARNING: Image ${IMAGE_FULL} does not exist!"
+                                echo "This happens when pipeline is restarted from Terraform stage."
+                                echo "Falling back to 'latest' tag..."
+                                env.IMAGE_DEPLOYMENT = "${IMAGE_LATEST}"
+                            } else {
+                                echo "✓ Image ${IMAGE_FULL} exists"
+                                env.IMAGE_DEPLOYMENT = "${IMAGE_FULL}"
+                            }
+                            
+                            echo "Image to deploy: ${env.IMAGE_DEPLOYMENT}"
+                        }
+                    }
+                }
+
                 stage('Terraform Plan') {
                     steps {
                         dir('terraform') {
@@ -272,7 +300,7 @@ pipeline {
                                 sh """
                                     terraform plan \
                                         -var-file="environments/${params.ENVIRONMENT}.tfvars" \
-                                        -var "image_url=${IMAGE_FULL}" \
+                                        -var "image_url=${env.IMAGE_DEPLOYMENT}" \
                                         -out=tfplan \
                                         -no-color
                                 """
@@ -301,7 +329,7 @@ pipeline {
                                 echo "=========================================="
                                 echo "Deployment Successful!"
                                 echo "Service URL: ${serviceUrl}"
-                                echo "Image: ${IMAGE_FULL}"
+                                echo "Image Deployed: ${env.IMAGE_DEPLOYMENT}"
                                 echo "=========================================="
                             }
                         }
@@ -316,7 +344,7 @@ pipeline {
             echo '=========================================='
             echo 'Deployment completed successfully!'
             echo "Environment: ${params.ENVIRONMENT}"
-            echo "Image: ${IMAGE_FULL}"
+            echo "Image Deployed: ${env.IMAGE_DEPLOYMENT ?: IMAGE_FULL}"
             echo '=========================================='
         }
         failure {
