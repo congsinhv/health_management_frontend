@@ -9,7 +9,7 @@ pipeline {
         )
         string(
             name: 'BRANCH_NAME',
-            defaultValue: 'main',
+            defaultValue: 'develop',
             description: 'Git branch to deploy'
         )
         booleanParam(
@@ -22,7 +22,7 @@ pipeline {
     environment {
         GCP_REGION = 'asia-southeast1'
         ENV = "${params.ENVIRONMENT}"
-        GCP_PROJECT_ID = "${params.ENVIRONMENT == 'prod' ? 'vhealth-prod' : 'vhealth-test'}"
+        GCP_PROJECT_ID = "vhealth-${params.ENVIRONMENT}"
         TF_BACKEND_BUCKET = "${GCP_PROJECT_ID}-frontend-tfstate"
 
         ARTIFACT_REGISTRY_REPO = "vhealth-frontend-${params.ENVIRONMENT}"
@@ -33,13 +33,7 @@ pipeline {
 
         TF_IN_AUTOMATION = 'true'
         TF_VAR_FILE = "terraform/environments/${params.ENVIRONMENT}.tfvars"
-        
-        // Environment-specific service account credentials
-        GOOGLE_APPLICATION_CREDENTIALS = credentials(
-            params.ENVIRONMENT == 'prod'
-                ? 'gcp-service-account-key-prod'
-                : 'gcp-service-account-key-test'
-        )
+        ENV_CREDENTIAL = "gcp-service-account-key-${params.ENVIRONMENT}"
 
         // Docker BuildKit for better caching
         DOCKER_BUILDKIT = '1'
@@ -87,13 +81,15 @@ pipeline {
         stage('Authenticate to GCP') {
             steps {
                 script {
-                    echo 'Authenticating to GCP...'
-                    sh '''
-                        gcloud auth activate-service-account --key-file=${GOOGLE_APPLICATION_CREDENTIALS}
-                        gcloud config set project ${GCP_PROJECT_ID}
-                        gcloud config set compute/region ${GCP_REGION}
-                        gcloud auth configure-docker ${GCP_REGION}-docker.pkg.dev --quiet
-                    '''
+                    withCredentials([file(credentialsId: "${ENV_CREDENTIAL}", variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
+                        sh """
+                            echo 'Using credentials: ${ENV_CREDENTIAL}'
+                            gcloud auth activate-service-account --key-file="$GOOGLE_APPLICATION_CREDENTIALS"
+                            gcloud config set project "${GCP_PROJECT_ID}"
+                            gcloud config set compute/region "${GCP_REGION}"
+                            gcloud auth configure-docker "${GCP_REGION}-docker.pkg.dev" --quiet
+                        """
+                    }
                 }
             }
         }
