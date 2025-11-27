@@ -4,12 +4,12 @@ pipeline {
     parameters {
         choice(
             name: 'ENVIRONMENT',
-            choices: ['dev', 'prod'],
+            choices: ['test', 'prod'],
             description: 'Target environment for deployment'
         )
         string(
             name: 'BRANCH_NAME',
-            defaultValue: 'develop',
+            defaultValue: 'main',
             description: 'Git branch to deploy'
         )
         booleanParam(
@@ -22,7 +22,7 @@ pipeline {
     environment {
         GCP_REGION = 'asia-southeast1'
         ENV = "${params.ENVIRONMENT}"
-        GCP_PROJECT_ID = "${params.ENVIRONMENT == 'prod' ? 'vhealth-prod' : 'vhealth-dev'}"
+        GCP_PROJECT_ID = "${params.ENVIRONMENT == 'prod' ? 'vhealth-prod' : 'vhealth-test'}"
         TF_BACKEND_BUCKET = "${GCP_PROJECT_ID}-frontend-tfstate"
 
         ARTIFACT_REGISTRY_REPO = "vhealth-frontend-${params.ENVIRONMENT}"
@@ -33,7 +33,13 @@ pipeline {
 
         TF_IN_AUTOMATION = 'true'
         TF_VAR_FILE = "terraform/environments/${params.ENVIRONMENT}.tfvars"
-        GOOGLE_APPLICATION_CREDENTIALS = credentials('gcp-service-account-key')
+        
+        // Environment-specific service account credentials
+        GOOGLE_APPLICATION_CREDENTIALS = credentials(
+            params.ENVIRONMENT == 'prod'
+                ? 'gcp-service-account-key-prod'
+                : 'gcp-service-account-key-test'
+        )
 
         // Docker BuildKit for better caching
         DOCKER_BUILDKIT = '1'
