@@ -173,10 +173,10 @@ pipeline {
                         returnStdout: true
                     ).trim()
 
-                    echo "✓ API URL: ${env.NEXT_PUBLIC_API_URL}"
-                    echo "✓ Google Client ID: ${env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ? '***' : '(not set)'}"
-                    echo "✓ Google Client Secret: ${env.NEXT_PUBLIC_GOOGLE_SECRET ? '***' : '(not set)'}"
-                    echo "✓ Google Redirect URI: ${env.NEXT_PUBLIC_GOOGLE_REDIRECT_URI}"
+                    echo "API URL: ${env.NEXT_PUBLIC_API_URL}"
+                    echo "Google Client ID: ${env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ? '***' : '(not set)'}"
+                    echo "Google Client Secret: ${env.NEXT_PUBLIC_GOOGLE_SECRET ? '***' : '(not set)'}"
+                    echo "Google Redirect URI: ${env.NEXT_PUBLIC_GOOGLE_REDIRECT_URI}"
                 }
             }
         }
@@ -210,12 +210,33 @@ pipeline {
 
         stage('Terraform Deployment') {
             stages {
+                stage('Clean Terraform Workspace') {
+                    steps {
+                        dir('terraform') {
+                            script {
+                                echo '=========================================='
+                                echo 'Cleaning Terraform workspace to prevent cross-environment contamination'
+                                echo '=========================================='
+                                sh '''
+                                    rm -rf .terraform .terraform.lock.hcl terraform.tfstate* tfplan
+                                    echo "Workspace cleaned"
+                                '''
+                            }
+                        }
+                    }
+                }
+
                 stage('Terraform Init') {
                     steps {
                         withCredentials([file(credentialsId: "${ENV_CREDENTIAL}", variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
                             dir('terraform') {
                                 script {
-                                    echo 'Initializing Terraform...'
+                                    echo '=========================================='
+                                    echo "Initializing Terraform for ${params.ENVIRONMENT}"
+                                    echo "Backend Bucket: ${TF_BACKEND_BUCKET}"
+                                    echo "State Prefix: terraform/state/frontend-${params.ENVIRONMENT}"
+                                    echo "Project: ${GCP_PROJECT_ID}"
+                                    echo '=========================================='
                                     sh """
                                         gcloud auth activate-service-account --key-file="\$GOOGLE_APPLICATION_CREDENTIALS"
                                         gcloud config set project "${GCP_PROJECT_ID}"
@@ -225,6 +246,51 @@ pipeline {
                                             -reconfigure \
                                             -no-color
                                     """
+                                }
+                            }
+                        }
+                    }
+                }
+
+                stage('Validate State Environment') {
+                    steps {
+                        withCredentials([file(credentialsId: "${ENV_CREDENTIAL}", variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
+                            dir('terraform') {
+                                script {
+                                    echo '=========================================='
+                                    echo 'Validating Terraform state matches target environment'
+                                    echo '=========================================='
+
+                                    def stateCheck = sh(
+                                        script: """
+                                            terraform show -json 2>/dev/null | jq -r '.values.root_module.resources[]? | select(.type == "google_cloud_run_service") | .values.project' | head -1 || echo ''
+                                        """,
+                                        returnStdout: true
+                                    ).trim()
+
+                                    echo "Expected Project: ${GCP_PROJECT_ID}"
+                                    echo "State Project: ${stateCheck ?: '(empty state - first deployment)'}"
+
+                                    if (stateCheck && stateCheck != "" && stateCheck != "${GCP_PROJECT_ID}") {
+                                        error """
+========================================
+CRITICAL ERROR: State Contamination Detected!
+========================================
+Expected Project: ${GCP_PROJECT_ID}
+Found in State:   ${stateCheck}
+
+This deployment would DESTROY resources in the wrong environment!
+Aborting to prevent cross-environment contamination.
+
+Action Required:
+1. Verify you selected the correct ENVIRONMENT parameter
+2. Check Jenkins workspace for leftover state files
+3. Contact DevOps team if this persists
+========================================
+                                        """
+                                    }
+
+                                    echo "State validation passed"
                                 }
                             }
                         }
@@ -292,10 +358,10 @@ pipeline {
                                     echo "Falling back to 'latest' tag..."
                                     env.IMAGE_DEPLOYMENT = "${IMAGE_LATEST}"
                                 } else {
-                                    echo "✓ Image ${IMAGE_FULL} exists"
+                                    echo "Image ${IMAGE_FULL} exists"
                                     env.IMAGE_DEPLOYMENT = "${IMAGE_FULL}"
                                 }
-                                
+
                                 echo "Image to deploy: ${env.IMAGE_DEPLOYMENT}"
                             }
                         }
@@ -307,7 +373,13 @@ pipeline {
                         withCredentials([file(credentialsId: "${ENV_CREDENTIAL}", variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
                             dir('terraform') {
                                 script {
-                                    echo 'Planning Terraform changes...'
+                                    echo '=========================================='
+                                    echo 'Planning Terraform changes'
+                                    echo "Environment: ${params.ENVIRONMENT}"
+                                    echo "Project: ${GCP_PROJECT_ID}"
+                                    echo "Image: ${env.IMAGE_DEPLOYMENT}"
+                                    echo '=========================================='
+
                                     sh """
                                         terraform plan \
                                             -var-file="environments/${params.ENVIRONMENT}.tfvars" \
@@ -315,6 +387,27 @@ pipeline {
                                             -out=tfplan \
                                             -no-color
                                     """
+
+                                    echo '=========================================='
+                                    echo 'Validating Terraform plan for cross-environment operations'
+                                    echo '=========================================='
+
+                                    // Check if plan contains operations on wrong environment
+                                    def wrongEnvCheck = sh(
+                                        script: """
+                                            terraform show -json tfplan | jq -r '.resource_changes[]? | select(.change.actions[] | contains("delete") or contains("create")) | .address' | grep -v "${params.ENVIRONMENT}" || echo ''
+                                        """,
+                                        returnStdout: true
+                                    ).trim()
+
+                                    if (wrongEnvCheck) {
+                                        echo "WARNING: Plan contains operations on resources not matching environment: ${params.ENVIRONMENT}"
+                                        echo "Resources: ${wrongEnvCheck}"
+                                        // Note: Not failing here as resource names might legitimately differ
+                                        // But logging for audit purposes
+                                    }
+
+                                    echo "Plan validation complete"
                                 }
                             }
                         }
@@ -369,9 +462,20 @@ pipeline {
             echo '=========================================='
         }
         always {
-            sh '''
-                docker system prune -f || true
-            '''
+            script {
+                echo 'Cleaning up resources...'
+
+                sh 'docker system prune -f || true'
+
+                dir('terraform') {
+                    sh '''
+                        echo 'Cleaning Terraform workspace for next deployment'
+                        rm -rf .terraform .terraform.lock.hcl terraform.tfstate* tfplan || true
+                    '''
+                }
+
+                echo 'Cleanup complete'
+            }
         }
     }
 }
