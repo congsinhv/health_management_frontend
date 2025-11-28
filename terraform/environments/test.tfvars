@@ -35,3 +35,10 @@ secret_environment_variables = {
   NEXT_PUBLIC_GOOGLE_REDIRECT_URI = "vhealth-test-google-redirect-uri"
 }
 
+# Resource Management Flags
+# Set to false because:
+# - IAM bindings: Jenkins SA doesn't have roles/resourcemanager.projectIamAdmin
+# - Artifact Registry: Repository already exists in GCP
+manage_iam_bindings      = false
+manage_artifact_registry = false
+

@@ -66,3 +66,15 @@ variable "secret_environment_variables" {
   default     = {}
 }
 
+variable "manage_iam_bindings" {
+  description = "Whether Terraform should manage IAM bindings for the Cloud Run service account. Set to false if the Jenkins SA lacks roles/resourcemanager.projectIamAdmin"
+  type        = bool
+  default     = false
+}
+
+variable "manage_artifact_registry" {
+  description = "Whether Terraform should manage the Artifact Registry repository. Set to false if the repository already exists"
+  type        = bool
+  default     = false
+}
+
