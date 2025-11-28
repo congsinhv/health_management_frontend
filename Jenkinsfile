@@ -212,16 +212,20 @@ pipeline {
             stages {
                 stage('Terraform Init') {
                     steps {
-                        dir('terraform') {
-                            script {
-                                echo 'Initializing Terraform...'
-                                sh """
-                                    terraform init \
-                                        -backend-config="bucket=${TF_BACKEND_BUCKET}" \
-                                        -backend-config="prefix=terraform/state/frontend-${params.ENVIRONMENT}" \
-                                        -reconfigure \
-                                        -no-color
-                                """
+                        withCredentials([file(credentialsId: "${ENV_CREDENTIAL}", variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
+                            dir('terraform') {
+                                script {
+                                    echo 'Initializing Terraform...'
+                                    sh """
+                                        gcloud auth activate-service-account --key-file="\$GOOGLE_APPLICATION_CREDENTIALS"
+                                        gcloud config set project "${GCP_PROJECT_ID}"
+                                        terraform init \
+                                            -backend-config="bucket=${TF_BACKEND_BUCKET}" \
+                                            -backend-config="prefix=terraform/state/frontend-${params.ENVIRONMENT}" \
+                                            -reconfigure \
+                                            -no-color
+                                    """
+                                }
                             }
                         }
                     }
@@ -229,10 +233,12 @@ pipeline {
 
                 stage('Terraform Validate') {
                     steps {
-                        dir('terraform') {
-                            script {
-                                echo 'Validating Terraform configuration...'
-                                sh 'terraform validate -no-color'
+                        withCredentials([file(credentialsId: "${ENV_CREDENTIAL}", variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
+                            dir('terraform') {
+                                script {
+                                    echo 'Validating Terraform configuration...'
+                                    sh 'terraform validate -no-color'
+                                }
                             }
                         }
                     }
@@ -240,70 +246,76 @@ pipeline {
 
                 stage('Fetch Secrets') {
                     steps {
-                        script {
-                            def fetchSecret = { secretName, placeholder ->
-                                try {
-                                    return sh(
-                                        script: """
-                                            gcloud secrets versions access latest \
-                                                --secret=vhealth-${params.ENVIRONMENT}-${secretName} \
-                                                --project=${GCP_PROJECT_ID} 2>/dev/null \
-                                            || echo '${placeholder}'
-                                        """,
-                                        returnStdout: true
-                                    ).trim()
-                                } catch (Exception e) {
-                                    return placeholder
+                        withCredentials([file(credentialsId: "${ENV_CREDENTIAL}", variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
+                            script {
+                                def fetchSecret = { secretName, placeholder ->
+                                    try {
+                                        return sh(
+                                            script: """
+                                                gcloud secrets versions access latest \
+                                                    --secret=vhealth-${params.ENVIRONMENT}-${secretName} \
+                                                    --project=${GCP_PROJECT_ID} 2>/dev/null \
+                                                || echo '${placeholder}'
+                                            """,
+                                            returnStdout: true
+                                        ).trim()
+                                    } catch (Exception e) {
+                                        return placeholder
+                                    }
                                 }
-                            }
 
-                            echo 'Fetching secrets from GCP Secret Manager...'
-                            env.TF_VAR_next_public_api_url = fetchSecret("api-url", "https://api.placeholder.com")
-                            echo 'Secrets fetched!'
+                                echo 'Fetching secrets from GCP Secret Manager...'
+                                env.TF_VAR_next_public_api_url = fetchSecret("api-url", "https://api.placeholder.com")
+                                echo 'Secrets fetched!'
+                            }
                         }
                     }
                 }
 
                 stage('Validate Docker Image') {
                     steps {
-                        script {
-                            echo 'Validating Docker image exists...'
-                            def imageExists = sh(
-                                script: """
-                                    gcloud artifacts docker images describe ${IMAGE_FULL} \
-                                        --project=${GCP_PROJECT_ID} \
-                                        >/dev/null 2>&1 && echo 'true' || echo 'false'
-                                """,
-                                returnStdout: true
-                            ).trim()
+                        withCredentials([file(credentialsId: "${ENV_CREDENTIAL}", variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
+                            script {
+                                echo 'Validating Docker image exists...'
+                                def imageExists = sh(
+                                    script: """
+                                        gcloud artifacts docker images describe ${IMAGE_FULL} \
+                                            --project=${GCP_PROJECT_ID} \
+                                            >/dev/null 2>&1 && echo 'true' || echo 'false'
+                                    """,
+                                    returnStdout: true
+                                ).trim()
 
-                            if (imageExists == 'false') {
-                                echo "WARNING: Image ${IMAGE_FULL} does not exist!"
-                                echo "This happens when pipeline is restarted from Terraform stage."
-                                echo "Falling back to 'latest' tag..."
-                                env.IMAGE_DEPLOYMENT = "${IMAGE_LATEST}"
-                            } else {
-                                echo "✓ Image ${IMAGE_FULL} exists"
-                                env.IMAGE_DEPLOYMENT = "${IMAGE_FULL}"
+                                if (imageExists == 'false') {
+                                    echo "WARNING: Image ${IMAGE_FULL} does not exist!"
+                                    echo "This happens when pipeline is restarted from Terraform stage."
+                                    echo "Falling back to 'latest' tag..."
+                                    env.IMAGE_DEPLOYMENT = "${IMAGE_LATEST}"
+                                } else {
+                                    echo "✓ Image ${IMAGE_FULL} exists"
+                                    env.IMAGE_DEPLOYMENT = "${IMAGE_FULL}"
+                                }
+                                
+                                echo "Image to deploy: ${env.IMAGE_DEPLOYMENT}"
                             }
-                            
-                            echo "Image to deploy: ${env.IMAGE_DEPLOYMENT}"
                         }
                     }
                 }
 
                 stage('Terraform Plan') {
                     steps {
-                        dir('terraform') {
-                            script {
-                                echo 'Planning Terraform changes...'
-                                sh """
-                                    terraform plan \
-                                        -var-file="environments/${params.ENVIRONMENT}.tfvars" \
-                                        -var "image_url=${env.IMAGE_DEPLOYMENT}" \
-                                        -out=tfplan \
-                                        -no-color
-                                """
+                        withCredentials([file(credentialsId: "${ENV_CREDENTIAL}", variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
+                            dir('terraform') {
+                                script {
+                                    echo 'Planning Terraform changes...'
+                                    sh """
+                                        terraform plan \
+                                            -var-file="environments/${params.ENVIRONMENT}.tfvars" \
+                                            -var "image_url=${env.IMAGE_DEPLOYMENT}" \
+                                            -out=tfplan \
+                                            -no-color
+                                    """
+                                }
                             }
                         }
                     }
@@ -311,26 +323,28 @@ pipeline {
 
                 stage('Terraform Apply') {
                     steps {
-                        dir('terraform') {
-                            script {
-                                echo 'Deploying to Cloud Run via Terraform...'
-                                sh 'terraform apply -auto-approve -no-color tfplan'
+                        withCredentials([file(credentialsId: "${ENV_CREDENTIAL}", variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
+                            dir('terraform') {
+                                script {
+                                    echo 'Deploying to Cloud Run via Terraform...'
+                                    sh 'terraform apply -auto-approve -no-color tfplan'
 
-                                sh '''
-                                    terraform output -json > terraform_outputs.json
-                                    cat terraform_outputs.json
-                                '''
+                                    sh '''
+                                        terraform output -json > terraform_outputs.json
+                                        cat terraform_outputs.json
+                                    '''
 
-                                def serviceUrl = sh(
-                                    script: 'terraform output -raw service_url',
-                                    returnStdout: true
-                                ).trim()
+                                    def serviceUrl = sh(
+                                        script: 'terraform output -raw service_url',
+                                        returnStdout: true
+                                    ).trim()
 
-                                echo "=========================================="
-                                echo "Deployment Successful!"
-                                echo "Service URL: ${serviceUrl}"
-                                echo "Image Deployed: ${env.IMAGE_DEPLOYMENT}"
-                                echo "=========================================="
+                                    echo "=========================================="
+                                    echo "Deployment Successful!"
+                                    echo "Service URL: ${serviceUrl}"
+                                    echo "Image Deployed: ${env.IMAGE_DEPLOYMENT}"
+                                    echo "=========================================="
+                                }
                             }
                         }
                     }
