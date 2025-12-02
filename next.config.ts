@@ -1,20 +1,27 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  // Enable standalone output for Docker
   output: 'standalone',
-
-  // Turbopack configuration
-  turbopack: {
-    rules: {
-      '*.svg': {
-        loaders: ['@svgr/webpack'],
-        as: '*.js',
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'plus.unsplash.com',
       },
-    },
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'source.unsplash.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'storage.googleapis.com',
+      },
+    ],
   },
-
-  // Webpack configuration (fallback for when not using Turbopack)
   webpack(config) {
     // SVG handling with SVGR
     config.module.rules.push({

@@ -1,7 +1,5 @@
 'use client';
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -10,37 +8,12 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Navigation } from '@/components/Navigation';
-import { useAuth } from '@/contexts/AuthContext';
+import { Navigation } from '@/components/shared/Navigation';
+import { useAuth } from '@/contexts/auth';
+import { ProtectedRoute } from '@/components/shared/ProtectedRoute';
 
-export default function DashboardPage() {
-  const router = useRouter();
-  const { user, isAuthenticated, isLoading } = useAuth();
-
-  // Redirect to login if not authenticated
-  useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      router.push('/auth/login');
-    }
-  }, [isAuthenticated, isLoading, router]);
-
-  // Show loading state
-  if (isLoading) {
-    return (
-      <div className='flex min-h-screen items-center justify-center'>
-        <div className='text-lg'>Loading...</div>
-      </div>
-    );
-  }
-
-  // Show login redirect message if not authenticated
-  if (!isAuthenticated) {
-    return (
-      <div className='flex min-h-screen items-center justify-center'>
-        <div className='text-lg'>Redirecting to login...</div>
-      </div>
-    );
-  }
+function DashboardContent() {
+  const { user } = useAuth();
 
   return (
     <div className='min-h-screen bg-gray-50 dark:bg-gray-900'>
@@ -172,5 +145,13 @@ export default function DashboardPage() {
         </div>
       </main>
     </div>
+  );
+}
+
+export default function DashboardPage() {
+  return (
+    <ProtectedRoute>
+      <DashboardContent />
+    </ProtectedRoute>
   );
 }

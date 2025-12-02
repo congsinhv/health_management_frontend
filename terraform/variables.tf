@@ -10,11 +10,11 @@ variable "region" {
 }
 
 variable "environment" {
-  description = "Environment (dev or prod)"
+  description = "Environment (test or prod)"
   type        = string
   validation {
-    condition     = contains(["dev", "prod"], var.environment)
-    error_message = "Environment must be either 'dev' or 'prod'."
+    condition     = contains(["test", "prod"], var.environment)
+    error_message = "Environment must be 'test' or 'prod'."
   }
 }
 
@@ -64,5 +64,17 @@ variable "secret_environment_variables" {
   description = "Secret environment variables from GCP Secret Manager (format: SECRET_NAME:VERSION)"
   type        = map(string)
   default     = {}
+}
+
+variable "manage_iam_bindings" {
+  description = "Whether Terraform should manage IAM bindings for the Cloud Run service account. Set to false if the Jenkins SA lacks roles/resourcemanager.projectIamAdmin"
+  type        = bool
+  default     = false
+}
+
+variable "manage_artifact_registry" {
+  description = "Whether Terraform should manage the Artifact Registry repository. Set to false if the repository already exists"
+  type        = bool
+  default     = false
 }
 

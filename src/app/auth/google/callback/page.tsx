@@ -1,7 +1,8 @@
 'use client';
 
-import { useAuth } from '@/contexts/AuthContext';
-import { api, tokenStorage } from '@/lib/api';
+import { useAuth } from '@/contexts/auth';
+import { authService } from '@/services/auth';
+import { tokenStorage } from '@/lib/storage';
 import { logger } from '@/lib/logger';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect } from 'react';
@@ -51,7 +52,7 @@ function GoogleCallbackContent() {
         });
 
         // Call the Google callback API
-        const response = await api.auth.googleCallback({
+        const response = await authService.googleCallback({
           code,
           state: state || undefined,
         });
@@ -66,7 +67,7 @@ function GoogleCallbackContent() {
 
         // Store tokens in localStorage
         if (response.access_token) {
-          tokenStorage.setToken(response.access_token);
+          tokenStorage.setAccessToken(response.access_token);
           logger.debug('Access token stored in localStorage');
         }
 

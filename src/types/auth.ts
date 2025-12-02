@@ -7,6 +7,7 @@ export interface User {
   dateOfBirth?: string;
   gender?: 'male' | 'female' | 'other' | 'prefer-not-to-say';
   phoneNumber?: string;
+  emailVerified?: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -33,10 +34,40 @@ export interface RegisterCredentials {
   [key: string]: unknown;
 }
 
-export interface AuthResponse {
-  user: User;
+export interface RegisterData {
+  email: string;
+  first_name: string;
+  last_name: string;
+  password: string;
+  provider?: string;
+  is_active?: boolean;
+  email_verified?: boolean;
+}
+
+export interface PasswordResetRequest {
+  email: string;
+}
+
+export interface PasswordResetData {
   token: string;
-  refreshToken: string;
+  new_password: string;
+}
+
+export interface ChangePasswordData {
+  current_password: string;
+  new_password: string;
+}
+
+export interface AuthResponse {
+  access_token: string;
+  refresh_token: string;
+  user?: User;
+}
+
+export interface TokenPair {
+  access_token: string;
+  refresh_token: string;
+  token_type: 'bearer';
 }
 
 export interface GoogleAuthResponse {
@@ -53,11 +84,13 @@ export interface AuthContextType extends AuthState {
   login: (credentials: LoginCredentials) => Promise<void>;
   register: (credentials: RegisterCredentials) => Promise<void>;
   loginWithGoogle: () => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
+  logoutAll: () => Promise<void>;
   updateProfile: (userData: Partial<User>) => Promise<void>;
   refreshAuth: () => Promise<void>;
   checkAuthStatus: () => Promise<void>;
   clearError: () => void;
+  updateUserInContext: (userData: Partial<User>) => void;
 }
 
 export interface HealthProfile {

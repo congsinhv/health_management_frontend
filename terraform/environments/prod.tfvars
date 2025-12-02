@@ -29,9 +29,16 @@ environment_variables = {
 
 # Secret Environment Variables (from GCP Secret Manager)
 secret_environment_variables = {
-  NEXT_PUBLIC_API_URL            = "vhealth-prod-api-url"
-  NEXT_PUBLIC_GOOGLE_CLIENT_ID   = "vhealth-prod-google-client-id"
-  NEXT_PUBLIC_GOOGLE_SECRET      = "vhealth-prod-google-client-secret"
+  NEXT_PUBLIC_API_URL             = "vhealth-prod-api-url"
+  NEXT_PUBLIC_GOOGLE_CLIENT_ID    = "vhealth-prod-google-client-id"
+  NEXT_PUBLIC_GOOGLE_SECRET       = "vhealth-prod-google-client-secret"
   NEXT_PUBLIC_GOOGLE_REDIRECT_URI = "vhealth-prod-google-redirect-uri"
 }
+
+# Resource Management Flags
+# Set to false because:
+# - IAM bindings: Jenkins SA doesn't have roles/resourcemanager.projectIamAdmin
+# - Artifact Registry: Repository already exists in GCP
+manage_iam_bindings      = false
+manage_artifact_registry = false
 

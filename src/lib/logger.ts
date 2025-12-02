@@ -60,6 +60,7 @@ class Logger {
     const entry = this.createLogEntry('debug', message, context);
 
     if (this.shouldLog('debug')) {
+      // eslint-disable-next-line no-console
       console.debug(this.formatMessage(entry));
     }
   }
@@ -68,6 +69,7 @@ class Logger {
     const entry = this.createLogEntry('info', message, context);
 
     if (this.shouldLog('info')) {
+      // eslint-disable-next-line no-console
       console.info(this.formatMessage(entry));
     }
 
@@ -143,6 +145,29 @@ class Logger {
       status,
       category: 'api',
     });
+  }
+
+  // Conversation-specific logging methods
+  conversation(action: string, context?: Record<string, unknown>): void {
+    this.info(`Conversation: ${action}`, {
+      ...context,
+      category: 'conversation',
+    });
+  }
+
+  conversationError(
+    action: string,
+    error?: Error | unknown,
+    context?: Record<string, unknown>
+  ): void {
+    this.error(
+      `Conversation error: ${action}`,
+      error instanceof Error ? error : new Error(String(error)),
+      {
+        ...context,
+        category: 'conversation',
+      }
+    );
   }
 }
 

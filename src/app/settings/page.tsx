@@ -12,8 +12,16 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { ProtectedRoute } from '@/components/shared/ProtectedRoute';
 
-export default function SettingsPage() {
+function SettingsContent() {
   const [notifications, setNotifications] = useState({
     email: true,
     push: false,
@@ -255,52 +263,68 @@ export default function SettingsPage() {
               <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
                 <div>
                   <Label htmlFor='theme'>Theme</Label>
-                  <select
-                    id='theme'
-                    className='border-input bg-background ring-offset-background focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none'
-                    defaultValue='system'
-                  >
-                    <option value='light'>Light</option>
-                    <option value='dark'>Dark</option>
-                    <option value='system'>System</option>
-                  </select>
+                  <Select defaultValue='system'>
+                    <SelectTrigger id='theme'>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value='light'>Light</SelectItem>
+                      <SelectItem value='dark'>Dark</SelectItem>
+                      <SelectItem value='system'>System</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div>
                   <Label htmlFor='language'>Language</Label>
-                  <select
-                    id='language'
-                    className='border-input bg-background ring-offset-background focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none'
-                    defaultValue='en'
-                  >
-                    <option value='en'>English</option>
-                    <option value='es'>Español</option>
-                    <option value='fr'>Français</option>
-                    <option value='de'>Deutsch</option>
-                  </select>
+                  <Select defaultValue='en'>
+                    <SelectTrigger id='language'>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value='en'>English</SelectItem>
+                      <SelectItem value='es'>Español</SelectItem>
+                      <SelectItem value='fr'>Français</SelectItem>
+                      <SelectItem value='de'>Deutsch</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div>
                   <Label htmlFor='timezone'>Timezone</Label>
-                  <select
-                    id='timezone'
-                    className='border-input bg-background ring-offset-background focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none'
-                    defaultValue='utc-5'
-                  >
-                    <option value='utc-8'>Pacific Time (UTC-8)</option>
-                    <option value='utc-7'>Mountain Time (UTC-7)</option>
-                    <option value='utc-6'>Central Time (UTC-6)</option>
-                    <option value='utc-5'>Eastern Time (UTC-5)</option>
-                  </select>
+                  <Select defaultValue='utc-5'>
+                    <SelectTrigger id='timezone'>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value='utc-8'>
+                        Pacific Time (UTC-8)
+                      </SelectItem>
+                      <SelectItem value='utc-7'>
+                        Mountain Time (UTC-7)
+                      </SelectItem>
+                      <SelectItem value='utc-6'>
+                        Central Time (UTC-6)
+                      </SelectItem>
+                      <SelectItem value='utc-5'>
+                        Eastern Time (UTC-5)
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div>
                   <Label htmlFor='units'>Unit System</Label>
-                  <select
-                    id='units'
-                    className='border-input bg-background ring-offset-background focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none'
-                    defaultValue='metric'
-                  >
-                    <option value='metric'>Metric (kg, cm, °C)</option>
-                    <option value='imperial'>Imperial (lbs, ft, °F)</option>
-                  </select>
+                  <Select defaultValue='metric'>
+                    <SelectTrigger id='units'>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value='metric'>
+                        Metric (kg, cm, °C)
+                      </SelectItem>
+                      <SelectItem value='imperial'>
+                        Imperial (lbs, ft, °F)
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
               <Button>Save Preferences</Button>
@@ -309,5 +333,13 @@ export default function SettingsPage() {
         </div>
       </main>
     </div>
+  );
+}
+
+export default function SettingsPage() {
+  return (
+    <ProtectedRoute>
+      <SettingsContent />
+    </ProtectedRoute>
   );
 }

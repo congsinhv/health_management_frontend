@@ -37,22 +37,32 @@ resource "google_project_service" "required_apis" {
 }
 
 # Service Account for Cloud Run
-resource "google_service_account" "cloud_run_sa" {
-  account_id   = "vhealth-frontend-${var.environment}"
-  display_name = "Cloud Run Service Account for VHealth Frontend - ${var.environment}"
-  project      = var.project_id
+# NOTE: The service account and its IAM bindings should be pre-created manually
+# or by a separate Terraform configuration with elevated permissions.
+# This data source references an existing service account.
+data "google_service_account" "cloud_run_sa" {
+  account_id = "vhealth-frontend-${var.environment}"
+  project    = var.project_id
 }
 
 # IAM bindings for Service Account
+# IMPORTANT: These require the Jenkins service account to have roles/resourcemanager.projectIamAdmin
+# If you get 403 errors, grant the IAM roles manually via GCP Console or gcloud:
+#   gcloud projects add-iam-policy-binding PROJECT_ID \
+#     --member="serviceAccount:vhealth-frontend-ENV@PROJECT_ID.iam.gserviceaccount.com" \
+#     --role="roles/secretmanager.secretAccessor"
+#   gcloud projects add-iam-policy-binding PROJECT_ID \
+#     --member="serviceAccount:vhealth-frontend-ENV@PROJECT_ID.iam.gserviceaccount.com" \
+#     --role="roles/artifactregistry.reader"
 resource "google_project_iam_member" "cloud_run_sa_roles" {
-  for_each = toset([
+  for_each = var.manage_iam_bindings ? toset([
     "roles/secretmanager.secretAccessor",
     "roles/artifactregistry.reader",
-  ])
+  ]) : toset([])
 
   project = var.project_id
   role    = each.key
-  member  = "serviceAccount:${google_service_account.cloud_run_sa.email}"
+  member  = "serviceAccount:${data.google_service_account.cloud_run_sa.email}"
 }
 
 # Cloud Run Service
@@ -119,7 +129,7 @@ resource "google_cloud_run_service" "frontend" {
         }
       }
 
-      service_account_name = google_service_account.cloud_run_sa.email
+      service_account_name = data.google_service_account.cloud_run_sa.email
     }
 
     metadata {
@@ -152,7 +162,10 @@ resource "google_cloud_run_service_iam_member" "public_access" {
 }
 
 # Artifact Registry Repository
+# NOTE: Set manage_artifact_registry = false if the repository already exists
 resource "google_artifact_registry_repository" "docker_repo" {
+  count = var.manage_artifact_registry ? 1 : 0
+
   location      = var.region
   repository_id = "vhealth-frontend-${var.environment}"
   description   = "Docker repository for VHealth frontend - ${var.environment}"
