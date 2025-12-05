@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -8,140 +9,817 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Navigation } from '@/components/shared/Navigation';
-import { useAuth } from '@/contexts/auth';
-import { ProtectedRoute } from '@/components/shared/ProtectedRoute';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+} from 'recharts';
+import {
+  Calendar,
+  TrendingUp,
+  Heart,
+  Activity,
+  Brain,
+  ChevronLeft,
+  ChevronRight,
+  Droplets,
+  Moon,
+  Footprints,
+  Plus,
+  Bell,
+  Search,
+  Menu,
+  User,
+  Users,
+  Clock,
+} from 'lucide-react';
+
+// Dữ liệu người dùng mẫu từ database
+const mockUser = {
+  id: 1,
+  email: 'nichols@example.com',
+  profile: {
+    firstName: 'Nichols',
+    lastName: 'Anderson',
+    avatarUrl: null,
+    gender: 'male',
+    heightCm: 175,
+    weightKg: 70,
+    dateOfBirth: '1990-05-15',
+    familyMedicalHistory: 'Không có tiền sử đáng kể',
+    goal: 'Duy trì lối sống lành mạnh và cải thiện thể lực',
+  },
+};
+
+// Dữ liệu sức khỏe mẫu dựa trên hồ sơ người dùng
+const generateHealthData = profile => {
+  const bmi = (profile.weightKg / Math.pow(profile.heightCm / 100, 2)).toFixed(
+    1
+  );
+  const age =
+    new Date().getFullYear() - new Date(profile.dateOfBirth).getFullYear();
+
+  return {
+    steps: 8432,
+    stepsGoal: 10000,
+    heartRate: 72,
+    sleepHours: 7.5,
+    waterIntake: 1.8,
+    waterGoal: 2.5,
+    bmi: bmi,
+    age: age,
+    calories: 2340,
+    caloriesGoal: 2500,
+  };
+};
 
 function DashboardContent() {
-  const { user } = useAuth();
+  const [timeView, setTimeView] = useState('daily');
+  const [currentMonth, setCurrentMonth] = useState(11);
+  const [currentYear, setCurrentYear] = useState(2025);
+
+  const user = mockUser;
+  const healthData = generateHealthData(user.profile);
+
+  // Dữ liệu biểu đồ theo thời gian
+  const dailyActivityData = [
+    { date: '16', steps: 7200, heartRate: 68, calories: 2100 },
+    { date: '17', steps: 9500, heartRate: 74, calories: 2400 },
+    { date: '18', steps: 6800, heartRate: 70, calories: 2000 },
+    { date: '19', steps: 10200, heartRate: 76, calories: 2600 },
+    { date: '20', steps: 8100, heartRate: 71, calories: 2200 },
+    { date: '21', steps: 9800, heartRate: 73, calories: 2450 },
+    { date: '22', steps: 12500, heartRate: 78, calories: 2800 },
+    { date: '23', steps: 11200, heartRate: 75, calories: 2650 },
+    { date: '24', steps: 10800, heartRate: 74, calories: 2500 },
+    { date: '25', steps: 8900, heartRate: 72, calories: 2300 },
+    { date: '26', steps: 8432, heartRate: 72, calories: 2340 },
+  ];
+
+  const weeklyData = [
+    { day: 'T2', value: 8500, weight: 70.2 },
+    { day: 'T3', value: 9200, weight: 70.1 },
+    { day: 'T4', value: 7800, weight: 70.0 },
+    { day: 'T5', value: 10200, weight: 69.9 },
+    { day: 'T6', value: 8900, weight: 70.0 },
+    { day: 'T7', value: 11500, weight: 70.1 },
+    { day: 'CN', value: 6500, weight: 70.0 },
+  ];
+
+  const monthlyData = [
+    { month: 'Th7', avgSteps: 8200, avgWeight: 71.5 },
+    { month: 'Th8', avgSteps: 8500, avgWeight: 71.2 },
+    { month: 'Th9', avgSteps: 8800, avgWeight: 70.8 },
+    { month: 'Th10', avgSteps: 9100, avgWeight: 70.5 },
+    { month: 'Th11', avgSteps: 9300, avgWeight: 70.2 },
+    { month: 'Th12', avgSteps: 9000, avgWeight: 70.0 },
+  ];
+
+  // Lịch sử chỉ số sức khỏe
+  const healthMetrics = [
+    {
+      date: '2024-12-26',
+      bloodPressure: { systolic: 120, diastolic: 80 },
+      weight: 70.0,
+      sleep: 7.5,
+      water: 1.8,
+    },
+  ];
+
+  // Thành viên nhóm - có thể tải từ database users
+  const teamMembers = [
+    {
+      id: 1,
+      firstName: 'Sarah',
+      lastName: 'Johnson',
+      avatarUrl: null,
+      color: 'from-pink-400 to-red-400',
+      avatar: '👩‍💼',
+    },
+    {
+      id: 2,
+      firstName: 'John',
+      lastName: 'Doe',
+      avatarUrl: null,
+      color: 'from-blue-400 to-cyan-400',
+      avatar: '👨‍💻',
+    },
+    {
+      id: 3,
+      firstName: 'Emma',
+      lastName: 'Wilson',
+      avatarUrl: null,
+      color: 'from-purple-400 to-pink-400',
+      avatar: '👩‍🔬',
+    },
+    {
+      id: 4,
+      firstName: 'Mike',
+      lastName: 'Brown',
+      avatarUrl: null,
+      color: 'from-green-400 to-teal-400',
+      avatar: '👨‍🎨',
+    },
+    {
+      id: 5,
+      firstName: 'Lisa',
+      lastName: 'Davis',
+      avatarUrl: null,
+      color: 'from-yellow-400 to-orange-400',
+      avatar: '👩‍⚕️',
+    },
+    {
+      id: 6,
+      firstName: 'Tom',
+      lastName: 'Miller',
+      avatarUrl: null,
+      color: 'from-indigo-400 to-blue-400',
+      avatar: '👨‍🏫',
+    },
+    {
+      id: 7,
+      firstName: 'Anna',
+      lastName: 'Garcia',
+      avatarUrl: null,
+      color: 'from-red-400 to-pink-400',
+      avatar: '👩‍💻',
+    },
+  ];
+
+  // Cuộc hẹn/Họp
+  const upcomingAppointments = [
+    {
+      date: '17',
+      day: 'T2',
+      title: 'Khám sức khỏe',
+      desc: 'Khám tổng quát định kỳ với Bác sĩ Smith',
+      type: 'medical',
+      color: 'bg-blue-50 dark:bg-blue-950',
+      textColor: 'text-blue-600 dark:text-blue-400',
+    },
+    {
+      date: '21',
+      day: 'T6',
+      title: 'Hẹn nha khoa',
+      desc: 'Vệ sinh răng miệng và kiểm tra định kỳ',
+      type: 'dental',
+      color: 'bg-teal-50 dark:bg-teal-950',
+      textColor: 'text-teal-600 dark:text-teal-400',
+    },
+    {
+      date: '25',
+      day: 'T3',
+      title: 'Đánh giá thể lực',
+      desc: 'Đánh giá tiến độ hàng tháng với huấn luyện viên',
+      type: 'fitness',
+      color: 'bg-yellow-50 dark:bg-yellow-950',
+      textColor: 'text-yellow-600 dark:text-yellow-400',
+    },
+  ];
+
+  // Đề xuất AI dựa trên dữ liệu người dùng
+  const generateAISuggestions = () => {
+    const suggestions = [];
+
+    // Phân tích số bước chân
+    const stepsPercentage = (
+      (healthData.steps / healthData.stepsGoal) *
+      100
+    ).toFixed(0);
+    if (stepsPercentage >= 80) {
+      suggestions.push({
+        type: 'success',
+        title: '🎯 Hoạt động tuyệt vời!',
+        message: `Bạn đã đạt ${stepsPercentage}% mục tiêu bước chân hôm nay. Tiếp tục duy trì!`,
+      });
+    } else {
+      suggestions.push({
+        type: 'warning',
+        title: '🚶 Tăng hoạt động',
+        message: `Bạn còn ${healthData.stepsGoal - healthData.steps} bước để đạt mục tiêu. Hãy đi bộ thêm 15 phút!`,
+      });
+    }
+
+    // Lượng nước uống
+    const waterPercentage = (
+      (healthData.waterIntake / healthData.waterGoal) *
+      100
+    ).toFixed(0);
+    if (waterPercentage < 80) {
+      suggestions.push({
+        type: 'info',
+        title: '💧 Nhắc nhở uống nước',
+        message: `Bạn cần uống thêm ${(healthData.waterGoal - healthData.waterIntake).toFixed(1)}L nước để đạt mục tiêu hôm nay.`,
+      });
+    }
+
+    // Phân tích BMI
+    const bmi = parseFloat(healthData.bmi);
+    if (bmi >= 18.5 && bmi < 25) {
+      suggestions.push({
+        type: 'success',
+        title: '⚖️ BMI lý tưởng',
+        message: `BMI của bạn là ${bmi}, nằm trong khoảng cân nặng khỏe mạnh. Tuyệt vời!`,
+      });
+    } else if (bmi >= 25) {
+      suggestions.push({
+        type: 'warning',
+        title: '⚖️ Kiểm soát cân nặng',
+        message: `BMI của bạn là ${bmi}. Hãy tăng cường tập luyện và ăn uống lành mạnh.`,
+      });
+    }
+
+    return suggestions;
+  };
+
+  const aiSuggestions = generateAISuggestions();
+
+  const getDaysInMonth = (month, year) => {
+    return new Date(year, month + 1, 0).getDate();
+  };
+
+  const getFirstDayOfMonth = (month, year) => {
+    return new Date(year, month, 1).getDay();
+  };
+
+  const monthNames = [
+    'Tháng 1',
+    'Tháng 2',
+    'Tháng 3',
+    'Tháng 4',
+    'Tháng 5',
+    'Tháng 6',
+    'Tháng 7',
+    'Tháng 8',
+    'Tháng 9',
+    'Tháng 10',
+    'Tháng 11',
+    'Tháng 12',
+  ];
+
+  const renderCalendar = () => {
+    const daysInMonth = getDaysInMonth(currentMonth, currentYear);
+    const firstDay = getFirstDayOfMonth(currentMonth, currentYear);
+    const days = [];
+    const prevMonthDays = getDaysInMonth(currentMonth - 1, currentYear);
+
+    for (let i = firstDay - 1; i >= 0; i--) {
+      days.push(
+        <div
+          key={`prev-${i}`}
+          className='py-2 text-center text-sm text-gray-400 dark:text-gray-600'
+        >
+          {prevMonthDays - i}
+        </div>
+      );
+    }
+
+    for (let day = 1; day <= daysInMonth; day++) {
+      const isToday = day === 26;
+      days.push(
+        <div
+          key={day}
+          className={`cursor-pointer rounded-lg py-2 text-center text-sm transition-all ${
+            isToday
+              ? 'bg-blue-500 font-bold text-white shadow-md'
+              : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800'
+          }`}
+        >
+          {day}
+        </div>
+      );
+    }
+
+    return days;
+  };
+
+  const getChartData = () => {
+    if (timeView === 'weekly') return weeklyData;
+    if (timeView === 'monthly') return monthlyData;
+    return dailyActivityData;
+  };
+
+  const getDataKey = () => {
+    if (timeView === 'weekly') return 'value';
+    if (timeView === 'monthly') return 'avgSteps';
+    return 'steps';
+  };
+
+  const getXAxisKey = () => {
+    if (timeView === 'monthly') return 'month';
+    if (timeView === 'weekly') return 'day';
+    return 'date';
+  };
+
+  // Tính toán avatar người dùng
+  const getUserAvatar = () => {
+    if (user.profile.avatarUrl) {
+      return (
+        <img
+          src={user.profile.avatarUrl}
+          alt={user.profile.firstName}
+          className='h-full w-full object-cover'
+        />
+      );
+    }
+
+    const genderEmoji = user.profile.gender === 'female' ? '👩‍💼' : '👨‍💼';
+    return <span className='text-xl'>{genderEmoji}</span>;
+  };
 
   return (
     <div className='min-h-screen bg-gray-50 dark:bg-gray-900'>
-      <Navigation />
+      {/* Header */}
+      <header className='sticky top-0 z-10 border-b border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800'>
+        <div className='container mx-auto px-4 py-4'>
+          <div className='flex items-center justify-between'>
+            <div className='flex items-center gap-4'>
+              <div className='flex h-12 w-12 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-pink-400 to-purple-500 text-white'>
+                {getUserAvatar()}
+              </div>
+              <div>
+                <h2 className='text-xl font-bold text-gray-900 dark:text-white'>
+                  Chào mừng trở lại, {user.profile.firstName}!
+                </h2>
+                <p className='text-sm text-gray-600 dark:text-gray-400'>
+                  {user.email}
+                </p>
+              </div>
+            </div>
+            <div className='flex items-center gap-3'>
+              <Button variant='ghost' size='icon'>
+                <Search className='h-5 w-5' />
+              </Button>
+              <Button variant='ghost' size='icon' className='relative'>
+                <Bell className='h-5 w-5' />
+                <span className='absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500'></span>
+              </Button>
+              <Button variant='ghost' size='icon'>
+                <Menu className='h-5 w-5' />
+              </Button>
+              <div className='flex items-center gap-2 rounded-lg bg-blue-50 px-4 py-2 dark:bg-blue-950'>
+                <Activity className='h-4 w-4 text-blue-600 dark:text-blue-400' />
+                <span className='font-semibold text-blue-600 dark:text-blue-400'>
+                  {((healthData.steps / healthData.stepsGoal) * 100).toFixed(0)}
+                  %
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
 
-      {/* Main Content */}
+      {/* Nội dung chính */}
       <main className='container mx-auto p-4'>
         <div className='mb-8'>
           <h1 className='text-3xl font-bold text-gray-900 dark:text-white'>
-            Welcome back, {user?.firstName}!
+            Bảng điều khiển Sức khỏe
           </h1>
           <p className='text-gray-600 dark:text-gray-300'>
-            Here&apos;s your health overview for today
+            Đây là tổng quan sức khỏe của bạn hôm nay -{' '}
+            {new Date().toLocaleDateString('vi-VN', {
+              weekday: 'long',
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+            })}
           </p>
         </div>
 
-        {/* Quick Stats */}
-        <div className='mb-8 grid gap-4 md:grid-cols-4'>
+        {/* Thống kê nhanh */}
+        <div className='mb-8 grid gap-4 md:grid-cols-2 lg:grid-cols-4'>
           <Card>
             <CardHeader className='pb-2'>
-              <CardDescription>Today&apos;s Steps</CardDescription>
-              <CardTitle className='text-2xl'>8,432</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className='text-sm text-green-600 dark:text-green-400'>
-                +12% from yesterday
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className='pb-2'>
-              <CardDescription>Heart Rate</CardDescription>
-              <CardTitle className='text-2xl'>72 BPM</CardTitle>
+              <div className='flex items-center justify-between'>
+                {/* THAY ĐỔI: Thay Footprints bằng Clock */}
+                <Clock className='h-5 w-5 text-blue-500' />
+                <span className='rounded bg-green-50 px-2 py-1 text-xs font-semibold text-green-600 dark:bg-green-950 dark:text-green-400'>
+                  {((healthData.steps / healthData.stepsGoal) * 100).toFixed(0)}
+                  %
+                </span>
+              </div>
+              <CardDescription>Thời gian tập thể dục</CardDescription>
+              <CardTitle className='text-2xl'>
+                {healthData.steps.toLocaleString()}
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <p className='text-sm text-gray-600 dark:text-gray-400'>
-                Normal range
+                Mục tiêu: {healthData.stepsGoal.toLocaleString()} h
               </p>
             </CardContent>
           </Card>
+
           <Card>
             <CardHeader className='pb-2'>
-              <CardDescription>Sleep</CardDescription>
-              <CardTitle className='text-2xl'>7.5h</CardTitle>
+              <div className='flex items-center justify-between'>
+                <Heart className='h-5 w-5 text-red-500' />
+                <span className='rounded bg-gray-100 px-2 py-1 text-xs font-semibold text-gray-600 dark:bg-gray-800 dark:text-gray-400'>
+                  Bình thường
+                </span>
+              </div>
+              <CardDescription>Nhịp tim</CardDescription>
+              <CardTitle className='text-2xl'>
+                {healthData.heartRate} BPM
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className='text-sm text-gray-600 dark:text-gray-400'>
+                Nhịp tim nghỉ ngơi
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className='pb-2'>
+              <div className='flex items-center justify-between'>
+                <Moon className='h-5 w-5 text-purple-500' />
+                <span className='rounded bg-blue-50 px-2 py-1 text-xs font-semibold text-blue-600 dark:bg-blue-950 dark:text-blue-400'>
+                  Tốt
+                </span>
+              </div>
+              <CardDescription>Giấc ngủ</CardDescription>
+              <CardTitle className='text-2xl'>
+                {healthData.sleepHours}h
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <p className='text-sm text-blue-600 dark:text-blue-400'>
-                Good quality
+                Giấc ngủ chất lượng tốt
               </p>
             </CardContent>
           </Card>
+
           <Card>
             <CardHeader className='pb-2'>
-              <CardDescription>Water Intake</CardDescription>
-              <CardTitle className='text-2xl'>1.8L</CardTitle>
+              <div className='flex items-center justify-between'>
+                <Droplets className='h-5 w-5 text-cyan-500' />
+                <span className='rounded bg-orange-50 px-2 py-1 text-xs font-semibold text-orange-600 dark:bg-orange-950 dark:text-orange-400'>
+                  {(
+                    (healthData.waterIntake / healthData.waterGoal) *
+                    100
+                  ).toFixed(0)}
+                  %
+                </span>
+              </div>
+              <CardDescription>Lượng nước uống</CardDescription>
+              <CardTitle className='text-2xl'>
+                {healthData.waterIntake}L
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <p className='text-sm text-orange-600 dark:text-orange-400'>
-                Goal: 2.5L
+                Mục tiêu: {healthData.waterGoal}L
               </p>
             </CardContent>
           </Card>
         </div>
 
-        {/* Recent Activities and Quick Actions */}
-        <div className='grid gap-8 lg:grid-cols-2'>
+        {/* Tóm tắt hồ sơ người dùng */}
+        <div className='mb-8'>
           <Card>
             <CardHeader>
-              <CardTitle>Recent Activities</CardTitle>
-              <CardDescription>Your latest health entries</CardDescription>
+              <CardTitle>Tóm tắt Hồ sơ</CardTitle>
             </CardHeader>
-            <CardContent className='space-y-4'>
-              <div className='flex items-center justify-between'>
+            <CardContent>
+              <div className='grid grid-cols-2 gap-4 md:grid-cols-4'>
                 <div>
-                  <p className='font-medium'>Blood Pressure</p>
-                  <p className='text-sm text-gray-600 dark:text-gray-400'>
-                    120/80 mmHg
+                  <p className='text-sm text-gray-500 dark:text-gray-400'>
+                    Tuổi
+                  </p>
+                  <p className='text-lg font-semibold'>{healthData.age} tuổi</p>
+                </div>
+                <div>
+                  <p className='text-sm text-gray-500 dark:text-gray-400'>
+                    Chiều cao
+                  </p>
+                  <p className='text-lg font-semibold'>
+                    {user.profile.heightCm} cm
                   </p>
                 </div>
-                <span className='text-sm text-gray-500'>2 hours ago</span>
-              </div>
-              <div className='flex items-center justify-between'>
                 <div>
-                  <p className='font-medium'>Weight</p>
-                  <p className='text-sm text-gray-600 dark:text-gray-400'>
-                    68.5 kg
+                  <p className='text-sm text-gray-500 dark:text-gray-400'>
+                    Cân nặng
+                  </p>
+                  <p className='text-lg font-semibold'>
+                    {user.profile.weightKg} kg
                   </p>
                 </div>
-                <span className='text-sm text-gray-500'>Yesterday</span>
-              </div>
-              <div className='flex items-center justify-between'>
                 <div>
-                  <p className='font-medium'>Mood</p>
-                  <p className='text-sm text-gray-600 dark:text-gray-400'>
-                    Good 😊
+                  <p className='text-sm text-gray-500 dark:text-gray-400'>
+                    BMI
+                  </p>
+                  <p className='text-lg font-semibold'>{healthData.bmi}</p>
+                </div>
+              </div>
+              {user.profile.goal && (
+                <div className='mt-4 rounded-lg bg-blue-50 p-3 dark:bg-blue-950'>
+                  <p className='text-sm font-medium text-blue-900 dark:text-blue-100'>
+                    Mục tiêu của bạn
+                  </p>
+                  <p className='text-sm text-blue-700 dark:text-blue-300'>
+                    {user.profile.goal}
                   </p>
                 </div>
-                <span className='text-sm text-gray-500'>Yesterday</span>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Lưới chính */}
+        <div className='mb-6 grid gap-6 lg:grid-cols-3'>
+          {/* Biểu đồ hoạt động */}
+          <Card className='lg:col-span-2'>
+            <CardHeader>
+              <div className='flex items-center justify-between'>
+                <div>
+                  {/* THAY ĐỔI: Thay đổi tiêu đề chính */}
+                  <CardTitle>Thời gian tập thể dục</CardTitle>
+                  <CardDescription>
+                    {/* THAY ĐỔI: Thay đổi mô tả */}
+                    Theo dõi tiến độ thời gian tập luyện hàng ngày
+                  </CardDescription>
+                </div>
+                <div className='flex gap-2'>
+                  <Button
+                    onClick={() => setTimeView('daily')}
+                    variant={timeView === 'daily' ? 'default' : 'outline'}
+                    size='sm'
+                  >
+                    Hàng ngày
+                  </Button>
+                  <Button
+                    onClick={() => setTimeView('weekly')}
+                    variant={timeView === 'weekly' ? 'default' : 'outline'}
+                    size='sm'
+                  >
+                    Hàng tuần
+                  </Button>
+                  <Button
+                    onClick={() => setTimeView('monthly')}
+                    variant={timeView === 'monthly' ? 'default' : 'outline'}
+                    size='sm'
+                  >
+                    Hàng tháng
+                  </Button>
+                </div>
               </div>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width='100%' height={280}>
+                <AreaChart data={getChartData()}>
+                  <defs>
+                    <linearGradient id='colorValue' x1='0' y1='0' x2='0' y2='1'>
+                      <stop offset='5%' stopColor='#3B82F6' stopOpacity={0.3} />
+                      <stop offset='95%' stopColor='#3B82F6' stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray='3 3' stroke='#f0f0f0' />
+                  <XAxis
+                    dataKey={getXAxisKey()}
+                    stroke='#888'
+                    style={{ fontSize: '12px' }}
+                  />
+                  <YAxis stroke='#888' style={{ fontSize: '12px' }} />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: 'white',
+                      border: '1px solid #e5e7eb',
+                      borderRadius: '8px',
+                    }}
+                  />
+                  <Area
+                    type='monotone'
+                    dataKey={getDataKey()}
+                    stroke='#3B82F6'
+                    strokeWidth={3}
+                    fill='url(#colorValue)'
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
             </CardContent>
           </Card>
 
+          {/* Lịch */}
           <Card>
             <CardHeader>
-              <CardTitle>Quick Actions</CardTitle>
-              <CardDescription>
-                Common actions to track your health
-              </CardDescription>
+              <div className='flex items-center justify-between'>
+                <Button variant='ghost' size='icon'>
+                  <ChevronLeft className='h-5 w-5' />
+                </Button>
+                <CardTitle className='text-base'>
+                  {monthNames[currentMonth]} {currentYear}
+                </CardTitle>
+                <Button variant='ghost' size='icon'>
+                  <ChevronRight className='h-5 w-5' />
+                </Button>
+              </div>
             </CardHeader>
-            <CardContent className='space-y-4'>
-              <Button className='w-full justify-start' variant='outline'>
-                <span className='mr-2'>🩺</span>
-                Log Symptoms
-              </Button>
-              <Button className='w-full justify-start' variant='outline'>
-                <span className='mr-2'>💊</span>
-                Record Medication
-              </Button>
-              <Button className='w-full justify-start' variant='outline'>
-                <span className='mr-2'>🏃</span>
-                Track Exercise
-              </Button>
-              <Button className='w-full justify-start' variant='outline'>
-                <span className='mr-2'>🥗</span>
-                Log Meal
-              </Button>
+            <CardContent>
+              <div className='mb-2 grid grid-cols-7 gap-1'>
+                {['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'].map(day => (
+                  <div
+                    key={day}
+                    className='py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-400'
+                  >
+                    {day}
+                  </div>
+                ))}
+              </div>
+              <div className='grid grid-cols-7 gap-1'>{renderCalendar()}</div>
             </CardContent>
           </Card>
+        </div>
+
+        {/* Phần dưới */}
+        <div className='grid gap-6 lg:grid-cols-3'>
+          {/* Cột trái */}
+          <div className='space-y-6 lg:col-span-2'>
+            {/* Đề xuất AI */}
+            <Card>
+              <CardHeader>
+                <div className='flex items-center justify-between'>
+                  <div>
+                    <CardTitle>Thông tin chi tiết</CardTitle>
+                    <CardDescription>
+                      Đề xuất cá nhân hóa dựa trên dữ liệu của bạn
+                    </CardDescription>
+                  </div>
+                  <Brain className='h-6 w-6 text-purple-500' />
+                </div>
+              </CardHeader>
+              <CardContent className='space-y-4'>
+                {aiSuggestions.map((suggestion, idx) => (
+                  <div
+                    key={idx}
+                    className={`rounded-lg border-l-4 p-4 ${
+                      suggestion.type === 'success'
+                        ? 'border-green-500 bg-green-50 dark:bg-green-950'
+                        : suggestion.type === 'warning'
+                          ? 'border-orange-500 bg-orange-50 dark:bg-orange-950'
+                          : 'border-blue-500 bg-blue-50 dark:bg-blue-950'
+                    }`}
+                  >
+                    <h4 className='mb-1 text-sm font-semibold text-gray-900 dark:text-white'>
+                      {suggestion.title}
+                    </h4>
+                    <p className='text-sm text-gray-600 dark:text-gray-400'>
+                      {suggestion.message}
+                    </p>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+
+            {/* Hoạt động gần đây */}
+            {/* Biểu đồ calo */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Biểu đồ calo</CardTitle>
+                <CardDescription>
+                  Lượng calo tiêu thụ và đốt cháy hàng ngày
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width='100%' height={250}>
+                  <LineChart data={dailyActivityData}>
+                    <CartesianGrid strokeDasharray='3 3' stroke='#f0f0f0' />
+                    <XAxis
+                      dataKey='date'
+                      stroke='#888'
+                      style={{ fontSize: '12px' }}
+                    />
+                    <YAxis stroke='#888' style={{ fontSize: '12px' }} />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: 'white',
+                        border: '1px solid #e5e7eb',
+                        borderRadius: '8px',
+                      }}
+                    />
+                    <Line
+                      type='monotone'
+                      dataKey='calories'
+                      stroke='#F59E0B'
+                      strokeWidth={2}
+                      dot={{ fill: '#F59E0B', r: 4 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+                <div className='mt-4 flex items-center justify-between rounded-lg bg-orange-50 p-3 dark:bg-orange-950'>
+                  <div>
+                    <p className='text-sm text-gray-600 dark:text-gray-400'>
+                      Hôm nay
+                    </p>
+                    <p className='text-2xl font-bold text-orange-600 dark:text-orange-400'>
+                      {healthData.calories}
+                    </p>
+                  </div>
+                  <div className='text-right'>
+                    <p className='text-sm text-gray-600 dark:text-gray-400'>
+                      Mục tiêu
+                    </p>
+                    <p className='text-lg font-semibold text-gray-700 dark:text-gray-300'>
+                      {healthData.caloriesGoal}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Cột phải */}
+          <div className='space-y-6'>
+            {/* Sức khỏe tổng quan */}
+            <Card>
+              <CardHeader>
+                <div className='flex items-center justify-between'>
+                  <CardTitle>Tổng quan</CardTitle>
+                  <Button variant='link' size='sm'>
+                    Xem tất cả
+                  </Button>
+                </div>
+                <CardDescription>
+                  Đánh giá tổng quan về sức khỏe của bạn dựa trên AI
+                </CardDescription>
+              </CardHeader>
+              <CardContent className='space-y-3'></CardContent>
+            </Card>
+
+            {/* Hành động nhanh */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Hành động nhanh</CardTitle>
+                <CardDescription>
+                  Theo dõi dữ liệu sức khỏe của bạn
+                </CardDescription>
+              </CardHeader>
+              <CardContent className='space-y-3'>
+                <Button className='w-full justify-start' variant='outline'>
+                  <span className='mr-2'>🩺</span>
+                  Ghi nhận triệu chứng
+                </Button>
+                <Button className='w-full justify-start' variant='outline'>
+                  <span className='mr-2'>💊</span>
+                  Ghi nhận thuốc
+                </Button>
+                <Button className='w-full justify-start' variant='outline'>
+                  <span className='mr-2'>🏃</span>
+                  Theo dõi tập luyện
+                </Button>
+                <Button className='w-full justify-start' variant='outline'>
+                  <span className='mr-2'>🥗</span>
+                  Ghi nhận bữa ăn
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </main>
     </div>
@@ -149,9 +827,5 @@ function DashboardContent() {
 }
 
 export default function DashboardPage() {
-  return (
-    <ProtectedRoute>
-      <DashboardContent />
-    </ProtectedRoute>
-  );
+  return <DashboardContent />;
 }

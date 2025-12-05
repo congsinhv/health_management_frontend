@@ -32,6 +32,14 @@ const features: FeatureCard[] = [
     linkText: 'Chat ngay',
     href: './chatbox',
   },
+  {
+    title: 'Dashboard theo dõi tiến độ',
+    description:
+      'Biểu đồ cân nặng, chỉ số cơ thể và nhật ký ăn uống giúp bạn điều chỉnh kế hoạch hiệu quả.',
+    linkText: 'Xem dashboard mẫu',
+    href: './dashboard',
+    isHighlight: true,
+  },
 ];
 
 const FeaturesSection = () => {
