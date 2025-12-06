@@ -4,7 +4,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { FormField, FormItem, FormMessage } from '@/components/ui/form';
 import { UseFormReturn } from 'react-hook-form';
-import { useMemo } from 'react';
 import { DayPicker } from './DayPicker';
 import { FlexibleMode } from './FlexibleMode';
 import { FixedMode } from './FixedMode';
@@ -15,19 +14,9 @@ interface ScheduleSectionProps {
 }
 
 export const ScheduleSection = ({ form }: ScheduleSectionProps) => {
+  // Use watch directly - it subscribes to form changes and triggers re-renders
   const scheduleMode = form.watch('schedule.mode') || 'flexible';
-  const selectedDays = useMemo(
-    () => form.watch('schedule.selectedDays') || [],
-    [form]
-  );
-  const flexiblePeriods = useMemo(
-    () => form.watch('schedule.flexiblePeriods') || {},
-    [form]
-  );
-  const fixedPeriod = useMemo(
-    () => form.watch('schedule.fixedPeriod') || { startTime: '', endTime: '' },
-    [form]
-  );
+  const selectedDays = form.watch('schedule.selectedDays') || [];
 
   return (
     <Card className='mx-auto w-[82.5%] border-none bg-transparent pt-13.5 shadow-none'>
