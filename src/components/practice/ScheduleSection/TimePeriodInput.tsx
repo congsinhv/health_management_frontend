@@ -85,7 +85,7 @@ export const TimePeriodInput = ({
 
       {/* Duration */}
       <div className='flex flex-col gap-1'>
-        <label className='text-xs text-gray-500'>Thờ lượng</label>
+        <label className='text-xs text-gray-500'>Thời lượng</label>
         <div
           className={cn(
             'flex h-10 w-20 items-center justify-center rounded-[4px] bg-gray-100 text-sm font-medium',

@@ -101,6 +101,12 @@ const PracticePage = () => {
     const isValid = await form.trigger();
     if (!isValid) {
       toast.error('Vui lòng kiểm tra lại thông tin');
+      // Smoothly scroll to first error field
+      const firstError = document.querySelector('[aria-invalid="true"]');
+      if (firstError) {
+        firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        (firstError as HTMLElement).focus?.();
+      }
       return;
     }
     submitMutation.mutate(data);

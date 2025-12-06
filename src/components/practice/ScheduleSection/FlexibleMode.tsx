@@ -1,10 +1,16 @@
 'use client';
 
+import { useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import { TimePeriodInput } from './TimePeriodInput';
 import { dayOptions } from '@/app/practice/formHelper';
 import type { TimePeriod } from '@/types/practice';
+
+// Extended TimePeriod with unique ID for stable React keys
+interface TimePeriodWithId extends TimePeriod {
+  id: string;
+}
 
 interface FlexibleModeProps {
   selectedDays: string[];
@@ -17,11 +23,38 @@ export const FlexibleMode = ({
   periods,
   onPeriodsChange,
 }: FlexibleModeProps) => {
+  // Counter for generating unique IDs
+  const idCounterRef = useRef(0);
+  // Cache for period IDs to maintain stability across renders
+  const periodIdsRef = useRef<Record<string, string[]>>({});
+
   const getDayLabel = (dayValue: string) =>
     dayOptions.find(d => d.value === dayValue)?.fullName || dayValue;
 
+  const generateId = () => {
+    idCounterRef.current += 1;
+    return `period-${Date.now()}-${idCounterRef.current}`;
+  };
+
+  // Get or create IDs for periods in a day
+  const getPeriodIds = (day: string, count: number): string[] => {
+    if (!periodIdsRef.current[day]) {
+      periodIdsRef.current[day] = [];
+    }
+    // Add new IDs if needed
+    while (periodIdsRef.current[day].length < count) {
+      periodIdsRef.current[day].push(generateId());
+    }
+    return periodIdsRef.current[day].slice(0, count);
+  };
+
   const addPeriod = (day: string) => {
     const dayPeriods = periods[day] || [];
+    // Add a new ID for the new period
+    if (!periodIdsRef.current[day]) {
+      periodIdsRef.current[day] = [];
+    }
+    periodIdsRef.current[day].push(generateId());
     onPeriodsChange({
       ...periods,
       [day]: [...dayPeriods, { startTime: '', endTime: '' }],
@@ -41,6 +74,10 @@ export const FlexibleMode = ({
 
   const removePeriod = (day: string, index: number) => {
     const dayPeriods = (periods[day] || []).filter((_, i) => i !== index);
+    // Remove the ID at this index
+    if (periodIdsRef.current[day]) {
+      periodIdsRef.current[day].splice(index, 1);
+    }
     onPeriodsChange({ ...periods, [day]: dayPeriods });
   };
 
@@ -52,8 +89,8 @@ export const FlexibleMode = ({
     );
   }
 
-  // Sort selected days by week order
-  const sortedDays = selectedDays.sort(
+  // Sort selected days by week order (without mutating original array)
+  const sortedDays = [...selectedDays].sort(
     (a, b) =>
       dayOptions.findIndex(d => d.value === a) -
       dayOptions.findIndex(d => d.value === b)
@@ -63,6 +100,7 @@ export const FlexibleMode = ({
     <div className='space-y-6'>
       {sortedDays.map(day => {
         const dayPeriods = periods[day] || [{ startTime: '', endTime: '' }];
+        const periodIds = getPeriodIds(day, dayPeriods.length);
 
         return (
           <div
@@ -76,7 +114,7 @@ export const FlexibleMode = ({
             <div className='space-y-3'>
               {dayPeriods.map((period, index) => (
                 <TimePeriodInput
-                  key={index}
+                  key={periodIds[index]}
                   index={index}
                   startTime={period.startTime}
                   endTime={period.endTime}
