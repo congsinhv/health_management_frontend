@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -33,6 +33,10 @@ const TestScheduleSection = () => {
       },
     },
   });
+
+  // Watch form values to ensure re-renders
+  const selectedDays = form.watch('schedule.selectedDays');
+  const mode = form.watch('schedule.mode');
 
   return (
     <Form {...form}>
@@ -100,11 +104,18 @@ describe('ScheduleSection Component', () => {
     // Select a day first (required for fixed mode to show content)
     await user.click(screen.getByText('T2'));
 
+    // Wait for the day to be selected
+    await waitFor(() => {
+      expect(screen.getByText('T2')).toHaveClass('bg-gradient-to-r');
+    });
+
     const fixedTab = screen.getByText('Cố định');
     await user.click(fixedTab);
 
-    // Should show fixed mode content
-    expect(screen.getByText('Giờ tập cố định')).toBeInTheDocument();
+    // Wait for fixed mode content to appear
+    await waitFor(() => {
+      expect(screen.getByText('Giờ tập cố định')).toBeInTheDocument();
+    });
   });
 
   it('shows time inputs in fixed mode', async () => {
@@ -114,9 +125,19 @@ describe('ScheduleSection Component', () => {
     // Select a day first (required for fixed mode to show content)
     await user.click(screen.getByText('T2'));
 
+    // Wait for the day to be selected
+    await waitFor(() => {
+      expect(screen.getByText('T2')).toHaveClass('bg-gradient-to-r');
+    });
+
     // Switch to fixed mode
     const fixedTab = screen.getByText('Cố định');
     await user.click(fixedTab);
+
+    // Wait for fixed mode content to appear
+    await waitFor(() => {
+      expect(screen.getByText('Giờ tập cố định')).toBeInTheDocument();
+    });
 
     // Should show time inputs
     expect(screen.getByText('Bắt đầu')).toBeInTheDocument();
@@ -168,6 +189,16 @@ describe('ScheduleSection Component', () => {
     // Select a day
     await user.click(screen.getByText('T2'));
 
+    // Wait for the day to be selected
+    await waitFor(() => {
+      expect(screen.getByText('T2')).toHaveClass('bg-gradient-to-r');
+    });
+
+    // Wait for the day label to appear
+    await waitFor(() => {
+      expect(screen.getByText('Thứ 2')).toBeInTheDocument();
+    });
+
     // Should show day label for the selected day
     expect(screen.getByText('Thứ 2')).toBeInTheDocument();
 
@@ -183,6 +214,16 @@ describe('ScheduleSection Component', () => {
     // Select Monday
     await user.click(screen.getByText('T2'));
 
+    // Wait for the day to be selected
+    await waitFor(() => {
+      expect(screen.getByText('T2')).toHaveClass('bg-gradient-to-r');
+    });
+
+    // Wait for the day label to appear
+    await waitFor(() => {
+      expect(screen.getByText('Thứ 2')).toBeInTheDocument();
+    });
+
     // Look for "Thêm khung giờ" button
     const addButton = screen.getByText('Thêm khung giờ');
     expect(addButton).toBeInTheDocument();
@@ -197,6 +238,16 @@ describe('ScheduleSection Component', () => {
 
     // Select a day to show time inputs
     await user.click(screen.getByText('T2'));
+
+    // Wait for the day to be selected
+    await waitFor(() => {
+      expect(screen.getByText('T2')).toHaveClass('bg-gradient-to-r');
+    });
+
+    // Wait for the day label to appear
+    await waitFor(() => {
+      expect(screen.getByText('Thứ 2')).toBeInTheDocument();
+    });
 
     // Should show day label
     expect(screen.getByText('Thứ 2')).toBeInTheDocument();

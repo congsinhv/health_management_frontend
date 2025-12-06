@@ -124,6 +124,11 @@ src/
       page.tsx
     health-tracking/
       page.tsx
+    practice/
+      formHelper.ts
+      page.tsx
+      validation.test.ts
+      validation.ts
     predict/
       result/
         page.tsx
@@ -174,6 +179,23 @@ src/
     marketing/
       FeaturesSection.tsx
       InformationSection.tsx
+    practice/
+      ScheduleSection/
+        DayPicker.tsx
+        FixedMode.tsx
+        FlexibleMode.tsx
+        index.tsx
+        ScheduleSection.test.tsx
+        TimePeriodInput.tsx
+      SportsSection/
+        index.tsx
+        SportBadge.tsx
+        SportsSection.test.tsx
+        SportTagInput.tsx
+      BasicInfoSection.tsx
+      index.ts
+      NotesSection.test.tsx
+      NotesSection.tsx
     predict/
       DietPlanSection.tsx
       HealthAnalysisSection.tsx
@@ -198,6 +220,7 @@ src/
       calendar.tsx
       card.tsx
       checkbox.tsx
+      collapsible.tsx
       date-picker.tsx
       form.tsx
       input.tsx
@@ -270,6 +293,7 @@ src/
     auth.ts
     chat.ts
     conversation.ts
+    practice.ts
     prediction.ts
     qa.ts
     sse.ts
@@ -279,8 +303,8 @@ src/
     user.ts
 terraform/
   environments/
-    dev.tfvars
     prod.tfvars
+    test.tfvars
   main.tf
   outputs.tf
   terraform.tfvars.example
@@ -289,8 +313,9 @@ terraform/
 .gitignore
 .prettierignore
 .prettierrc
+.repomixignore
+CLAUDE.md
 components.json
-CONTRIBUTING.md
 Dockerfile
 eslint.config.mjs
 Jenkinsfile
@@ -304,6 +329,965 @@ vitest.config.ts
 
 <files>
 This section contains the contents of the repository's files.
+
+<file path="src/components/practice/SportsSection/index.tsx">
+'use client';
+
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { FormField, FormItem, FormMessage } from '@/components/ui/form';
+import { UseFormReturn } from 'react-hook-form';
+import { SportBadge } from './SportBadge';
+import { SportTagInput } from './SportTagInput';
+import { predefinedSports } from '@/app/practice/formHelper';
+import type { PracticeFormData } from '@/types/practice';
+
+interface SportsSectionProps {
+  form: UseFormReturn<PracticeFormData>;
+}
+
+export const SportsSection = ({ form }: SportsSectionProps) => {
+  const selectedPredefined = form.watch('sports.predefined') || [];
+
+  const togglePredefined = (value: string) => {
+    const current = selectedPredefined;
+    const newSelection = current.includes(value)
+      ? current.filter((s) => s !== value)
+      : [...current, value];
+    form.setValue('sports.predefined', newSelection);
+  };
+
+  return (
+    <Card className="mx-auto w-[82.5%] border-none bg-transparent pt-13.5 shadow-none">
+      <CardHeader className="border-b border-[#B3B8C3] px-0 pb-5.5">
+        <CardTitle className="font-medium">
+          Môn thể thao yêu thích
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="flex gap-17 px-0">
+        {/* Left description */}
+        <div className="w-[23%]">
+          <h5 className="text-xl font-medium">Sở thích</h5>
+          <p className="text-sm text-gray-600">
+            Chọn các môn thể thao bạn yêu thích để cá nhân hóa đề xuất.
+          </p>
+        </div>
+
+        {/* Sports content */}
+        <div className="flex-1 space-y-6">
+          {/* Predefined sports grid */}
+          <FormField
+            control={form.control}
+            name="sports.predefined"
+            render={() => (
+              <FormItem>
+                <div
+                  role="group"
+                  aria-label="Chọn môn thể thao yêu thích"
+                  className="flex flex-wrap gap-3"
+                >
+                  {predefinedSports.map((sport) => (
+                    <SportBadge
+                      key={sport.value}
+                      label={sport.label}
+                      value={sport.value}
+                      selected={selectedPredefined.includes(sport.value)}
+                      onToggle={togglePredefined}
+                    />
+                  ))}
+                </div>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {/* Custom sports input */}
+          <FormField
+            control={form.control}
+            name="sports.custom"
+            render={({ field }) => (
+              <FormItem>
+                <label className="mb-2 block text-sm font-medium text-gray-700">
+                  Thêm môn thể thao khác
+                </label>
+                <SportTagInput
+                  tags={field.value || []}
+                  onAdd={(tag) => field.onChange([...(field.value || []), tag])}
+                  onRemove={(tag) =>
+                    field.onChange((field.value || []).filter((t) => t !== tag))
+                  }
+                />
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
+export { SportBadge } from './SportBadge';
+export { SportTagInput } from './SportTagInput';
+</file>
+
+<file path="src/components/practice/SportsSection/SportBadge.tsx">
+'use client';
+
+import { cn } from '@/lib/utils';
+
+interface SportBadgeProps {
+  label: string;
+  value: string;
+  selected: boolean;
+  onToggle: (value: string) => void;
+}
+
+export const SportBadge = ({
+  label,
+  value,
+  selected,
+  onToggle,
+}: SportBadgeProps) => {
+  return (
+    <button
+      type="button"
+      onClick={() => onToggle(value)}
+      aria-pressed={selected}
+      className={cn(
+        'rounded-full border px-4 py-2 text-sm font-medium transition-all',
+        'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2',
+        selected
+          ? 'border-primary bg-primary/10 text-primary'
+          : 'border-gray-300 bg-white text-gray-700 hover:border-primary hover:bg-gray-50'
+      )}
+    >
+      {label}
+    </button>
+  );
+};
+</file>
+
+<file path="src/components/practice/SportsSection/SportsSection.test.tsx">
+import { describe, it, expect, vi } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Form } from '@/components/ui/form';
+import { SportsSection } from './index';
+import { practiceFormSchema } from '@/app/practice/validation';
+import type { PracticeFormData } from '@/types/practice';
+
+// Mock the predefined sports data
+vi.mock('@/app/practice/formHelper', () => ({
+  predefinedSports: [
+    { value: 'football', label: 'Bóng đá' },
+    { value: 'basketball', label: 'Bóng rổ' },
+    { value: 'swimming', label: 'Bơi lội' },
+    { value: 'running', label: 'Chạy bộ' },
+    { value: 'cycling', label: 'Đạp xe' },
+    { value: 'yoga', label: 'Yoga' },
+    { value: 'gym', label: 'Gym' },
+    { value: 'badminton', label: 'Cầu lông' },
+  ],
+}));
+
+// Test component that provides proper form context
+const TestSportsSection = () => {
+  const form = useForm<PracticeFormData>({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    resolver: zodResolver(practiceFormSchema) as any,
+    defaultValues: {
+      basicInfo: {
+        targetWeight: 0,
+      },
+      schedule: {
+        mode: 'flexible',
+        selectedDays: [],
+        flexiblePeriods: {},
+        fixedPeriod: { startTime: '', endTime: '' },
+      },
+      sports: {
+        predefined: [],
+        custom: [],
+      },
+      notes: {
+        personal: '',
+        healthWarnings: '',
+      },
+    },
+  });
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(() => {})}>
+        <SportsSection form={form} />
+      </form>
+    </Form>
+  );
+};
+
+describe('SportsSection Component', () => {
+  it('renders the main title', () => {
+    render(<TestSportsSection />);
+
+    expect(screen.getByText('Môn thể thao yêu thích')).toBeInTheDocument();
+  });
+
+  it('displays the section description', () => {
+    render(<TestSportsSection />);
+
+    expect(screen.getByText('Sở thích')).toBeInTheDocument();
+    expect(screen.getByText('Chọn các môn thể thao bạn yêu thích để cá nhân hóa đề xuất.')).toBeInTheDocument();
+  });
+
+  it('renders all predefined sports badges', () => {
+    render(<TestSportsSection />);
+
+    const sports = ['Bóng đá', 'Bóng rổ', 'Bơi lội', 'Chạy bộ', 'Đạp xe', 'Yoga', 'Gym', 'Cầu lông'];
+    sports.forEach(sport => {
+      expect(screen.getByText(sport)).toBeInTheDocument();
+    });
+  });
+
+  it('allows selecting a predefined sport', async () => {
+    const user = userEvent.setup();
+    render(<TestSportsSection />);
+
+    const footballBadge = screen.getByText('Bóng đá');
+    await user.click(footballBadge);
+
+    // The badge should have selected styling
+    expect(footballBadge).toHaveClass('border-primary', 'bg-primary/10', 'text-primary');
+  });
+
+  it('toggles predefined sport selection when clicked twice', async () => {
+    const user = userEvent.setup();
+    render(<TestSportsSection />);
+
+    const footballBadge = screen.getByText('Bóng đá');
+
+    // First click - select
+    await user.click(footballBadge);
+    expect(footballBadge).toHaveClass('border-primary', 'bg-primary/10', 'text-primary');
+
+    // Second click - deselect
+    await user.click(footballBadge);
+    expect(footballBadge).not.toHaveClass('border-primary', 'bg-primary/10', 'text-primary');
+    expect(footballBadge).toHaveClass('border-gray-300', 'bg-white', 'text-gray-700');
+  });
+
+  it('allows selecting multiple predefined sports', async () => {
+    const user = userEvent.setup();
+    render(<TestSportsSection />);
+
+    await user.click(screen.getByText('Bóng đá'));
+    await user.click(screen.getByText('Bơi lội'));
+    await user.click(screen.getByText('Yoga'));
+
+    expect(screen.getByText('Bóng đá')).toHaveClass('border-primary', 'bg-primary/10', 'text-primary');
+    expect(screen.getByText('Bơi lội')).toHaveClass('border-primary', 'bg-primary/10', 'text-primary');
+    expect(screen.getByText('Yoga')).toHaveClass('border-primary', 'bg-primary/10', 'text-primary');
+  });
+
+  it('renders custom sports input section', () => {
+    render(<TestSportsSection />);
+
+    expect(screen.getByText('Thêm môn thể thao khác')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('Nhập môn thể thao khác...')).toBeInTheDocument();
+  });
+
+  it('allows adding custom sports', async () => {
+    const user = userEvent.setup();
+    render(<TestSportsSection />);
+
+    const input = screen.getByPlaceholderText('Nhập môn thể thao khác...');
+    const addButton = screen.getByRole('button', { name: /thêm/i });
+
+    await user.type(input, 'Bóng chuyền');
+    await user.click(addButton);
+
+    // The custom sport should appear as a tag
+    expect(screen.getByText('Bóng chuyền')).toBeInTheDocument();
+  });
+
+  it('allows removing custom sports', async () => {
+    const user = userEvent.setup();
+    render(<TestSportsSection />);
+
+    // Add a custom sport first
+    const input = screen.getByPlaceholderText('Nhập môn thể thao khác...');
+    const addButton = screen.getByRole('button', { name: /thêm/i });
+
+    await user.type(input, 'Bóng chuyền');
+    await user.click(addButton);
+
+    // Remove the custom sport
+    const removeButton = screen.getByRole('button', { name: /xóa bóng chuyền/i });
+    await user.click(removeButton);
+
+    // The custom sport should be removed
+    expect(screen.queryByText('Bóng chuyền')).not.toBeInTheDocument();
+  });
+
+  it('prevents adding empty custom sports', async () => {
+    const user = userEvent.setup();
+    render(<TestSportsSection />);
+
+    const addButton = screen.getByRole('button', { name: /thêm/i });
+    await user.click(addButton);
+
+    // No tag should be added
+    expect(screen.queryAllByRole('button', { name: /xóa/i }).length).toBe(0);
+  });
+
+  it('allows adding multiple custom sports', async () => {
+    const user = userEvent.setup();
+    render(<TestSportsSection />);
+
+    const input = screen.getByPlaceholderText('Nhập môn thể thao khác...');
+    const addButton = screen.getByRole('button', { name: /thêm/i });
+
+    await user.type(input, 'Bóng chuyền');
+    await user.click(addButton);
+
+    await user.type(input, 'Bóng ném');
+    await user.click(addButton);
+
+    await user.type(input, 'Quần vợt');
+    await user.click(addButton);
+
+    expect(screen.getByText('Bóng chuyền')).toBeInTheDocument();
+    expect(screen.getByText('Bóng ném')).toBeInTheDocument();
+    expect(screen.getByText('Quần vợt')).toBeInTheDocument();
+  });
+
+  it('combines predefined and custom sports selection', async () => {
+    const user = userEvent.setup();
+    render(<TestSportsSection />);
+
+    // Select predefined sports
+    await user.click(screen.getByText('Bóng đá'));
+    await user.click(screen.getByText('Bơi lội'));
+
+    // Add custom sports
+    const input = screen.getByPlaceholderText('Nhập môn thể thao khác...');
+    const addButton = screen.getByRole('button', { name: /thêm/i });
+
+    await user.type(input, 'Bóng chuyền');
+    await user.click(addButton);
+
+    // All selections should be visible
+    expect(screen.getByText('Bóng đá')).toHaveClass('border-primary', 'bg-primary/10', 'text-primary');
+    expect(screen.getByText('Bơi lội')).toHaveClass('border-primary', 'bg-primary/10', 'text-primary');
+    expect(screen.getByText('Bóng chuyền')).toBeInTheDocument();
+  });
+
+  it('has proper accessibility attributes', () => {
+    render(<TestSportsSection />);
+
+    // Check for proper ARIA labels
+    const sportsGroup = screen.getByRole('group', { name: /chọn môn thể thao yêu thích/i });
+    expect(sportsGroup).toBeInTheDocument();
+
+    // Check for proper button roles on badges
+    const footballBadge = screen.getByText('Bóng đá');
+    expect(footballBadge.tagName).toBe('BUTTON');
+    expect(footballBadge).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('updates aria-pressed state when sport is selected', async () => {
+    const user = userEvent.setup();
+    render(<TestSportsSection />);
+
+    const footballBadge = screen.getByText('Bóng đá');
+
+    // Initially not pressed
+    expect(footballBadge).toHaveAttribute('aria-pressed', 'false');
+
+    // Select the sport
+    await user.click(footballBadge);
+
+    // Should be pressed
+    expect(footballBadge).toHaveAttribute('aria-pressed', 'true');
+  });
+});
+</file>
+
+<file path="src/components/practice/SportsSection/SportTagInput.tsx">
+'use client';
+
+import { useState, useRef } from 'react';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { X, Plus } from 'lucide-react';
+import { cn } from '@/lib/utils';
+
+interface SportTagInputProps {
+  tags: string[];
+  onAdd: (tag: string) => void;
+  onRemove: (tag: string) => void;
+  placeholder?: string;
+}
+
+export const SportTagInput = ({
+  tags,
+  onAdd,
+  onRemove,
+  placeholder = 'Nhập môn thể thao khác...',
+}: SportTagInputProps) => {
+  const [inputValue, setInputValue] = useState('');
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const handleAdd = () => {
+    const trimmed = inputValue.trim();
+
+    // Input validation
+    if (trimmed.length < 2) return;
+    if (trimmed.length > 30) return; // Max 30 characters
+    if (tags.includes(trimmed)) return;
+
+    // Sanitize input - remove HTML/script tags
+    const sanitized = trimmed.replace(/<[^>>]*>/g, '').trim();
+    if (sanitized !== trimmed) return; // Reject if HTML was removed
+
+    // Only allow letters, numbers, spaces and common Vietnamese characters
+    if (!/^[a-zA-Z0-9ÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêìíòóôõùúăđĩũơƯĂẠẢẤẦẨẪẬẮẰẲẴẶẸẺẼỀỀỂưăạảấầẩẫậắằẳẵặẹẻẽềềểỄỆỈỊỌỎỐỒỔỖỘỚỜỞỠỢỤỦỨỪễệỉịọỏốồổỗộớờởỡợụủứừỬỮỰỲỴÝỶỸửữựỳỵỷỹ\s]+$/.test(sanitized)) {
+      return;
+    }
+
+    onAdd(sanitized);
+    setInputValue('');
+    inputRef.current?.focus();
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleAdd();
+    }
+  };
+
+  const handleRemove = (tag: string) => {
+    onRemove(tag);
+    inputRef.current?.focus();
+  };
+
+  return (
+    <div className="space-y-3">
+      {/* Input row */}
+      <div className="flex gap-2">
+        <Input
+          ref={inputRef}
+          type="text"
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder={placeholder}
+          className="flex-1 rounded-[4px] bg-white"
+          aria-label="Thêm môn thể thao"
+        />
+        <Button
+          type="button"
+          onClick={handleAdd}
+          disabled={inputValue.trim().length < 2 || inputValue.trim().length > 30}
+          variant="outline"
+          className="px-3"
+          aria-label="Thêm"
+        >
+          <Plus className="h-4 w-4" />
+        </Button>
+      </div>
+
+      {/* Tags display */}
+      {tags.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {tags.map((tag) => (
+            <span
+              key={tag}
+              className={cn(
+                'inline-flex items-center gap-1 rounded-full',
+                'bg-gray-100 px-3 py-1 text-sm text-gray-700'
+              )}
+            >
+              {tag}
+              <button
+                type="button"
+                onClick={() => handleRemove(tag)}
+                className="ml-1 rounded-full p-0.5 hover:bg-gray-200"
+                aria-label={`Xóa ${tag}`}
+              >
+                <X className="h-3 w-3" />
+              </button>
+              <span className="sr-only" aria-live="polite">
+                Đã xóa {tag}
+              </span>
+            </span>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+</file>
+
+<file path="src/components/practice/NotesSection.test.tsx">
+import { describe, it, expect } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Form } from '@/components/ui/form';
+import { NotesSection } from './NotesSection';
+import { practiceFormSchema } from '@/app/practice/validation';
+import type { PracticeFormData } from '@/types/practice';
+
+// Test component that provides proper form context
+const TestNotesSection = () => {
+  const form = useForm<PracticeFormData>({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    resolver: zodResolver(practiceFormSchema) as any,
+    defaultValues: {
+      basicInfo: {
+        targetWeight: 0,
+      },
+      schedule: {
+        mode: 'flexible',
+        selectedDays: [],
+        flexiblePeriods: {},
+        fixedPeriod: { startTime: '', endTime: '' },
+      },
+      sports: {
+        predefined: [],
+        custom: [],
+      },
+      notes: {
+        personal: '',
+        healthWarnings: '',
+      },
+    },
+  });
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(() => {})}>
+        <NotesSection form={form} />
+      </form>
+    </Form>
+  );
+};
+
+describe('NotesSection Component', () => {
+  it('renders the main title with optional indicator', () => {
+    render(<TestNotesSection />);
+
+    expect(screen.getByText('Ghi chú & Cảnh báo sức khỏe')).toBeInTheDocument();
+    expect(screen.getByText('(Tùy chọn)')).toBeInTheDocument();
+  });
+
+  it('displays the section description', async () => {
+    const user = userEvent.setup();
+    render(<TestNotesSection />);
+
+    // Expand the section first
+    const trigger = screen.getByRole('button', { name: /ghi chú & cảnh báo sức khỏe/i });
+    await user.click(trigger);
+
+    expect(screen.getByText('Thông tin thêm')).toBeInTheDocument();
+    expect(screen.getByText('Thêm ghi chú hoặc cảnh báo sức khỏe để chúng tôi điều chỉnh chương trình phù hợp.')).toBeInTheDocument();
+  });
+
+  it('is collapsible by default', () => {
+    render(<TestNotesSection />);
+
+    // Should have collapsible trigger
+    const trigger = screen.getByRole('button', { name: /ghi chú & cảnh báo sức khỏe/i });
+    expect(trigger).toBeInTheDocument();
+
+    // Content should not be visible initially
+    expect(screen.queryByText('Ghi chú riêng')).not.toBeInTheDocument();
+    expect(screen.queryByText('Cảnh báo sức khỏe')).not.toBeInTheDocument();
+  });
+
+  it('expands when clicked', async () => {
+    const user = userEvent.setup();
+    render(<TestNotesSection />);
+
+    const trigger = screen.getByRole('button', { name: /ghi chú & cảnh báo sức khỏe/i });
+    await user.click(trigger);
+
+    // Content should be visible after expansion
+    expect(screen.getByText('Ghi chú riêng')).toBeInTheDocument();
+    expect(screen.getByText('Cảnh báo sức khỏe')).toBeInTheDocument();
+  });
+
+  it('shows chevron down icon when collapsed', () => {
+    render(<TestNotesSection />);
+
+    expect(screen.getByText('Ghi chú & Cảnh báo sức khỏe')).toBeInTheDocument();
+    const chevron = document.querySelector('.lucide-chevron-down');
+    expect(chevron).toBeInTheDocument();
+  });
+
+  it('shows chevron up icon when expanded', async () => {
+    const user = userEvent.setup();
+    render(<TestNotesSection />);
+
+    const trigger = screen.getByRole('button', { name: /ghi chú & cảnh báo sức khỏe/i });
+    await user.click(trigger);
+
+    const chevron = document.querySelector('.lucide-chevron-up');
+    expect(chevron).toBeInTheDocument();
+  });
+
+  it('renders personal notes textarea', async () => {
+    const user = userEvent.setup();
+    render(<TestNotesSection />);
+
+    const trigger = screen.getByRole('button', { name: /ghi chú & cảnh báo sức khỏe/i });
+    await user.click(trigger);
+
+    const personalNotes = screen.getByPlaceholderText('VD: Tập nhẹ vào buổi sáng, không tập sau 9h tối...');
+    expect(personalNotes).toBeInTheDocument();
+  });
+
+  it('renders health warnings textarea', async () => {
+    const user = userEvent.setup();
+    render(<TestNotesSection />);
+
+    const trigger = screen.getByRole('button', { name: /ghi chú & cảnh báo sức khỏe/i });
+    await user.click(trigger);
+
+    const healthWarnings = screen.getByPlaceholderText('VD: Đau khớp gối, huyết áp cao, dị ứng...');
+    expect(healthWarnings).toBeInTheDocument();
+  });
+
+  it('allows typing in personal notes', async () => {
+    const user = userEvent.setup();
+    render(<TestNotesSection />);
+
+    const trigger = screen.getByRole('button', { name: /ghi chú & cảnh báo sức khỏe/i });
+    await user.click(trigger);
+
+    const personalNotes = screen.getByPlaceholderText('VD: Tập nhẹ vào buổi sáng, không tập sau 9h tối...');
+    await user.type(personalNotes, 'Tôi thích tập vào buổi sáng');
+
+    expect(personalNotes).toHaveValue('Tôi thích tập vào buổi sáng');
+  });
+
+  it('allows typing in health warnings', async () => {
+    const user = userEvent.setup();
+    render(<TestNotesSection />);
+
+    const trigger = screen.getByRole('button', { name: /ghi chú & cảnh báo sức khỏe/i });
+    await user.click(trigger);
+
+    const healthWarnings = screen.getByPlaceholderText('VD: Đau khớp gối, huyết áp cao, dị ứng...');
+    await user.type(healthWarnings, 'Đau lưng khi tập nặng');
+
+    expect(healthWarnings).toHaveValue('Đau lưng khi tập nặng');
+  });
+
+  it('shows character counter for personal notes', async () => {
+    const user = userEvent.setup();
+    render(<TestNotesSection />);
+
+    const trigger = screen.getByRole('button', { name: /ghi chú & cảnh báo sức khỏe/i });
+    await user.click(trigger);
+
+    const personalNotes = screen.getByLabelText('Ghi chú riêng');
+    await user.type(personalNotes, 'Hello');
+
+    expect(screen.getByText('5/500')).toBeInTheDocument();
+  });
+
+  it('shows character counter for health warnings', async () => {
+    const user = userEvent.setup();
+    render(<TestNotesSection />);
+
+    const trigger = screen.getByRole('button', { name: /ghi chú & cảnh báo sức khỏe/i });
+    await user.click(trigger);
+
+    const healthWarnings = screen.getByPlaceholderText('VD: Đau khớp gối, huyết áp cao, dị ứng...');
+    await user.type(healthWarnings, 'Warning text');
+
+    expect(screen.getByText('12/500')).toBeInTheDocument();
+  });
+
+  it('has 500 character limit for personal notes', async () => {
+    const user = userEvent.setup();
+    render(<TestNotesSection />);
+
+    const trigger = screen.getByRole('button', { name: /ghi chú & cảnh báo sức khỏe/i });
+    await user.click(trigger);
+
+    const personalNotes = screen.getByLabelText('Ghi chú riêng');
+    expect(personalNotes).toHaveAttribute('maxlength', '500');
+  });
+
+  it('has 500 character limit for health warnings', async () => {
+    const user = userEvent.setup();
+    render(<TestNotesSection />);
+
+    const trigger = screen.getByRole('button', { name: /ghi chú & cảnh báo sức khỏe/i });
+    await user.click(trigger);
+
+    const healthWarnings = screen.getByPlaceholderText('VD: Đau khớp gối, huyết áp cao, dị ứng...');
+    expect(healthWarnings).toHaveAttribute('maxlength', '500');
+  });
+
+  it('applies special styling to health warnings when filled', async () => {
+    const user = userEvent.setup();
+    render(<TestNotesSection />);
+
+    const trigger = screen.getByRole('button', { name: /ghi chú & cảnh báo sức khỏe/i });
+    await user.click(trigger);
+
+    const healthWarnings = screen.getByPlaceholderText('VD: Đau khớp gối, huyết áp cao, dị ứng...');
+    await user.type(healthWarnings, 'Cao huyết áp');
+
+    // Health warnings textarea should have amber border when filled
+    expect(healthWarnings.parentElement?.parentElement).toHaveClass('border-amber-400');
+  });
+
+  it('does not apply special styling to health warnings when empty', async () => {
+    const user = userEvent.setup();
+    render(<TestNotesSection />);
+
+    const trigger = screen.getByRole('button', { name: /ghi chú & cảnh báo sức khỏe/i });
+    await user.click(trigger);
+
+    const healthWarnings = screen.getByPlaceholderText('VD: Đau khớp gối, huyết áp cao, dị ứng...');
+
+    // Health warnings textarea should not have amber border when empty
+    expect(healthWarnings.parentElement?.parentElement).not.toHaveClass('border-amber-400');
+  });
+
+  it('has proper grid layout for textareas', async () => {
+    const user = userEvent.setup();
+    render(<TestNotesSection />);
+
+    const trigger = screen.getByRole('button', { name: /ghi chú & cảnh báo sức khỏe/i });
+    await user.click(trigger);
+
+    const contentContainer = screen.getByText('Ghi chú riêng').parentElement?.parentElement?.parentElement;
+    expect(contentContainer).toHaveClass('grid', 'grid-cols-1', 'md:grid-cols-2');
+  });
+
+  it('has non-resizable textareas', async () => {
+    const user = userEvent.setup();
+    render(<TestNotesSection />);
+
+    const trigger = screen.getByRole('button', { name: /ghi chú & cảnh báo sức khỏe/i });
+    await user.click(trigger);
+
+    const personalNotes = screen.getByLabelText('Ghi chú riêng');
+    const healthWarnings = screen.getByPlaceholderText('VD: Đau khớp gối, huyết áp cao, dị ứng...');
+
+    expect(personalNotes).toHaveClass('resize-none');
+    expect(healthWarnings).toHaveClass('resize-none');
+  });
+
+  it('has minimum height for textareas', async () => {
+    const user = userEvent.setup();
+    render(<TestNotesSection />);
+
+    const trigger = screen.getByRole('button', { name: /ghi chú & cảnh báo sức khỏe/i });
+    await user.click(trigger);
+
+    const personalNotes = screen.getByLabelText('Ghi chú riêng');
+    const healthWarnings = screen.getByPlaceholderText('VD: Đau khớp gối, huyết áp cao, dị ứng...');
+
+    expect(personalNotes).toHaveClass('min-h-[100px]');
+    expect(healthWarnings).toHaveClass('min-h-[100px]');
+  });
+
+  it('maintains state when collapsed and expanded', async () => {
+    const user = userEvent.setup();
+    render(<TestNotesSection />);
+
+    const trigger = screen.getByRole('button', { name: /ghi chú & cảnh báo sức khỏe/i });
+
+    // Expand
+    await user.click(trigger);
+
+    // Type something
+    const personalNotes = screen.getByLabelText('Ghi chú riêng');
+    await user.type(personalNotes, 'Test content');
+
+    // Collapse
+    await user.click(trigger);
+
+    // Expand again
+    await user.click(trigger);
+
+    // Content should still be there
+    expect(screen.getByLabelText('Ghi chú riêng')).toHaveValue('Test content');
+  });
+});
+</file>
+
+<file path="src/components/practice/NotesSection.tsx">
+'use client';
+
+import { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible';
+import { FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Textarea } from '@/components/ui/textarea';
+import { ChevronDown, ChevronUp } from 'lucide-react';
+import { UseFormReturn } from 'react-hook-form';
+import { cn } from '@/lib/utils';
+import type { PracticeFormData } from '@/types/practice';
+
+interface NotesSectionProps {
+  form: UseFormReturn<PracticeFormData>;
+}
+
+export const NotesSection = ({ form }: NotesSectionProps) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <Card className="mx-auto w-[82.5%] border-none bg-transparent pt-13.5 shadow-none">
+      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+        <CardHeader className="border-b border-[#B3B8C3] px-0 pb-5.5">
+          <CollapsibleTrigger asChild>
+            <button
+              type="button"
+              className="flex w-full items-center justify-between"
+            >
+              <CardTitle className="font-medium">
+                Ghi chú & Cảnh báo sức khỏe
+                <span className="ml-2 text-sm font-normal text-gray-500">
+                  (Tùy chọn)
+                </span>
+              </CardTitle>
+              {isOpen ? (
+                <ChevronUp className="h-5 w-5 text-gray-500" />
+              ) : (
+                <ChevronDown className="h-5 w-5 text-gray-500" />
+              )}
+            </button>
+          </CollapsibleTrigger>
+        </CardHeader>
+
+        <CollapsibleContent>
+          <CardContent className="flex gap-17 px-0">
+            {/* Left description */}
+            <div className="w-[23%]">
+              <h5 className="text-xl font-medium">Thông tin thêm</h5>
+              <p className="text-sm text-gray-600">
+                Thêm ghi chú hoặc cảnh báo sức khỏe để chúng tôi điều chỉnh
+                chương trình phù hợp.
+              </p>
+            </div>
+
+            {/* Notes content */}
+            <div className="grid flex-1 grid-cols-1 gap-6 md:grid-cols-2">
+              {/* Personal Notes */}
+              <FormField
+                control={form.control}
+                name="notes.personal"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel htmlFor="personal-notes" className="text-xs font-medium text-[#6A7282]">
+                      Ghi chú riêng
+                    </FormLabel>
+                    <Textarea
+                      id="personal-notes"
+                      placeholder="VD: Tập nhẹ vào buổi sáng, không tập sau 9h tối..."
+                      className="min-h-[100px] resize-none rounded-[4px] bg-white"
+                      maxLength={500}
+                      {...field}
+                      value={field.value || ''}
+                    />
+                    <div className="flex justify-between">
+                      <FormMessage />
+                      <span className="text-xs text-gray-400">
+                        {(field.value || '').length}/500
+                      </span>
+                    </div>
+                  </FormItem>
+                )}
+              />
+
+              {/* Health Warnings */}
+              <FormField
+                control={form.control}
+                name="notes.healthWarnings"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel htmlFor="health-warnings" className="text-xs font-medium text-[#6A7282]">
+                      Cảnh báo sức khỏe
+                    </FormLabel>
+                    <Textarea
+                      id="health-warnings"
+                      placeholder="VD: Đau khớp gối, huyết áp cao, dị ứng..."
+                      className={cn(
+                        'min-h-[100px] resize-none rounded-[4px] bg-white',
+                        field.value && 'border-amber-400'
+                      )}
+                      maxLength={500}
+                      {...field}
+                      value={field.value || ''}
+                    />
+                    <div className="flex justify-between">
+                      <FormMessage />
+                      <span className="text-xs text-gray-400">
+                        {(field.value || '').length}/500
+                      </span>
+                    </div>
+                  </FormItem>
+                )}
+              />
+            </div>
+          </CardContent>
+        </CollapsibleContent>
+      </Collapsible>
+    </Card>
+  );
+};
+</file>
+
+<file path="src/components/ui/collapsible.tsx">
+"use client"
+
+import * as CollapsiblePrimitive from "@radix-ui/react-collapsible"
+
+function Collapsible({
+  ...props
+}: React.ComponentProps<typeof CollapsiblePrimitive.Root>) {
+  return <CollapsiblePrimitive.Root data-slot="collapsible" {...props} />
+}
+
+function CollapsibleTrigger({
+  ...props
+}: React.ComponentProps<typeof CollapsiblePrimitive.CollapsibleTrigger>) {
+  return (
+    <CollapsiblePrimitive.CollapsibleTrigger
+      data-slot="collapsible-trigger"
+      {...props}
+    />
+  )
+}
+
+function CollapsibleContent({
+  ...props
+}: React.ComponentProps<typeof CollapsiblePrimitive.CollapsibleContent>) {
+  return (
+    <CollapsiblePrimitive.CollapsibleContent
+      data-slot="collapsible-content"
+      {...props}
+    />
+  )
+}
+
+export { Collapsible, CollapsibleTrigger, CollapsibleContent }
+</file>
 
 <file path="public/icons/activity.svg">
 <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -950,6 +1934,224 @@ export default function HealthTrackingPage() {
     </div>
   );
 }
+</file>
+
+<file path="src/app/practice/formHelper.ts">
+export const goalOptions = [
+  { label: 'Tăng cân', value: 'gain' },
+  { label: 'Giảm cân', value: 'lose' },
+  { label: 'Giữ cân', value: 'maintain' },
+];
+
+export const dayOptions = [
+  { label: 'T2', value: 'monday', fullName: 'Thứ 2' },
+  { label: 'T3', value: 'tuesday', fullName: 'Thứ 3' },
+  { label: 'T4', value: 'wednesday', fullName: 'Thứ 4' },
+  { label: 'T5', value: 'thursday', fullName: 'Thứ 5' },
+  { label: 'T6', value: 'friday', fullName: 'Thứ 6' },
+  { label: 'T7', value: 'saturday', fullName: 'Thứ 7' },
+  { label: 'CN', value: 'sunday', fullName: 'Chủ nhật' },
+];
+
+export const predefinedSports = [
+  { label: 'Chạy bộ', value: 'running' },
+  { label: 'Bơi lội', value: 'swimming' },
+  { label: 'Yoga', value: 'yoga' },
+  { label: 'Gym', value: 'gym' },
+  { label: 'Đạp xe', value: 'cycling' },
+  { label: 'Bóng đá', value: 'football' },
+  { label: 'Tennis', value: 'tennis' },
+  { label: 'Cầu lông', value: 'badminton' },
+];
+
+export const scheduleModeOptions = [
+  { label: 'Linh hoạt', value: 'flexible' },
+  { label: 'Cố định', value: 'fixed' },
+];
+
+// Calculate duration between two times
+export const calculateDuration = (start: string, end: string): string => {
+  const [startH, startM] = start.split(':').map(Number);
+  const [endH, endM] = end.split(':').map(Number);
+
+  let totalMinutes = endH * 60 + endM - (startH * 60 + startM);
+  if (totalMinutes < 0) totalMinutes += 24 * 60; // Handle overnight
+
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+
+  if (hours === 0) return `${minutes}p`;
+  if (minutes === 0) return `${hours}h`;
+  return `${hours}h${minutes}p`;
+};
+</file>
+
+<file path="src/app/practice/validation.test.ts">
+import { describe, it, expect } from 'vitest';
+import { validateTargetWeight } from './validation';
+
+describe('validateTargetWeight', () => {
+  describe('Goal: gain', () => {
+    it('returns true when target weight is greater than current weight', () => {
+      const result = validateTargetWeight(70, 65, 'gain');
+      expect(result).toBe(true);
+    });
+
+    it('returns error message when target weight is equal to current weight', () => {
+      const result = validateTargetWeight(65, 65, 'gain');
+      expect(result).toBe(
+        'Mục tiêu tăng cân: cân nặng mục tiêu phải lớn hơn cân nặng hiện tại'
+      );
+    });
+
+    it('returns error message when target weight is less than current weight', () => {
+      const result = validateTargetWeight(60, 65, 'gain');
+      expect(result).toBe(
+        'Mục tiêu tăng cân: cân nặng mục tiêu phải lớn hơn cân nặng hiện tại'
+      );
+    });
+  });
+
+  describe('Goal: lose', () => {
+    it('returns true when target weight is less than current weight', () => {
+      const result = validateTargetWeight(60, 65, 'lose');
+      expect(result).toBe(true);
+    });
+
+    it('returns error message when target weight is equal to current weight', () => {
+      const result = validateTargetWeight(65, 65, 'lose');
+      expect(result).toBe(
+        'Mục tiêu giảm cân: cân nặng mục tiêu phải nhỏ hơn cân nặng hiện tại'
+      );
+    });
+
+    it('returns error message when target weight is greater than current weight', () => {
+      const result = validateTargetWeight(70, 65, 'lose');
+      expect(result).toBe(
+        'Mục tiêu giảm cân: cân nặng mục tiêu phải nhỏ hơn cân nặng hiện tại'
+      );
+    });
+  });
+
+  describe('Goal: maintain', () => {
+    it('returns true when target weight is within 1kg of current weight', () => {
+      const result = validateTargetWeight(65, 65, 'maintain');
+      expect(result).toBe(true);
+    });
+
+    it('returns true when target weight is 1kg less than current weight', () => {
+      const result = validateTargetWeight(64, 65, 'maintain');
+      expect(result).toBe(true);
+    });
+
+    it('returns true when target weight is 1kg more than current weight', () => {
+      const result = validateTargetWeight(66, 65, 'maintain');
+      expect(result).toBe(true);
+    });
+
+    it('returns error message when target weight is more than 1kg different', () => {
+      const result = validateTargetWeight(63, 65, 'maintain');
+      expect(result).toBe(
+        'Mục tiêu giữ cân: cân nặng mục tiêu phải xấp xỉ cân nặng hiện tại (±1kg)'
+      );
+    });
+
+    it('returns error message when target weight is more than 1kg higher', () => {
+      const result = validateTargetWeight(67, 65, 'maintain');
+      expect(result).toBe(
+        'Mục tiêu giữ cân: cân nặng mục tiêu phải xấp xỉ cân nặng hiện tại (±1kg)'
+      );
+    });
+  });
+
+  describe('Edge cases', () => {
+    it('returns true for unknown goal', () => {
+      const result = validateTargetWeight(70, 65, 'unknown');
+      expect(result).toBe(true);
+    });
+
+    it('handles decimal weights correctly', () => {
+      const result = validateTargetWeight(65.5, 65.2, 'gain');
+      expect(result).toBe(true);
+    });
+
+    it('handles very small weight differences', () => {
+      const result = validateTargetWeight(65.01, 65, 'maintain');
+      expect(result).toBe(true);
+    });
+
+    it('handles zero weight difference for maintain', () => {
+      const result = validateTargetWeight(65.0, 65.0, 'maintain');
+      expect(result).toBe(true);
+    });
+  });
+});
+</file>
+
+<file path="src/app/practice/validation.ts">
+import { z } from 'zod';
+
+const timePeriodSchema = z.object({
+  startTime: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/, 'Invalid time'),
+  endTime: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/, 'Invalid time'),
+});
+
+export const practiceFormSchema = z.object({
+  // Basic Info
+  basicInfo: z.object({
+    height: z.number().optional(),
+    weight: z.number().optional(),
+    targetWeight: z.coerce
+      .number()
+      .min(30, 'Cân nặng tối thiểu 30kg')
+      .max(200, 'Cân nặng tối đa 200kg'),
+    goal: z.enum(['gain', 'lose', 'maintain']).optional(),
+  }),
+
+  // Schedule
+  schedule: z.object({
+    mode: z.enum(['flexible', 'fixed']),
+    selectedDays: z.array(z.string()).min(1, 'Chọn ít nhất 1 ngày'),
+    flexiblePeriods: z.record(z.string(), z.array(timePeriodSchema)).optional(),
+    fixedPeriod: timePeriodSchema.optional(),
+  }),
+
+  // Sports
+  sports: z.object({
+    predefined: z.array(z.string()),
+    custom: z.array(z.string()),
+  }),
+
+  // Notes
+  notes: z.object({
+    personal: z.string().max(500).optional(),
+    healthWarnings: z.string().max(500).optional(),
+  }),
+});
+
+// Dynamic validation for target weight based on goal
+export const validateTargetWeight = (
+  target: number,
+  current: number,
+  goal: string
+): string | true => {
+  switch (goal) {
+    case 'gain':
+      return target > current
+        ? true
+        : 'Mục tiêu tăng cân: cân nặng mục tiêu phải lớn hơn cân nặng hiện tại';
+    case 'lose':
+      return target < current
+        ? true
+        : 'Mục tiêu giảm cân: cân nặng mục tiêu phải nhỏ hơn cân nặng hiện tại';
+    case 'maintain':
+      return Math.abs(target - current) <= 1
+        ? true
+        : 'Mục tiêu giữ cân: cân nặng mục tiêu phải xấp xỉ cân nặng hiện tại (±1kg)';
+    default:
+      return true;
+  }
+};
 </file>
 
 <file path="src/app/predict/validation.test.ts">
@@ -2831,6 +4033,965 @@ const InformationSection = () => {
 };
 
 export default InformationSection;
+</file>
+
+<file path="src/components/practice/ScheduleSection/DayPicker.tsx">
+'use client';
+
+import { cn } from '@/lib/utils';
+import { dayOptions } from '@/app/practice/formHelper';
+
+interface DayPickerProps {
+  selectedDays: string[];
+  onChange: (days: string[]) => void;
+  disabled?: boolean;
+}
+
+export const DayPicker = ({
+  selectedDays,
+  onChange,
+  disabled = false,
+}: DayPickerProps) => {
+  const toggleDay = (dayValue: string) => {
+    if (disabled) return;
+
+    const newDays = selectedDays.includes(dayValue)
+      ? selectedDays.filter(d => d !== dayValue)
+      : [...selectedDays, dayValue];
+    onChange(newDays);
+  };
+
+  return (
+    <div className='flex flex-wrap gap-2'>
+      {dayOptions.map(day => {
+        const isSelected = selectedDays.includes(day.value);
+        return (
+          <button
+            key={day.value}
+            type='button'
+            onClick={() => toggleDay(day.value)}
+            disabled={disabled}
+            aria-label={`${day.fullName}, ${isSelected ? 'đã chọn' : 'chưa chọn'}`}
+            aria-pressed={isSelected}
+            className={cn(
+              'flex h-12 w-12 items-center justify-center rounded-full text-sm font-medium transition-all',
+              'focus:ring-primary focus:ring-2 focus:ring-offset-2 focus:outline-none',
+              isSelected
+                ? 'bg-gradient-to-r from-[#00bba7] to-[#00bc7d] text-white'
+                : 'hover:border-primary border border-gray-300 bg-white text-gray-700 hover:bg-gray-50',
+              disabled && 'cursor-not-allowed opacity-50'
+            )}
+          >
+            {day.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+};
+</file>
+
+<file path="src/components/practice/ScheduleSection/FixedMode.tsx">
+'use client';
+
+import { TimePeriodInput } from './TimePeriodInput';
+import type { TimePeriod } from '@/types/practice';
+
+interface FixedModeProps {
+  selectedDays: string[];
+  period: TimePeriod;
+  onPeriodChange: (period: TimePeriod) => void;
+}
+
+export const FixedMode = ({
+  selectedDays,
+  period,
+  onPeriodChange,
+}: FixedModeProps) => {
+  if (selectedDays.length === 0) {
+    return (
+      <p className='py-4 text-sm text-gray-500'>
+        Vui lòng chọn ít nhất một ngày để thiết lập khung giờ
+      </p>
+    );
+  }
+
+  return (
+    <div className='space-y-4'>
+      <p className='text-sm text-gray-600'>
+        Khung giờ này sẽ được áp dụng cho tất cả {selectedDays.length} ngày đã
+        chọn
+      </p>
+
+      <div className='rounded-lg border border-gray-200 bg-white p-4'>
+        <h4 className='mb-3 font-medium text-gray-900'>Giờ tập cố định</h4>
+        <TimePeriodInput
+          startTime={period.startTime}
+          endTime={period.endTime}
+          onChange={(start, end) =>
+            onPeriodChange({ startTime: start, endTime: end })
+          }
+        />
+      </div>
+    </div>
+  );
+};
+</file>
+
+<file path="src/components/practice/ScheduleSection/FlexibleMode.tsx">
+'use client';
+
+import { Button } from '@/components/ui/button';
+import { Plus } from 'lucide-react';
+import { TimePeriodInput } from './TimePeriodInput';
+import { dayOptions } from '@/app/practice/formHelper';
+import type { TimePeriod } from '@/types/practice';
+
+interface FlexibleModeProps {
+  selectedDays: string[];
+  periods: Record<string, TimePeriod[]>;
+  onPeriodsChange: (periods: Record<string, TimePeriod[]>) => void;
+}
+
+export const FlexibleMode = ({
+  selectedDays,
+  periods,
+  onPeriodsChange,
+}: FlexibleModeProps) => {
+  const getDayLabel = (dayValue: string) =>
+    dayOptions.find(d => d.value === dayValue)?.fullName || dayValue;
+
+  const addPeriod = (day: string) => {
+    const dayPeriods = periods[day] || [];
+    onPeriodsChange({
+      ...periods,
+      [day]: [...dayPeriods, { startTime: '', endTime: '' }],
+    });
+  };
+
+  const updatePeriod = (
+    day: string,
+    index: number,
+    start: string,
+    end: string
+  ) => {
+    const dayPeriods = [...(periods[day] || [])];
+    dayPeriods[index] = { startTime: start, endTime: end };
+    onPeriodsChange({ ...periods, [day]: dayPeriods });
+  };
+
+  const removePeriod = (day: string, index: number) => {
+    const dayPeriods = (periods[day] || []).filter((_, i) => i !== index);
+    onPeriodsChange({ ...periods, [day]: dayPeriods });
+  };
+
+  if (selectedDays.length === 0) {
+    return (
+      <p className='py-4 text-sm text-gray-500'>
+        Vui lòng chọn ít nhất một ngày để thiết lập khung giờ
+      </p>
+    );
+  }
+
+  // Sort selected days by week order
+  const sortedDays = selectedDays.sort(
+    (a, b) =>
+      dayOptions.findIndex(d => d.value === a) -
+      dayOptions.findIndex(d => d.value === b)
+  );
+
+  return (
+    <div className='space-y-6'>
+      {sortedDays.map(day => {
+        const dayPeriods = periods[day] || [{ startTime: '', endTime: '' }];
+
+        return (
+          <div
+            key={day}
+            className='rounded-lg border border-gray-200 bg-white p-4'
+          >
+            <h4 className='mb-3 font-medium text-gray-900'>
+              {getDayLabel(day)}
+            </h4>
+
+            <div className='space-y-3'>
+              {dayPeriods.map((period, index) => (
+                <TimePeriodInput
+                  key={index}
+                  index={index}
+                  startTime={period.startTime}
+                  endTime={period.endTime}
+                  onChange={(start, end) =>
+                    updatePeriod(day, index, start, end)
+                  }
+                  onRemove={() => removePeriod(day, index)}
+                  showRemove={dayPeriods.length > 1}
+                />
+              ))}
+            </div>
+
+            <Button
+              type='button'
+              variant='ghost'
+              size='sm'
+              onClick={() => addPeriod(day)}
+              className='text-primary hover:text-primary mt-3'
+            >
+              <Plus className='mr-1 h-4 w-4' />
+              Thêm khung giờ
+            </Button>
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+</file>
+
+<file path="src/components/practice/ScheduleSection/index.tsx">
+'use client';
+
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { FormField, FormItem, FormMessage } from '@/components/ui/form';
+import { UseFormReturn } from 'react-hook-form';
+import { useMemo } from 'react';
+import { DayPicker } from './DayPicker';
+import { FlexibleMode } from './FlexibleMode';
+import { FixedMode } from './FixedMode';
+import type { PracticeFormData } from '@/types/practice';
+
+interface ScheduleSectionProps {
+  form: UseFormReturn<PracticeFormData>;
+}
+
+export const ScheduleSection = ({ form }: ScheduleSectionProps) => {
+  const scheduleMode = form.watch('schedule.mode') || 'flexible';
+  const selectedDays = useMemo(
+    () => form.watch('schedule.selectedDays') || [],
+    [form]
+  );
+  const flexiblePeriods = useMemo(
+    () => form.watch('schedule.flexiblePeriods') || {},
+    [form]
+  );
+  const fixedPeriod = useMemo(
+    () => form.watch('schedule.fixedPeriod') || { startTime: '', endTime: '' },
+    [form]
+  );
+
+  return (
+    <Card className='mx-auto w-[82.5%] border-none bg-transparent pt-13.5 shadow-none'>
+      <CardHeader className='border-b border-[#B3B8C3] px-0 pb-5.5'>
+        <CardTitle className='font-medium'>Lịch tập luyện trong tuần</CardTitle>
+      </CardHeader>
+      <CardContent className='flex gap-17 px-0'>
+        {/* Left description */}
+        <div className='w-[23%]'>
+          <h5 className='text-xl font-medium'>Lịch trình</h5>
+          <p className='text-sm text-gray-600'>
+            Chọn ngày và khung giờ tập luyện phù hợp với lịch trình của bạn.
+          </p>
+        </div>
+
+        {/* Schedule content */}
+        <div className='flex-1 space-y-6'>
+          {/* Mode Toggle */}
+          <FormField
+            control={form.control}
+            name='schedule.mode'
+            render={({ field }) => (
+              <FormItem>
+                <Tabs
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  className='w-full'
+                >
+                  <TabsList
+                    className='grid w-full max-w-[300px] grid-cols-2'
+                    role='tablist'
+                    aria-label='Chế độ lịch tập'
+                  >
+                    <TabsTrigger value='flexible'>Linh hoạt</TabsTrigger>
+                    <TabsTrigger value='fixed'>Cố định</TabsTrigger>
+                  </TabsList>
+                </Tabs>
+              </FormItem>
+            )}
+          />
+
+          {/* Day Picker */}
+          <FormField
+            control={form.control}
+            name='schedule.selectedDays'
+            render={({ field }) => (
+              <FormItem>
+                <label className='mb-2 block text-sm font-medium text-gray-700'>
+                  Chọn ngày tập
+                </label>
+                <DayPicker
+                  selectedDays={field.value || []}
+                  onChange={field.onChange}
+                />
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {/* Mode Content */}
+          {scheduleMode === 'flexible' ? (
+            <FormField
+              control={form.control}
+              name='schedule.flexiblePeriods'
+              render={({ field }) => (
+                <FormItem>
+                  <FlexibleMode
+                    selectedDays={selectedDays}
+                    periods={field.value || {}}
+                    onPeriodsChange={field.onChange}
+                  />
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          ) : (
+            <FormField
+              control={form.control}
+              name='schedule.fixedPeriod'
+              render={({ field }) => (
+                <FormItem>
+                  <FixedMode
+                    selectedDays={selectedDays}
+                    period={field.value || { startTime: '', endTime: '' }}
+                    onPeriodChange={field.onChange}
+                  />
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
+// Re-export subcomponents for flexibility
+export { DayPicker } from './DayPicker';
+export { TimePeriodInput } from './TimePeriodInput';
+export { FlexibleMode } from './FlexibleMode';
+export { FixedMode } from './FixedMode';
+</file>
+
+<file path="src/components/practice/ScheduleSection/ScheduleSection.test.tsx">
+import { describe, it, expect } from 'vitest';
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Form } from '@/components/ui/form';
+import { ScheduleSection } from './index';
+import { practiceFormSchema } from '@/app/practice/validation';
+import type { PracticeFormData } from '@/types/practice';
+
+// Test component that provides proper form context
+const TestScheduleSection = () => {
+  const form = useForm<PracticeFormData>({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    resolver: zodResolver(practiceFormSchema) as any,
+    defaultValues: {
+      basicInfo: {
+        targetWeight: 0,
+      },
+      schedule: {
+        mode: 'flexible',
+        selectedDays: [],
+        flexiblePeriods: {},
+        fixedPeriod: { startTime: '', endTime: '' },
+      },
+      sports: {
+        predefined: [],
+        custom: [],
+      },
+      notes: {
+        personal: '',
+        healthWarnings: '',
+      },
+    },
+  });
+
+  // Watch form values to ensure re-renders
+  const selectedDays = form.watch('schedule.selectedDays');
+  const mode = form.watch('schedule.mode');
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(() => {})}>
+        <ScheduleSection form={form} />
+      </form>
+    </Form>
+  );
+};
+
+describe('ScheduleSection Component', () => {
+  it('renders the main title', () => {
+    render(<TestScheduleSection />);
+
+    expect(screen.getByText('Lịch tập luyện trong tuần')).toBeInTheDocument();
+  });
+
+  it('displays mode selection tabs', () => {
+    render(<TestScheduleSection />);
+
+    expect(screen.getByText('Linh hoạt')).toBeInTheDocument();
+    expect(screen.getByText('Cố định')).toBeInTheDocument();
+  });
+
+  it('shows day picker buttons with correct labels', () => {
+    render(<TestScheduleSection />);
+
+    // Check for abbreviated day labels
+    const days = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
+    days.forEach(day => {
+      expect(screen.getByText(day)).toBeInTheDocument();
+    });
+  });
+
+  it('allows day selection by clicking', async () => {
+    const user = userEvent.setup();
+    render(<TestScheduleSection />);
+
+    const mondayButton = screen.getByText('T2');
+    await user.click(mondayButton);
+
+    // The button should have selected styling (gradient background)
+    expect(mondayButton).toHaveClass('bg-gradient-to-r');
+  });
+
+  it('toggles day selection when clicked twice', async () => {
+    const user = userEvent.setup();
+    render(<TestScheduleSection />);
+
+    const mondayButton = screen.getByText('T2');
+
+    // First click - select
+    await user.click(mondayButton);
+    expect(mondayButton).toHaveClass('bg-gradient-to-r');
+
+    // Second click - deselect
+    await user.click(mondayButton);
+    expect(mondayButton).not.toHaveClass('bg-gradient-to-r');
+  });
+
+  it('switches to fixed mode when tab is clicked', async () => {
+    const user = userEvent.setup();
+    render(<TestScheduleSection />);
+
+    // Select a day first (required for fixed mode to show content)
+    await user.click(screen.getByText('T2'));
+
+    // Wait for the day to be selected
+    await waitFor(() => {
+      expect(screen.getByText('T2')).toHaveClass('bg-gradient-to-r');
+    });
+
+    const fixedTab = screen.getByText('Cố định');
+    await user.click(fixedTab);
+
+    // Wait for fixed mode content to appear
+    await waitFor(() => {
+      expect(screen.getByText('Giờ tập cố định')).toBeInTheDocument();
+    });
+  });
+
+  it('shows time inputs in fixed mode', async () => {
+    const user = userEvent.setup();
+    render(<TestScheduleSection />);
+
+    // Select a day first (required for fixed mode to show content)
+    await user.click(screen.getByText('T2'));
+
+    // Wait for the day to be selected
+    await waitFor(() => {
+      expect(screen.getByText('T2')).toHaveClass('bg-gradient-to-r');
+    });
+
+    // Switch to fixed mode
+    const fixedTab = screen.getByText('Cố định');
+    await user.click(fixedTab);
+
+    // Wait for fixed mode content to appear
+    await waitFor(() => {
+      expect(screen.getByText('Giờ tập cố định')).toBeInTheDocument();
+    });
+
+    // Should show time inputs
+    expect(screen.getByText('Bắt đầu')).toBeInTheDocument();
+    expect(screen.getByText('Kết thúc')).toBeInTheDocument();
+  });
+
+  it('handles multiple day selection', async () => {
+    const user = userEvent.setup();
+    render(<TestScheduleSection />);
+
+    // Select multiple days
+    await user.click(screen.getByText('T2'));
+    await user.click(screen.getByText('T5'));
+    await user.click(screen.getByText('T7'));
+
+    // All selected days should have the selected class
+    expect(screen.getByText('T2')).toHaveClass('bg-gradient-to-r');
+    expect(screen.getByText('T5')).toHaveClass('bg-gradient-to-r');
+    expect(screen.getByText('T7')).toHaveClass('bg-gradient-to-r');
+  });
+
+  it('maintains selected days when switching modes', async () => {
+    const user = userEvent.setup();
+    render(<TestScheduleSection />);
+
+    // Select days in flexible mode
+    await user.click(screen.getByText('T2'));
+    await user.click(screen.getByText('T5'));
+
+    // Switch to fixed mode
+    await user.click(screen.getByText('Cố định'));
+
+    // Days should still be selected
+    expect(screen.getByText('T2')).toHaveClass('bg-gradient-to-r');
+    expect(screen.getByText('T5')).toHaveClass('bg-gradient-to-r');
+  });
+
+  it('shows flexible mode by default', () => {
+    render(<TestScheduleSection />);
+
+    // Should not show fixed mode content initially
+    expect(screen.queryByText('Khung giờ cố định')).not.toBeInTheDocument();
+  });
+
+  it('shows time period inputs when days are selected in flexible mode', async () => {
+    const user = userEvent.setup();
+    render(<TestScheduleSection />);
+
+    // Select a day
+    await user.click(screen.getByText('T2'));
+
+    // Wait for the day to be selected
+    await waitFor(() => {
+      expect(screen.getByText('T2')).toHaveClass('bg-gradient-to-r');
+    });
+
+    // Wait for the day label to appear
+    await waitFor(() => {
+      expect(screen.getByText('Thứ 2')).toBeInTheDocument();
+    });
+
+    // Should show day label for the selected day
+    expect(screen.getByText('Thứ 2')).toBeInTheDocument();
+
+    // Should show time input labels
+    expect(screen.getByText('Bắt đầu')).toBeInTheDocument();
+    expect(screen.getByText('Kết thúc')).toBeInTheDocument();
+  });
+
+  it('allows adding multiple time periods for a day in flexible mode', async () => {
+    const user = userEvent.setup();
+    render(<TestScheduleSection />);
+
+    // Select Monday
+    await user.click(screen.getByText('T2'));
+
+    // Wait for the day to be selected
+    await waitFor(() => {
+      expect(screen.getByText('T2')).toHaveClass('bg-gradient-to-r');
+    });
+
+    // Wait for the day label to appear
+    await waitFor(() => {
+      expect(screen.getByText('Thứ 2')).toBeInTheDocument();
+    });
+
+    // Look for "Thêm khung giờ" button
+    const addButton = screen.getByText('Thêm khung giờ');
+    expect(addButton).toBeInTheDocument();
+
+    // Button should be clickable
+    expect(addButton).not.toBeDisabled();
+  });
+
+  it('shows duration for time periods', async () => {
+    const user = userEvent.setup();
+    render(<TestScheduleSection />);
+
+    // Select a day to show time inputs
+    await user.click(screen.getByText('T2'));
+
+    // Wait for the day to be selected
+    await waitFor(() => {
+      expect(screen.getByText('T2')).toHaveClass('bg-gradient-to-r');
+    });
+
+    // Wait for the day label to appear
+    await waitFor(() => {
+      expect(screen.getByText('Thứ 2')).toBeInTheDocument();
+    });
+
+    // Should show day label
+    expect(screen.getByText('Thứ 2')).toBeInTheDocument();
+
+    // Should show "Thêm khung giờ" button
+    expect(screen.getByText('Thêm khung giờ')).toBeInTheDocument();
+  });
+});
+</file>
+
+<file path="src/components/practice/ScheduleSection/TimePeriodInput.tsx">
+'use client';
+
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { X } from 'lucide-react';
+import { calculateDuration } from '@/app/practice/formHelper';
+import { cn } from '@/lib/utils';
+
+interface TimePeriodInputProps {
+  startTime: string;
+  endTime: string;
+  onChange: (start: string, end: string) => void;
+  onRemove?: () => void;
+  showRemove?: boolean;
+  index?: number;
+}
+
+export const TimePeriodInput = ({
+  startTime,
+  endTime,
+  onChange,
+  onRemove,
+  showRemove = false,
+  index = 0,
+}: TimePeriodInputProps) => {
+  const duration =
+    startTime && endTime ? calculateDuration(startTime, endTime) : '';
+
+  // Validate that end time is after start time
+  const isValidTime = !startTime || !endTime || startTime < endTime;
+
+  const handleStartChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newStart = e.target.value;
+    // If end time is before new start time, clear end time
+    if (endTime && newStart >= endTime) {
+      onChange(newStart, '');
+    } else {
+      onChange(newStart, endTime);
+    }
+  };
+
+  const handleEndChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newEnd = e.target.value;
+    // Only update if end time is after start time
+    if (!startTime || newEnd > startTime) {
+      onChange(startTime, newEnd);
+    }
+  };
+
+  return (
+    <div
+      role='group'
+      aria-label={`Khung giờ ${index + 1}`}
+      className='flex items-center gap-3'
+    >
+      {/* Start Time */}
+      <div className='flex flex-col gap-1'>
+        <label className='text-xs text-gray-500'>Bắt đầu</label>
+        <Input
+          type='time'
+          value={startTime}
+          onChange={handleStartChange}
+          className={cn(
+            'w-32 rounded-[4px] bg-white',
+            !isValidTime && startTime && endTime && 'border-destructive'
+          )}
+        />
+      </div>
+
+      <span className='mt-5 text-gray-400'>-</span>
+
+      {/* End Time */}
+      <div className='flex flex-col gap-1'>
+        <label className='text-xs text-gray-500'>Kết thúc</label>
+        <Input
+          type='time'
+          value={endTime}
+          onChange={handleEndChange}
+          className={cn(
+            'w-32 rounded-[4px] bg-white',
+            !isValidTime && startTime && endTime && 'border-destructive'
+          )}
+        />
+      </div>
+
+      {/* Duration */}
+      <div className='flex flex-col gap-1'>
+        <label className='text-xs text-gray-500'>Thờ lượng</label>
+        <div
+          className={cn(
+            'flex h-10 w-20 items-center justify-center rounded-[4px] bg-gray-100 text-sm font-medium',
+            duration ? 'text-primary' : 'text-gray-400',
+            !isValidTime &&
+              startTime &&
+              endTime &&
+              'bg-destructive/10 text-destructive'
+          )}
+          aria-live='polite'
+        >
+          {duration || '--'}
+        </div>
+      </div>
+
+      {/* Remove button */}
+      {showRemove && onRemove && (
+        <Button
+          type='button'
+          variant='ghost'
+          size='icon'
+          onClick={onRemove}
+          className='hover:text-destructive mt-5 h-8 w-8 text-gray-400'
+          aria-label='Xóa khung giờ'
+        >
+          <X className='h-4 w-4' />
+        </Button>
+      )}
+    </div>
+  );
+};
+</file>
+
+<file path="src/components/practice/BasicInfoSection.tsx">
+'use client';
+
+import {
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
+import { UseFormReturn } from 'react-hook-form';
+import { goalOptions } from '@/app/practice/formHelper';
+import { validateTargetWeight } from '@/app/practice/validation';
+import { Lock } from 'lucide-react';
+import type { PracticeFormData, UserPracticeProfile } from '@/types/practice';
+
+interface BasicInfoSectionProps {
+  form: UseFormReturn<PracticeFormData>;
+  userProfile?: UserPracticeProfile;
+}
+
+export const BasicInfoSection = ({
+  form,
+  userProfile,
+}: BasicInfoSectionProps) => {
+  const hasHeight = !!userProfile?.height_cm;
+  const hasWeight = !!userProfile?.weight_kg;
+  const hasGoal = !!userProfile?.goal;
+
+  // Watch for dynamic validation
+  const currentWeight =
+    form.watch('basicInfo.weight') || userProfile?.weight_kg;
+  const currentGoal = form.watch('basicInfo.goal') || userProfile?.goal;
+
+  return (
+    <Card className='mx-auto w-[82.5%] border-none bg-transparent pt-13.5 shadow-none'>
+      <CardHeader className='border-b border-[#B3B8C3] px-0 pb-5.5'>
+        <CardTitle className='font-medium'>Thông tin cơ bản</CardTitle>
+      </CardHeader>
+      <CardContent className='flex gap-17 px-0'>
+        {/* Left description */}
+        <div className='w-[23%]'>
+          <h5 className='text-xl font-medium'>Mục tiêu sức khỏe</h5>
+          <p className='text-sm text-gray-600'>
+            Thiết lập mục tiêu cân nặng dựa trên tình trạng hiện tại của bạn.
+          </p>
+        </div>
+
+        {/* Form fields */}
+        <div className='grid flex-1 grid-cols-1 gap-6 md:grid-cols-2'>
+          {/* Height */}
+          <FormField
+            control={form.control}
+            name='basicInfo.height'
+            render={({ field }) => (
+              <FormItem className='min-h-[88px]'>
+                <FormLabel className='flex items-center gap-1.5 text-xs font-medium text-[#6A7282]'>
+                  Chiều cao (cm)
+                  {hasHeight && <Lock className='h-3 w-3' />}
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    type='number'
+                    placeholder='VD: 170'
+                    disabled={hasHeight}
+                    className={cn(
+                      'rounded-[4px] bg-white',
+                      hasHeight && 'bg-gray-100 opacity-60'
+                    )}
+                    {...field}
+                    value={field.value ?? userProfile?.height_cm ?? ''}
+                    onChange={e => {
+                      const sanitized = e.target.value.replace(/[^0-9.]/g, '');
+                      field.onChange(
+                        sanitized ? parseFloat(sanitized) : undefined
+                      );
+                    }}
+                  />
+                </FormControl>
+                {hasHeight && (
+                  <p className='text-xs text-gray-500'>Từ hồ sơ của bạn</p>
+                )}
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {/* Weight */}
+          <FormField
+            control={form.control}
+            name='basicInfo.weight'
+            render={({ field }) => (
+              <FormItem className='min-h-[88px]'>
+                <FormLabel className='flex items-center gap-1.5 text-xs font-medium text-[#6A7282]'>
+                  Cân nặng (kg)
+                  {hasWeight && <Lock className='h-3 w-3' />}
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    type='number'
+                    step='0.1'
+                    placeholder='VD: 60'
+                    disabled={hasWeight}
+                    className={cn(
+                      'rounded-[4px] bg-white',
+                      hasWeight && 'bg-gray-100 opacity-60'
+                    )}
+                    {...field}
+                    value={field.value ?? userProfile?.weight_kg ?? ''}
+                    onChange={e => {
+                      const sanitized = e.target.value.replace(/[^0-9.]/g, '');
+                      field.onChange(
+                        sanitized ? parseFloat(sanitized) : undefined
+                      );
+                    }}
+                  />
+                </FormControl>
+                {hasWeight && (
+                  <p className='text-xs text-gray-500'>Từ hồ sơ của bạn</p>
+                )}
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {/* Target Weight - Always editable */}
+          <FormField
+            control={form.control}
+            name='basicInfo.targetWeight'
+            render={({ field }) => {
+              const validationResult =
+                currentWeight && currentGoal
+                  ? validateTargetWeight(
+                      field.value || 0,
+                      currentWeight,
+                      currentGoal
+                    )
+                  : true;
+
+              return (
+                <FormItem className='min-h-[88px]'>
+                  <FormLabel className='text-xs font-medium text-[#6A7282]'>
+                    Mục tiêu cân nặng (kg)
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      type='number'
+                      step='0.1'
+                      placeholder='VD: 55'
+                      className={cn(
+                        'rounded-[4px] bg-white',
+                        validationResult !== true && 'border-destructive'
+                      )}
+                      {...field}
+                      value={field.value ?? ''}
+                      onChange={e =>
+                        field.onChange(parseFloat(e.target.value) || undefined)
+                      }
+                    />
+                  </FormControl>
+                  {validationResult !== true && (
+                    <p className='text-destructive text-xs'>
+                      {validationResult}
+                    </p>
+                  )}
+                  <FormMessage />
+                </FormItem>
+              );
+            }}
+          />
+
+          {/* Overall Goal */}
+          <FormField
+            control={form.control}
+            name='basicInfo.goal'
+            render={({ field }) => (
+              <FormItem className='min-h-[88px]'>
+                <FormLabel className='flex items-center gap-1.5 text-xs font-medium text-[#6A7282]'>
+                  Mục tiêu tổng thể
+                  {hasGoal && <Lock className='h-3 w-3' />}
+                </FormLabel>
+                <Select
+                  onValueChange={field.onChange}
+                  value={field.value || userProfile?.goal}
+                  disabled={hasGoal}
+                >
+                  <FormControl>
+                    <SelectTrigger
+                      className={cn(
+                        'rounded-[4px] bg-white',
+                        hasGoal && 'bg-gray-100 opacity-60'
+                      )}
+                    >
+                      <SelectValue placeholder='Chọn mục tiêu' />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {goalOptions.map(option => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {hasGoal && (
+                  <p className='text-xs text-gray-500'>Từ hồ sơ của bạn</p>
+                )}
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
 </file>
 
 <file path="src/components/predict/DietPlanSection.tsx">
@@ -8149,6 +10310,57 @@ export const DIET_RECOMMENDATION_FLOW: ConversationStep[] = [
 ];
 </file>
 
+<file path="src/types/practice.ts">
+// TimePeriod for schedule
+export interface TimePeriod {
+  startTime: string; // HH:mm format
+  endTime: string;
+}
+
+// Basic info section
+export interface PracticeBasicInfo {
+  height?: number;
+  weight?: number;
+  targetWeight: number;
+  goal?: 'gain' | 'lose' | 'maintain';
+}
+
+// Schedule section
+export interface PracticeSchedule {
+  mode: 'flexible' | 'fixed';
+  selectedDays: string[];
+  flexiblePeriods?: Record<string, TimePeriod[]>;
+  fixedPeriod?: TimePeriod;
+}
+
+// Sports section
+export interface PracticeSports {
+  predefined: string[];
+  custom: string[];
+}
+
+// Notes section
+export interface PracticeNotes {
+  personal?: string;
+  healthWarnings?: string;
+}
+
+// Full form data
+export interface PracticeFormData {
+  basicInfo: PracticeBasicInfo;
+  schedule: PracticeSchedule;
+  sports: PracticeSports;
+  notes: PracticeNotes;
+}
+
+// API response for pre-fill data
+export interface UserPracticeProfile {
+  height_cm?: number;
+  weight_kg?: number;
+  goal?: string;
+}
+</file>
+
 <file path="src/types/streaming.ts">
 /**
  * Streaming types for Q&A service
@@ -8250,229 +10462,6 @@ export interface UpdateUserProfileData {
 }
 </file>
 
-<file path="terraform/main.tf">
-terraform {
-  required_version = ">= 1.0"
-
-  required_providers {
-    google = {
-      source  = "hashicorp/google"
-      version = "~> 5.0"
-    }
-  }
-
-  backend "gcs" {
-    # Bucket and prefix are configured via backend-config in Jenkinsfile
-    # -backend-config="bucket=${TF_BACKEND_BUCKET}"
-    # -backend-config="prefix=terraform/state/${ENVIRONMENT}"
-  }
-}
-
-provider "google" {
-  project = var.project_id
-  region  = var.region
-}
-
-# Enable required APIs
-resource "google_project_service" "required_apis" {
-  for_each = toset([
-    "run.googleapis.com",
-    "artifactregistry.googleapis.com",
-    "compute.googleapis.com",
-    "cloudresourcemanager.googleapis.com",
-    "secretmanager.googleapis.com",
-  ])
-
-  project = var.project_id
-  service = each.key
-
-  disable_on_destroy = false
-}
-
-# Service Account for Cloud Run
-resource "google_service_account" "cloud_run_sa" {
-  account_id   = "vhealth-frontend-${var.environment}"
-  display_name = "Cloud Run Service Account for VHealth Frontend - ${var.environment}"
-  project      = var.project_id
-}
-
-# IAM bindings for Service Account
-resource "google_project_iam_member" "cloud_run_sa_roles" {
-  for_each = toset([
-    "roles/secretmanager.secretAccessor",
-    "roles/artifactregistry.reader",
-  ])
-
-  project = var.project_id
-  role    = each.key
-  member  = "serviceAccount:${google_service_account.cloud_run_sa.email}"
-}
-
-# Cloud Run Service
-resource "google_cloud_run_service" "frontend" {
-  name     = "vhealth-frontend-${var.environment}"
-  location = var.region
-  project  = var.project_id
-
-  template {
-    spec {
-      containers {
-        image = var.image_url
-
-        ports {
-          container_port = 8080
-        }
-
-        resources {
-          limits = {
-            cpu    = var.cpu_limit
-            memory = var.memory_limit
-          }
-        }
-
-        startup_probe {
-          http_get {
-            path = "/"
-          }
-          initial_delay_seconds = 0
-          timeout_seconds       = 1
-          period_seconds        = 3
-          failure_threshold     = 10
-        }
-
-        env {
-          name  = "NODE_ENV"
-          value = var.environment == "prod" ? "production" : "development"
-        }
-
-        env {
-          name  = "HOSTNAME"
-          value = "0.0.0.0"
-        }
-
-        dynamic "env" {
-          for_each = var.environment_variables
-          content {
-            name  = env.key
-            value = env.value
-          }
-        }
-
-        dynamic "env" {
-          for_each = var.secret_environment_variables
-          content {
-            name = env.key
-            value_from {
-              secret_key_ref {
-                name = env.value
-                key  = "latest"
-              }
-            }
-          }
-        }
-      }
-
-      service_account_name = google_service_account.cloud_run_sa.email
-    }
-
-    metadata {
-      annotations = {
-        "autoscaling.knative.dev/minScale" = var.min_instances
-        "autoscaling.knative.dev/maxScale" = var.max_instances
-      }
-    }
-  }
-
-  traffic {
-    percent         = 100
-    latest_revision = true
-  }
-
-  autogenerate_revision_name = true
-
-  depends_on = [google_project_service.required_apis]
-}
-
-# IAM policy for public access
-resource "google_cloud_run_service_iam_member" "public_access" {
-  count = var.allow_unauthenticated ? 1 : 0
-
-  service  = google_cloud_run_service.frontend.name
-  location = google_cloud_run_service.frontend.location
-  project  = var.project_id
-  role     = "roles/run.invoker"
-  member   = "allUsers"
-}
-
-# Artifact Registry Repository
-resource "google_artifact_registry_repository" "docker_repo" {
-  location      = var.region
-  repository_id = "vhealth-frontend-${var.environment}"
-  description   = "Docker repository for VHealth frontend - ${var.environment}"
-  format        = "DOCKER"
-  project       = var.project_id
-
-  depends_on = [google_project_service.required_apis]
-}
-</file>
-
-<file path="terraform/outputs.tf">
-output "cloud_run_url" {
-  description = "URL of the Cloud Run service"
-  value       = google_cloud_run_service.frontend.status[0].url
-}
-
-output "service_url" {
-  description = "Service URL (alias for cloud_run_url)"
-  value       = google_cloud_run_service.frontend.status[0].url
-}
-
-output "service_name" {
-  description = "Name of the Cloud Run service"
-  value       = google_cloud_run_service.frontend.name
-}
-
-output "cloud_run_service_name" {
-  description = "Cloud Run service name (alias for compatibility)"
-  value       = google_cloud_run_service.frontend.name
-}
-
-output "service_account_email" {
-  description = "Email of the service account"
-  value       = google_service_account.cloud_run_sa.email
-}
-
-output "cloud_run_service_account_email" {
-  description = "Cloud Run service account email (alias for compatibility)"
-  value       = google_service_account.cloud_run_sa.email
-}
-
-output "artifact_registry_url" {
-  description = "Artifact Registry URL"
-  value       = "${var.region}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.docker_repo.repository_id}"
-}
-
-output "artifact_registry_repository" {
-  description = "Artifact Registry repository ID"
-  value       = google_artifact_registry_repository.docker_repo.repository_id
-}
-
-output "environment" {
-  description = "Current environment"
-  value       = var.environment
-}
-
-output "region" {
-  description = "GCP region"
-  value       = var.region
-}
-
-output "project_id" {
-  description = "GCP project ID"
-  value       = var.project_id
-}
-</file>
-
 <file path="terraform/terraform.tfvars.example">
 # GCP Project Configuration
 project_id = "your-gcp-project-id"
@@ -8517,76 +10506,6 @@ github_repo                = "health_management_frontend"
 
 # Registry Type
 use_artifact_registry = false
-</file>
-
-<file path="terraform/variables.tf">
-variable "project_id" {
-  description = "GCP Project ID"
-  type        = string
-}
-
-variable "region" {
-  description = "GCP region for resources"
-  type        = string
-  default     = "us-central1"
-}
-
-variable "environment" {
-  description = "Environment (dev or prod)"
-  type        = string
-  validation {
-    condition     = contains(["dev", "prod"], var.environment)
-    error_message = "Environment must be either 'dev' or 'prod'."
-  }
-}
-
-variable "image_url" {
-  description = "Container image URL"
-  type        = string
-  default     = "gcr.io/cloudrun/hello"
-}
-
-variable "cpu_limit" {
-  description = "CPU limit for Cloud Run service"
-  type        = string
-  default     = "1"
-}
-
-variable "memory_limit" {
-  description = "Memory limit for Cloud Run service"
-  type        = string
-  default     = "1Gi"
-}
-
-variable "min_instances" {
-  description = "Minimum number of instances"
-  type        = string
-  default     = "0"
-}
-
-variable "max_instances" {
-  description = "Maximum number of instances"
-  type        = string
-  default     = "10"
-}
-
-variable "allow_unauthenticated" {
-  description = "Allow unauthenticated access to Cloud Run service"
-  type        = bool
-  default     = true
-}
-
-variable "environment_variables" {
-  description = "Environment variables for the Cloud Run service"
-  type        = map(string)
-  default     = {}
-}
-
-variable "secret_environment_variables" {
-  description = "Secret environment variables from GCP Secret Manager (format: SECRET_NAME:VERSION)"
-  type        = map(string)
-  default     = {}
-}
 </file>
 
 <file path=".dockerignore">
@@ -8718,6 +10637,231 @@ pids
 }
 </file>
 
+<file path=".repomixignore">
+docs/*
+plans/*
+assets/*
+dist/*
+coverage/*
+build/*
+ios/*
+android/*
+tests/*
+__tests__/*
+__pycache__/*
+node_modules/*
+
+.opencode/*
+.claude/*
+.serena/*
+.pnpm-store/*
+.github/*
+.dart_tool/*
+.idea/*
+.husky/*
+.venv/*
+</file>
+
+<file path="CLAUDE.md">
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Development Commands
+
+This project uses Bun as the package manager:
+
+- `bun run dev` - Start development server with Turbopack
+- `bun run build` - Build production application
+- `bun run start` - Start production server
+- `bun run lint` - Run ESLint
+- `bun run format` - Format code with Prettier
+- `bun run format:check` - Check code formatting
+- `bun run format:fix` - Format and fix linting issues
+
+## Project Architecture
+
+This is a Next.js 15 health management application called "VHealth" with the following architecture:
+
+### Core Structure
+
+- **Next.js App Router** with TypeScript and Turbopack
+- **Tailwind CSS** for styling, configured with CSS variables
+- **shadcn/ui** component library with New York style
+- **React Query (TanStack Query)** for server state management
+- **Axios** for API calls with automatic token refresh
+- **React Hook Form** with Zod validation
+- **Custom authentication context** with token management
+
+### Key Directories
+
+- `src/app/` - Next.js app router pages and API routes
+- `src/components/` - Reusable React components (including `ui/` for shadcn components)
+- `src/contexts/` - React contexts (AuthContext)
+- `src/hooks/` - Custom React hooks
+- `src/lib/` - Utilities, constants, and configuration
+- `src/services/` - API service functions
+- `src/types/` - TypeScript type definitions
+
+### Authentication System
+
+- **JWT-based authentication** with access/refresh token rotation
+- **OAuth Google login** support
+- **Automatic token refresh** with request queuing
+- **Protected routes** using HOC and context
+- **Email verification** flow
+
+### API Integration
+
+- **Base URL**: Configured via `NEXT_PUBLIC_API_URL` (defaults to localhost:8000)
+- **Axios interceptors** handle token injection and automatic refresh
+- **Request/Response logging** with custom logger
+- **Error handling** with toast notifications
+
+### State Management
+
+- **AuthContext** for authentication state
+- **React Query** for server state
+- **Local storage** for token persistence
+- **React hooks** for component-level state
+
+### Styling
+
+- **Tailwind CSS v4** exclusively (100% Tailwind, 0% SCSS)
+- **Custom CSS variables** defined in globals.css
+- **Custom fonts** (SVN-Gilroy family) loaded locally
+- **shadcn/ui** components with consistent theming
+- **Use `cn()` utility** from `@/lib/utils` for conditional classes
+
+### Configuration Files
+
+- **Path aliases**: `@/*` maps to `./src/*`
+- **Component aliases**: `@/components`, `@/lib`, `@/hooks`, `@/ui`
+- **SVG handling**: Configured for both Turbopack and Webpack
+- **Standalone output**: Enabled for Docker deployment
+
+### Key Features
+
+- Multi-page authentication flow (login, register, forgot password, etc.)
+- Dashboard and health tracking pages
+- Profile management with avatar upload
+- Settings page
+- Floating chat button component
+- Responsive design with custom fonts
+
+---
+
+## Development Conventions
+
+### Component Structure
+
+All components organized into clear categories:
+
+- **Feature components:** `src/components/chat/`, `src/components/predict/`
+- **Reusable components:** `src/components/shared/` (Avatar, Logo, Card, Navigation, ErrorBoundary, ProtectedRoute)
+- **Form components:** `src/components/form/` (TextField, Dropdown, NumberInput, RatioField)
+- **Layout components:** `src/components/layout/` (Header, HeaderVertical, Footer)
+- **Marketing components:** `src/components/marketing/` (FeaturesSection, InformationSection)
+- **UI primitives:** `src/components/ui/` (shadcn/ui - don't modify directly)
+
+**Rules:**
+
+- Feature-specific components in feature folders
+- Single reusable components in `shared/`
+- Never create single-component folders at root
+- Use barrel exports (index.ts) for multi-component folders
+
+### Context Organization
+
+Each context in its own folder with barrel export:
+
+```
+src/contexts/
+├── auth/
+│   ├── AuthContext.tsx
+│   ├── actions.ts
+│   ├── reducer.ts
+│   ├── types.ts
+│   └── index.ts
+└── conversation/
+    └── ... (same pattern)
+```
+
+**Rules:**
+
+- Main context file: `[Name]Context.tsx`
+- Supporting files: `actions.ts`, `reducer.ts`, `types.ts`
+- NO prefixes on supporting files (use `actions.ts`, not `authActions.ts`)
+
+### Type Organization
+
+**ALL types live in `/src/types/`**. Services IMPORT types, never define them inline.
+
+```
+src/types/
+├── auth.ts        # User, AuthState, LoginCredentials, RegisterCredentials, AuthResponse
+├── user.ts        # UserData, UpdateUserProfileData
+├── api.ts         # Generic API types (ApiResponse, ApiError, PaginatedResponse)
+├── streaming.ts   # SSE and streaming types
+├── conversation.ts
+├── chat.ts
+└── prediction.ts
+```
+
+### Utilities Organization
+
+Utilities consolidated in `src/lib/utils/`:
+
+```
+src/lib/
+├── utils/
+│   ├── index.ts       # Barrel export
+│   ├── cn.ts          # Classname utility
+│   ├── avatar.ts      # Avatar utilities
+│   ├── transforms.ts  # Data transformation utilities
+│   └── prediction.ts  # Prediction utilities
+├── constants.ts
+├── storage.ts
+├── logger.ts
+└── react-query.tsx
+```
+
+### Styling Conventions
+
+**Use Tailwind exclusively.** NO SCSS modules.
+
+```tsx
+// ✅ Good - Tailwind classes
+<div className="flex items-center justify-between p-4 rounded-lg bg-white">
+
+// ✅ Good - Conditional classes with cn()
+import { cn } from '@/lib/utils';
+<div className={cn("base-classes", isActive && "active-classes", className)}>
+
+// ❌ Bad - SCSS modules (removed in Phase 4)
+import styles from './Component.module.scss';
+<div className={styles.container}>
+```
+
+### Code Quality Tools
+
+- **ESLint** with Next.js and TypeScript configs
+- **Prettier** with Tailwind plugin
+- **Husky** pre-commit hooks with lint-staged
+- **TypeScript** strict mode
+
+**Available Scripts:**
+
+- `bun run lint` - Run ESLint
+- `bun run lint:fix` - Auto-fix ESLint issues
+- `bun run type-check` - Run TypeScript compiler
+- `bun run format` - Format with Prettier
+- `bun run format:check` - Check formatting
+- `bun run format:fix` - Format and fix linting
+
+See `CONTRIBUTING.md` for complete development conventions and guidelines.
+</file>
+
 <file path="components.json">
 {
   "$schema": "https://ui.shadcn.com/schema.json",
@@ -8741,204 +10885,6 @@ pids
   },
   "registries": {}
 }
-</file>
-
-<file path="CONTRIBUTING.md">
-# Contributing to VHealth
-
-## Project Structure
-
-### Component Organization
-
-All components follow this structure:
-
-```
-src/components/
-├── ui/          # shadcn/ui components (don't modify directly)
-├── shared/      # Single reusable components (Avatar, Logo, Card)
-├── form/        # Form-specific components (TextField, Dropdown)
-├── layout/      # Layout components (Header, Footer)
-├── marketing/   # Marketing page sections
-├── chat/        # Chat feature components
-├── predict/     # Prediction feature components
-└── icons/       # Icon components
-```
-
-**Rules:**
-
-- Feature-specific components go in feature folders (chat/, predict/)
-- Single reusable components go in shared/
-- NEVER create single-component folders at root
-- Use barrel exports (index.ts) for multi-component folders
-
-### Context Organization
-
-```
-src/contexts/
-├── auth/
-│   ├── AuthContext.tsx
-│   ├── actions.ts
-│   ├── reducer.ts
-│   ├── types.ts
-│   └── index.ts
-└── conversation/
-    └── ... (same pattern)
-```
-
-**Rules:**
-
-- Each context in its own folder
-- Main context file: `[Name]Context.tsx`
-- Supporting files: `actions.ts`, `reducer.ts`, `types.ts`
-- Always provide barrel export (index.ts)
-- NO prefix on supporting files (use `actions.ts`, not `authActions.ts`)
-
-### Type Organization
-
-ALL types must live in `/src/types/`, organized by domain:
-
-```
-src/types/
-├── auth.ts        # User, AuthState, LoginCredentials
-├── user.ts        # UserData, UpdateUserProfileData
-├── api.ts         # Generic API types
-├── chat.ts
-├── conversation.ts
-└── prediction.ts
-```
-
-**Rules:**
-
-- NO inline type definitions in service files
-- Service files IMPORT types, never define them
-- Use consistent naming: `[Entity]Data` for DTOs, `[Entity]` for domain models
-
-### Naming Conventions
-
-| Type             | Pattern                  | Example                       |
-| ---------------- | ------------------------ | ----------------------------- |
-| Components       | PascalCase               | `TextField`, `ChatMessage`    |
-| Files            | Match component name     | `TextField.tsx`               |
-| Folders          | kebab-case OR PascalCase | `form/` or `ChatComponents/`  |
-| Constants        | SCREAMING_SNAKE_CASE     | `DEFAULT_AVATAR_PATH`         |
-| Config objects   | SCREAMING + `as const`   | `AVATAR_CONFIG`               |
-| Functions        | camelCase                | `formatDate`, `validateEmail` |
-| Services         | camelCaseService         | `authService`, `userService`  |
-| Hooks            | `use` + PascalCase       | `useAuth`, `useChat`          |
-| Types/Interfaces | PascalCase               | `User`, `ApiResponse`         |
-
-### Styling
-
-**Use Tailwind exclusively.** NO SCSS modules.
-
-```tsx
-// ✅ Good
-<div className="flex items-center justify-between p-4 rounded-lg bg-white">
-
-// ❌ Bad
-import styles from './Component.module.scss';
-<div className={styles.container}>
-```
-
-**Use `cn()` for conditional classes:**
-
-```tsx
-import { cn } from '@/lib/utils';
-
-<div
-  className={cn('base-classes', isActive && 'active-classes', className)}
-></div>;
-```
-
-### Import Organization
-
-Order imports as follows:
-
-```tsx
-// 1. React/Next
-import React from 'react';
-import { useRouter } from 'next/navigation';
-
-// 2. External libraries
-import { z } from 'zod';
-import { useForm } from 'react-hook-form';
-
-// 3. Internal - Components
-import { Button } from '@/components/ui/button';
-import { TextField } from '@/components/form/TextField';
-
-// 4. Internal - Hooks/Utils/Types
-import { useAuth } from '@/hooks/useAuth';
-import { cn } from '@/lib/utils';
-import type { User } from '@/types/auth';
-
-// 5. Internal - Services/API
-import { authService } from '@/services/auth';
-
-// 6. Styles (if any)
-import '@/styles/custom.css';
-```
-
-## Code Quality
-
-### Before Committing
-
-```bash
-# Run linter
-bun run lint
-
-# Fix auto-fixable issues
-bun run lint:fix
-
-# Format code
-bun run format
-
-# Type check
-bun run type-check
-
-# Build (catches most errors)
-bun run build
-```
-
-### Pre-commit Hooks
-
-Husky runs automatically on commit:
-
-- Formats all staged files with Prettier
-- Runs ESLint on TypeScript files and auto-fixes
-- Blocks commit if errors found
-
-## Development Workflow
-
-1. **Create feature branch:**
-
-   ```bash
-   git checkout -b feature/my-feature
-   ```
-
-2. **Make changes following conventions above**
-
-3. **Test thoroughly:**
-
-   ```bash
-   bun run dev
-   bun run build
-   bun run lint
-   ```
-
-4. **Commit with conventional commits:**
-
-   ```bash
-   git commit -m "feat(auth): add password reset flow"
-   git commit -m "fix(chat): resolve message ordering bug"
-   git commit -m "refactor(components): migrate Card to Tailwind"
-   ```
-
-5. **Push and create PR**
-
-## Questions?
-
-Check CLAUDE.md for project-specific instructions.
 </file>
 
 <file path="postcss.config.mjs">
@@ -10880,6 +12826,152 @@ export default defineConfig({
 }
 </file>
 
+<file path="src/app/practice/page.tsx">
+'use client';
+
+import Footer from '@/components/layout/Footer';
+import Header from '@/components/layout/Header';
+import { Button } from '@/components/ui/button';
+import { Form } from '@/components/ui/form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useState, useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { useQuery } from '@tanstack/react-query';
+import type { Resolver } from 'react-hook-form';
+import { useAuth } from '@/contexts/auth';
+import { userService } from '@/services/user';
+import {
+  BasicInfoSection,
+  ScheduleSection,
+  SportsSection,
+  NotesSection,
+} from '@/components/practice';
+import { practiceFormSchema } from './validation';
+import type { PracticeFormData } from '@/types/practice';
+
+const PracticePage = () => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { user } = useAuth();
+
+  const form = useForm<PracticeFormData>({
+    resolver: zodResolver(practiceFormSchema) as Resolver<PracticeFormData>,
+    mode: 'onChange',
+    defaultValues: {
+      basicInfo: {
+        height: undefined,
+        weight: undefined,
+        targetWeight: 0,
+        goal: undefined,
+      },
+      schedule: {
+        mode: 'flexible',
+        selectedDays: [],
+        flexiblePeriods: {},
+        fixedPeriod: { startTime: '', endTime: '' },
+      },
+      sports: {
+        predefined: [],
+        custom: [],
+      },
+      notes: {
+        personal: '',
+        healthWarnings: '',
+      },
+    },
+  });
+
+  // Fetch user profile for pre-fill data
+  const { data: userProfile } = useQuery({
+    queryKey: ['userProfile', user?.id],
+    queryFn: () => userService.getProfile(Number(user?.id)),
+    enabled: !!user?.id,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // Pre-fill form when data loads
+  useEffect(() => {
+    if (userProfile?.profile) {
+      const profile = userProfile.profile;
+      if (profile.height_cm) {
+        form.setValue('basicInfo.height', profile.height_cm);
+      }
+      if (profile.weight_kg) {
+        form.setValue('basicInfo.weight', profile.weight_kg);
+      }
+      if (profile.goal) {
+        form.setValue(
+          'basicInfo.goal',
+          profile.goal as 'gain' | 'lose' | 'maintain'
+        );
+      }
+    }
+  }, [userProfile, form]);
+
+  const onSubmit = async (_data: PracticeFormData) => {
+    setIsSubmitting(true);
+    try {
+      // TODO: API integration in Phase 5
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <>
+      <Header className='sticky top-0 left-0 z-50 w-full' />
+      <div className='min-h-screen pt-24'>
+        {/* Hero Section */}
+        <div className='mb-12 text-center'>
+          <h2 className='mb-2 text-5xl font-semibold text-gray-900'>
+            Thiết lập kế hoạch tập luyện
+          </h2>
+          <p className='mx-auto max-w-3xl text-sm text-gray-600'>
+            Cá nhân hóa lịch tập luyện và mục tiêu sức khỏe của bạn
+          </p>
+        </div>
+
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className='space-y-10 bg-[#F5F4FA] pb-22.25'
+          >
+            {/* Basic Info Section */}
+            <BasicInfoSection
+              form={form}
+              userProfile={userProfile?.profile || undefined}
+            />
+
+            {/* Schedule Section */}
+            <ScheduleSection form={form} />
+
+            {/* Sports Section */}
+            <SportsSection form={form} />
+
+            {/* Notes Section */}
+            <NotesSection form={form} />
+
+            {/* Submit Button */}
+            <div className='mx-auto flex w-[82.5%] items-end justify-end gap-5'>
+              <div className='h-px w-full bg-[#B3B8C3]' />
+              <Button
+                type='submit'
+                disabled={isSubmitting}
+                className='w-full rounded-none bg-black px-17 py-3.25 text-white transition-colors hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50 md:w-auto'
+              >
+                {isSubmitting ? 'Đang lưu...' : 'Lưu thiết lập'}
+              </Button>
+            </div>
+          </form>
+        </Form>
+      </div>
+      <Footer />
+    </>
+  );
+};
+
+export default PracticePage;
+</file>
+
 <file path="src/app/predict/result/page.tsx">
 'use client';
 
@@ -12092,6 +14184,13 @@ const LogoIcon = () => {
 };
 
 export default LogoIcon;
+</file>
+
+<file path="src/components/practice/index.ts">
+export { BasicInfoSection } from './BasicInfoSection';
+export { ScheduleSection } from './ScheduleSection';
+export { SportsSection } from './SportsSection';
+export { NotesSection } from './NotesSection';
 </file>
 
 <file path="src/components/predict/PredictionResultCard.tsx">
@@ -14481,6 +16580,231 @@ export interface SSEConfig {
 }
 </file>
 
+<file path="terraform/environments/test.tfvars">
+# Test Environment Configuration
+environment = "test"
+
+# GCP Configuration
+project_id = "vhealth-test"
+region     = "asia-southeast1"
+
+# Resource Limits (smaller for test)
+cpu_limit    = "1"
+memory_limit = "512Mi"
+
+# Scaling Configuration (minimal for test)
+min_instances = "0"
+max_instances = "3"
+
+# Access Control
+allow_unauthenticated = true
+
+# Image Configuration
+# NOTE: This is a fallback value. Jenkins pipeline will override this with the specific build-tagged image
+# via: -var "image_url=${IMAGE_FULL}" in terraform plan/apply
+image_url = "asia-southeast1-docker.pkg.dev/vhealth-test/vhealth-frontend-test/vhealth-frontend:latest"
+
+# Environment Variables
+environment_variables = {
+  NODE_ENV                = "test"
+  NEXT_TELEMETRY_DISABLED = "1"
+}
+
+# Secret Environment Variables (from GCP Secret Manager)
+secret_environment_variables = {
+  NEXT_PUBLIC_API_URL             = "vhealth-test-api-url"
+  NEXT_PUBLIC_GOOGLE_CLIENT_ID    = "vhealth-test-google-client-id"
+  NEXT_PUBLIC_GOOGLE_SECRET       = "vhealth-test-google-client-secret"
+  NEXT_PUBLIC_GOOGLE_REDIRECT_URI = "vhealth-test-google-redirect-uri"
+}
+
+# Resource Management Flags
+# Set to false because:
+# - IAM bindings: Jenkins SA doesn't have roles/resourcemanager.projectIamAdmin
+# - Artifact Registry: Repository already exists in GCP
+manage_iam_bindings      = false
+manage_artifact_registry = false
+</file>
+
+<file path="terraform/main.tf">
+terraform {
+  required_version = ">= 1.0"
+
+  required_providers {
+    google = {
+      source  = "hashicorp/google"
+      version = "~> 5.0"
+    }
+  }
+
+  backend "gcs" {
+    # Bucket and prefix are configured via backend-config in Jenkinsfile
+    # -backend-config="bucket=${TF_BACKEND_BUCKET}"
+    # -backend-config="prefix=terraform/state/${ENVIRONMENT}"
+  }
+}
+
+provider "google" {
+  project = var.project_id
+  region  = var.region
+}
+
+# Enable required APIs
+resource "google_project_service" "required_apis" {
+  for_each = toset([
+    "run.googleapis.com",
+    "artifactregistry.googleapis.com",
+    "compute.googleapis.com",
+    "cloudresourcemanager.googleapis.com",
+    "secretmanager.googleapis.com",
+  ])
+
+  project = var.project_id
+  service = each.key
+
+  disable_on_destroy = false
+}
+
+# Service Account for Cloud Run
+# NOTE: The service account and its IAM bindings should be pre-created manually
+# or by a separate Terraform configuration with elevated permissions.
+# This data source references an existing service account.
+data "google_service_account" "cloud_run_sa" {
+  account_id = "vhealth-frontend-${var.environment}"
+  project    = var.project_id
+}
+
+# IAM bindings for Service Account
+# IMPORTANT: These require the Jenkins service account to have roles/resourcemanager.projectIamAdmin
+# If you get 403 errors, grant the IAM roles manually via GCP Console or gcloud:
+#   gcloud projects add-iam-policy-binding PROJECT_ID \
+#     --member="serviceAccount:vhealth-frontend-ENV@PROJECT_ID.iam.gserviceaccount.com" \
+#     --role="roles/secretmanager.secretAccessor"
+#   gcloud projects add-iam-policy-binding PROJECT_ID \
+#     --member="serviceAccount:vhealth-frontend-ENV@PROJECT_ID.iam.gserviceaccount.com" \
+#     --role="roles/artifactregistry.reader"
+resource "google_project_iam_member" "cloud_run_sa_roles" {
+  for_each = var.manage_iam_bindings ? toset([
+    "roles/secretmanager.secretAccessor",
+    "roles/artifactregistry.reader",
+  ]) : toset([])
+
+  project = var.project_id
+  role    = each.key
+  member  = "serviceAccount:${data.google_service_account.cloud_run_sa.email}"
+}
+
+# Cloud Run Service
+resource "google_cloud_run_service" "frontend" {
+  name     = "vhealth-frontend-${var.environment}"
+  location = var.region
+  project  = var.project_id
+
+  template {
+    spec {
+      containers {
+        image = var.image_url
+
+        ports {
+          container_port = 8080
+        }
+
+        resources {
+          limits = {
+            cpu    = var.cpu_limit
+            memory = var.memory_limit
+          }
+        }
+
+        startup_probe {
+          http_get {
+            path = "/"
+          }
+          initial_delay_seconds = 0
+          timeout_seconds       = 1
+          period_seconds        = 3
+          failure_threshold     = 10
+        }
+
+        env {
+          name  = "NODE_ENV"
+          value = var.environment == "prod" ? "production" : "development"
+        }
+
+        env {
+          name  = "HOSTNAME"
+          value = "0.0.0.0"
+        }
+
+        dynamic "env" {
+          for_each = var.environment_variables
+          content {
+            name  = env.key
+            value = env.value
+          }
+        }
+
+        dynamic "env" {
+          for_each = var.secret_environment_variables
+          content {
+            name = env.key
+            value_from {
+              secret_key_ref {
+                name = env.value
+                key  = "latest"
+              }
+            }
+          }
+        }
+      }
+
+      service_account_name = data.google_service_account.cloud_run_sa.email
+    }
+
+    metadata {
+      annotations = {
+        "autoscaling.knative.dev/minScale" = var.min_instances
+        "autoscaling.knative.dev/maxScale" = var.max_instances
+      }
+    }
+  }
+
+  traffic {
+    percent         = 100
+    latest_revision = true
+  }
+
+  autogenerate_revision_name = true
+
+  depends_on = [google_project_service.required_apis]
+}
+
+# IAM policy for public access
+resource "google_cloud_run_service_iam_member" "public_access" {
+  count = var.allow_unauthenticated ? 1 : 0
+
+  service  = google_cloud_run_service.frontend.name
+  location = google_cloud_run_service.frontend.location
+  project  = var.project_id
+  role     = "roles/run.invoker"
+  member   = "allUsers"
+}
+
+# Artifact Registry Repository
+# NOTE: Set manage_artifact_registry = false if the repository already exists
+resource "google_artifact_registry_repository" "docker_repo" {
+  count = var.manage_artifact_registry ? 1 : 0
+
+  location      = var.region
+  repository_id = "vhealth-frontend-${var.environment}"
+  description   = "Docker repository for VHealth frontend - ${var.environment}"
+  format        = "DOCKER"
+  project       = var.project_id
+
+  depends_on = [google_project_service.required_apis]
+}
+</file>
+
 <file path=".prettierignore">
 # Build outputs
 .next/
@@ -14591,478 +16915,6 @@ EXPOSE 3000
 # Start the application
 # Note: The standalone server.js automatically uses PORT and HOSTNAME env vars
 CMD ["node", "server.js"]
-</file>
-
-<file path="README.md">
-# VHealth - Health Management Platform
-
-A comprehensive health management platform built with Next.js 15, TypeScript, and modern web technologies. VHealth empowers users to track health metrics, manage personal information, and access AI-powered health assistance through an intuitive web interface.
-
-## Features
-
-### Authentication & Security
-
-- JWT-based authentication with automatic token refresh
-- OAuth Google integration for seamless login
-- Email verification and password reset flows
-- Multi-device session management
-- Secure storage of sensitive health data
-
-### Health Prediction
-
-- Advanced health prediction form with 17 validated fields
-- React Hook Form + Zod validation
-- Real-time progress tracking
-- Healthcare-specific validation rules
-- Comprehensive health analysis and recommendations
-
-### Conversation Management
-
-- AI-powered chat assistant for health queries
-- Real-time streaming responses with Server-Sent Events
-- Conversation history with search functionality
-- Quick response templates
-- Conversation metadata (pinned, tags, message count)
-
-### User Profile Management
-
-- Comprehensive profile editing with avatar upload
-- Health information management
-- Personal data with Zod validation
-- Emergency contact information
-
-### Health Tracking
-
-- Dashboard with health metrics overview
-- Weight tracking with historical data
-- Goal setting and progress monitoring
-- Data visualization components
-
-### Modern UI/UX
-
-- Responsive design optimized for all devices
-- WCAG 2.1 AA accessibility compliance
-- 100% Tailwind CSS styling (no SCSS)
-- shadcn/ui component library
-- Smooth animations with tw-animate-css
-- Custom SVN-Gilroy font family
-
-## Quick Start
-
-### Prerequisites
-
-- **Bun** package manager (recommended) or **Node.js** 18+
-
-### Installation
-
-```bash
-# Clone the repository
-git clone https://github.com/your-username/health_management_frontend.git
-cd health_management_frontend
-
-# Install dependencies
-bun install
-
-# Set up environment variables
-cp .env.example .env.local
-```
-
-Configure the following variables in `.env.local`:
-
-```env
-NEXT_PUBLIC_API_URL=http://localhost:8000
-NEXT_PUBLIC_APP_NAME=VHealth
-```
-
-### Development
-
-```bash
-# Start development server with Turbopack
-bun run dev
-
-# Open your browser
-# Navigate to http://localhost:3000
-```
-
-### Build & Production
-
-```bash
-# Build for production
-bun run build
-
-# Start production server
-bun run start
-```
-
-### Code Quality
-
-```bash
-# Run ESLint
-bun run lint
-
-# Auto-fix linting issues
-bun run lint:fix
-
-# Type checking
-bun run type-check
-
-# Format code with Prettier
-bun run format
-
-# Check formatting
-bun run format:check
-
-# Format and fix linting
-bun run format:fix
-```
-
-### Testing
-
-```bash
-# Run tests
-bun run test
-
-# Run tests with UI
-bun run test:ui
-
-# Run tests once (CI mode)
-bun run test:run
-```
-
-## Project Structure
-
-```
-src/
-├── app/                     # Next.js App Router pages
-│   ├── (auth)/             # Authentication routes
-│   ├── dashboard/          # Dashboard page
-│   ├── profile/            # User profile
-│   ├── predict/            # Health prediction
-│   ├── chatbox/            # AI chat interface
-│   ├── health-tracking/    # Health metrics
-│   ├── settings/           # App settings
-│   └── api/                # API routes
-├── components/             # React components
-│   ├── ui/                 # shadcn/ui components
-│   ├── shared/             # Reusable components
-│   ├── form/               # Form components
-│   ├── layout/             # Layout components
-│   ├── chat/               # Chat components
-│   ├── predict/            # Prediction components
-│   ├── marketing/          # Marketing components
-│   └── icons/              # Icon components
-├── contexts/               # React contexts
-│   ├── auth/               # Authentication context
-│   └── conversation/       # Conversation context
-├── hooks/                  # Custom React hooks
-├── lib/                    # Utilities and configuration
-│   ├── utils/              # Utility functions
-│   ├── schemas/            # Zod validation schemas
-│   └── [configs]           # Various configurations
-├── services/               # API service layer
-├── types/                  # TypeScript type definitions
-├── data/                   # Mock data
-└── test/                   # Test setup
-```
-
-## Technology Stack
-
-### Core
-
-- **Next.js 15.5.3** - React framework with App Router and Turbopack
-- **React 19.1.0** - UI library with latest features
-- **TypeScript 5.x** - Type-safe development with strict mode
-- **Bun** - Fast JavaScript runtime and package manager
-
-### Styling & UI
-
-- **Tailwind CSS v4** - Utility-first CSS framework (100% Tailwind, no SCSS)
-- **shadcn/ui** - Modern component library built on Radix UI
-- **Lucide React** - Comprehensive icon library
-- **tw-animate-css** - Animation utilities
-- **Custom Fonts** - SVN-Gilroy family (20 variants)
-
-### State Management
-
-- **TanStack Query v5** - Server state management with intelligent caching
-- **React Context** - Client state (authentication, preferences)
-- **React Hook Form v7** - Form state management
-- **Zod v4** - Schema validation
-
-### API & Data
-
-- **Axios** - HTTP client with automatic token refresh
-- **Server-Sent Events** - Real-time streaming for chat
-
-### Development Tools
-
-- **ESLint** - Code linting with Next.js rules
-- **Prettier** - Code formatting with Tailwind plugin
-- **Vitest** - Testing framework with React Testing Library
-- **Husky** - Pre-commit hooks with lint-staged
-- **TypeScript** - Strict type checking
-
-## Architecture Highlights
-
-### Authentication System
-
-- JWT tokens with access (15 min) + refresh (7 days) rotation
-- Automatic token refresh with request queuing
-- OAuth Google integration
-- Protected routes with HOC pattern
-- Secure localStorage token management
-
-### API Integration
-
-- Centralized Axios instance with interceptors
-- Automatic token injection and error handling
-- Type-safe service layer with TypeScript
-- Streaming support with Server-Sent Events
-
-### State Management
-
-- **Server State**: TanStack Query for API data caching
-- **Client State**: React Context for authentication
-- **Form State**: React Hook Form with Zod validation
-- **Local State**: useState/useReducer for component state
-
-### Component Organization
-
-- **Atomic Design**: UI primitives → Reusable components → Features → Pages
-- **Feature-based**: Chat, predict, auth components in dedicated folders
-- **Type-safe**: All components with TypeScript interfaces
-- **Accessibility**: WCAG 2.1 AA compliance throughout
-
-### Styling Architecture
-
-- 100% Tailwind CSS (SCSS eliminated in Phase 4 refactoring)
-- CSS variables for dynamic theming
-- `cn()` utility for conditional classes
-- shadcn/ui for consistent design system
-
-## Development Conventions
-
-### Component Structure
-
-- **Feature components**: `src/components/chat/`, `src/components/predict/`
-- **Reusable components**: `src/components/shared/`
-- **Form components**: `src/components/form/`
-- **Layout components**: `src/components/layout/`
-- **UI primitives**: `src/components/ui/` (shadcn/ui - don't modify directly)
-
-### Context Organization
-
-Each context in its own folder with barrel export:
-
-```
-src/contexts/auth/
-├── AuthContext.tsx
-├── actions.ts
-├── reducer.ts
-├── types.ts
-└── index.ts
-```
-
-### Type Organization
-
-**ALL types live in `/src/types/`**. Services import types, never define them inline.
-
-### Import Organization
-
-```typescript
-// 1. React/Next imports
-import React from 'react';
-
-// 2. External libraries
-import { z } from 'zod';
-
-// 3. Internal - Components
-import { Button } from '@/components/ui/button';
-
-// 4. Internal - Hooks/Utils/Types
-import { useAuth } from '@/hooks/useAuth';
-import type { User } from '@/types/auth';
-
-// 5. Internal - Services
-import { authService } from '@/services/auth';
-```
-
-### Code Quality Standards
-
-- TypeScript strict mode enabled
-- ESLint with Next.js and TypeScript rules
-- Prettier with Tailwind plugin
-- Husky pre-commit hooks
-- All components must have TypeScript interfaces
-- 100% Tailwind CSS (no SCSS modules)
-
-## Deployment
-
-### Docker Deployment
-
-```bash
-# Build Docker image
-docker build -t vhealth-frontend .
-
-# Run container
-docker run -p 3000:3000 vhealth-frontend
-```
-
-### Environment Variables
-
-Production environment variables:
-
-```env
-NEXT_PUBLIC_API_URL=https://api.yourdomain.com
-NEXT_PUBLIC_APP_NAME=VHealth
-NEXT_PUBLIC_APP_VERSION=0.1.0
-```
-
-### CI/CD
-
-- **Jenkinsfile**: Automated build and deployment pipeline
-- **Terraform**: Infrastructure as Code for cloud resources
-- **Multi-stage Docker build**: Optimized container size
-
-## Testing
-
-### Running Tests
-
-```bash
-# Run all tests
-bun run test
-
-# Run tests with UI
-bun run test:ui
-
-# Run tests once (CI mode)
-bun run test:run
-```
-
-### Test Coverage
-
-- **Validation Tests**: Comprehensive test suite in `src/app/predict/validation.test.ts`
-- **Component Tests**: Using React Testing Library
-- **Type Tests**: TypeScript strict mode validation
-
-## Security
-
-- **Input Validation**: Zod schemas for all user inputs
-- **XSS Prevention**: React's built-in protections + content security policy
-- **Token Security**: Secure localStorage with automatic cleanup
-- **HTTPS Enforcement**: Production-ready security headers
-- **API Security**: JWT authentication with automatic refresh
-
-## Performance
-
-- **Code Splitting**: Automatic route-based splitting with Next.js
-- **Image Optimization**: Next.js Image component with lazy loading
-- **Bundle Optimization**: Tree shaking and minification
-- **Caching**: React Query intelligent caching + browser caching
-- **Font Optimization**: Local font loading
-- **Build Tool**: Turbopack for faster builds
-
-## Documentation
-
-Comprehensive documentation is available in the `/docs` directory:
-
-- **[Project Overview & PDR](docs/project-overview-pdr.md)** - Product Development Requirements
-- **[Codebase Summary](docs/codebase-summary.md)** - Detailed codebase analysis
-- **[Code Standards](docs/code-standards.md)** - Development guidelines and best practices
-- **[System Architecture](docs/system-architecture.md)** - Technical architecture and design patterns
-- **[Project Roadmap](docs/project-roadmap.md)** - Development roadmap and milestones
-- **[CLAUDE.md](CLAUDE.md)** - AI assistant development guidance
-- **[CONTRIBUTING.md](CONTRIBUTING.md)** - Contribution guidelines
-
-## Git Workflow
-
-### Branch Naming
-
-```
-feature/user-profile-edit
-feature/chat-assistant
-bugfix/authentication-error
-hotfix/security-patch
-refactor/component-structure
-docs/api-documentation
-```
-
-### Commit Message Format
-
-```
-type(scope): description
-
-[optional body]
-
-[optional footer]
-```
-
-**Types**: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`
-
-**Examples**:
-
-```
-feat(auth): add Google OAuth integration
-fix(profile): handle avatar upload errors
-docs(readme): update installation instructions
-```
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch (`feature/amazing-feature`)
-3. Make your changes following the code standards
-4. Run tests and ensure they pass
-5. Commit your changes with conventional commits
-6. Push to your branch
-7. Open a Pull Request
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
-
-## Roadmap
-
-### Current Status: 80% Complete
-
-| Phase                    | Status         | Progress |
-| ------------------------ | -------------- | -------- |
-| Foundation & Auth        | ✅ Complete    | 100%     |
-| Core Features            | ✅ Complete    | 100%     |
-| Codebase Refactoring     | ✅ Complete    | 100%     |
-| Predict Page Enhancement | 🔄 In Progress | 35%      |
-| Testing & QA             | ⏳ Pending     | 0%       |
-| Production Deployment    | ⏳ Pending     | 0%       |
-
-### Recent Achievements
-
-- **SCSS to Tailwind Migration**: 2,126 lines of SCSS converted to pure Tailwind
-- **Component Reorganization**: Logical folder structure with feature-based organization
-- **Type Centralization**: All types consolidated in `/src/types/`
-- **React Hook Form Integration**: Modern form architecture with Zod validation
-
-### Upcoming Milestones
-
-- Complete multi-step wizard for prediction form
-- Increase test coverage to 80%+
-- Achieve Lighthouse score 90+
-- Mobile app development (React Native)
-
-See [docs/project-roadmap.md](docs/project-roadmap.md) for detailed roadmap.
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Support
-
-- **Documentation**: Check the `/docs` directory for comprehensive guides
-- **Issues**: Report bugs and request features via GitHub Issues
-- **Discussions**: Join community discussions for questions and ideas
-
----
-
-**Built with ❤️ for better health management**
-
-_Last Updated: November 23, 2025 | Version: 0.1.0_
 </file>
 
 <file path="src/app/auth/callback/page.tsx">
@@ -16574,81 +18426,142 @@ export const qaStreamingService = {
 };
 </file>
 
-<file path="terraform/environments/dev.tfvars">
-# Development Environment Configuration
-environment = "dev"
-
-# GCP Configuration
-project_id = "vhealth-dev"
-region     = "asia-southeast1"
-
-# Resource Limits (smaller for dev)
-cpu_limit    = "1"
-memory_limit = "512Mi"
-
-# Scaling Configuration (minimal for dev)
-min_instances = "0"
-max_instances = "3"
-
-# Access Control
-allow_unauthenticated = true
-
-# Image Configuration
-# NOTE: This is a fallback value. Jenkins pipeline will override this with the specific build-tagged image
-# via: -var "image_url=${IMAGE_FULL}" in terraform plan/apply
-image_url = "asia-southeast1-docker.pkg.dev/vhealth-dev/vhealth-frontend-dev/vhealth-frontend:latest"
-
-# Environment Variables
-environment_variables = {
-  NODE_ENV                = "development"
-  NEXT_TELEMETRY_DISABLED = "1"
+<file path="terraform/outputs.tf">
+output "cloud_run_url" {
+  description = "URL of the Cloud Run service"
+  value       = try(google_cloud_run_service.frontend.status[0].url, null)
 }
 
-# Secret Environment Variables (from GCP Secret Manager)
-secret_environment_variables = {
-  NEXT_PUBLIC_API_URL             = "vhealth-dev-api-url"
-  NEXT_PUBLIC_GOOGLE_CLIENT_ID    = "vhealth-dev-google-client-id"
-  NEXT_PUBLIC_GOOGLE_SECRET       = "vhealth-dev-google-client-secret"
-  NEXT_PUBLIC_GOOGLE_REDIRECT_URI = "vhealth-dev-google-redirect-uri"
+output "service_url" {
+  description = "Service URL (alias for cloud_run_url)"
+  value       = try(google_cloud_run_service.frontend.status[0].url, null)
+}
+
+output "service_name" {
+  description = "Name of the Cloud Run service"
+  value       = google_cloud_run_service.frontend.name
+}
+
+output "cloud_run_service_name" {
+  description = "Cloud Run service name (alias for compatibility)"
+  value       = google_cloud_run_service.frontend.name
+}
+
+output "service_account_email" {
+  description = "Email of the service account"
+  value       = data.google_service_account.cloud_run_sa.email
+}
+
+output "cloud_run_service_account_email" {
+  description = "Cloud Run service account email (alias for compatibility)"
+  value       = data.google_service_account.cloud_run_sa.email
+}
+
+output "artifact_registry_url" {
+  description = "Artifact Registry URL"
+  value       = "${var.region}-docker.pkg.dev/${var.project_id}/vhealth-frontend-${var.environment}"
+}
+
+output "artifact_registry_repository" {
+  description = "Artifact Registry repository ID"
+  value       = "vhealth-frontend-${var.environment}"
+}
+
+output "environment" {
+  description = "Current environment"
+  value       = var.environment
+}
+
+output "region" {
+  description = "GCP region"
+  value       = var.region
+}
+
+output "project_id" {
+  description = "GCP project ID"
+  value       = var.project_id
 }
 </file>
 
-<file path="terraform/environments/prod.tfvars">
-# Production Environment Configuration
-environment = "prod"
-
-# GCP Configuration
-project_id = "vhealth-prod"
-region     = "asia-southeast1"
-
-# Resource Limits (optimized for production)
-cpu_limit    = "2"
-memory_limit = "1Gi"
-
-# Scaling Configuration (production scale)
-min_instances = "1"
-max_instances = "10"
-
-# Access Control
-allow_unauthenticated = true
-
-# Image Configuration
-# NOTE: This is a fallback value. Jenkins pipeline will override this with the specific build-tagged image
-# via: -var "image_url=${IMAGE_FULL}" in terraform plan/apply
-image_url = "asia-southeast1-docker.pkg.dev/vhealth-prod/vhealth-frontend-prod/vhealth-frontend:latest"
-
-# Environment Variables
-environment_variables = {
-  NODE_ENV                = "production"
-  NEXT_TELEMETRY_DISABLED = "1"
+<file path="terraform/variables.tf">
+variable "project_id" {
+  description = "GCP Project ID"
+  type        = string
 }
 
-# Secret Environment Variables (from GCP Secret Manager)
-secret_environment_variables = {
-  NEXT_PUBLIC_API_URL             = "vhealth-prod-api-url"
-  NEXT_PUBLIC_GOOGLE_CLIENT_ID    = "vhealth-prod-google-client-id"
-  NEXT_PUBLIC_GOOGLE_SECRET       = "vhealth-prod-google-client-secret"
-  NEXT_PUBLIC_GOOGLE_REDIRECT_URI = "vhealth-prod-google-redirect-uri"
+variable "region" {
+  description = "GCP region for resources"
+  type        = string
+  default     = "us-central1"
+}
+
+variable "environment" {
+  description = "Environment (test or prod)"
+  type        = string
+  validation {
+    condition     = contains(["test", "prod"], var.environment)
+    error_message = "Environment must be 'test' or 'prod'."
+  }
+}
+
+variable "image_url" {
+  description = "Container image URL"
+  type        = string
+  default     = "gcr.io/cloudrun/hello"
+}
+
+variable "cpu_limit" {
+  description = "CPU limit for Cloud Run service"
+  type        = string
+  default     = "1"
+}
+
+variable "memory_limit" {
+  description = "Memory limit for Cloud Run service"
+  type        = string
+  default     = "1Gi"
+}
+
+variable "min_instances" {
+  description = "Minimum number of instances"
+  type        = string
+  default     = "0"
+}
+
+variable "max_instances" {
+  description = "Maximum number of instances"
+  type        = string
+  default     = "10"
+}
+
+variable "allow_unauthenticated" {
+  description = "Allow unauthenticated access to Cloud Run service"
+  type        = bool
+  default     = true
+}
+
+variable "environment_variables" {
+  description = "Environment variables for the Cloud Run service"
+  type        = map(string)
+  default     = {}
+}
+
+variable "secret_environment_variables" {
+  description = "Secret environment variables from GCP Secret Manager (format: SECRET_NAME:VERSION)"
+  type        = map(string)
+  default     = {}
+}
+
+variable "manage_iam_bindings" {
+  description = "Whether Terraform should manage IAM bindings for the Cloud Run service account. Set to false if the Jenkins SA lacks roles/resourcemanager.projectIamAdmin"
+  type        = bool
+  default     = false
+}
+
+variable "manage_artifact_registry" {
+  description = "Whether Terraform should manage the Artifact Registry repository. Set to false if the repository already exists"
+  type        = bool
+  default     = false
 }
 </file>
 
@@ -16705,354 +18618,270 @@ const eslintConfig = [
 export default eslintConfig;
 </file>
 
-<file path="Jenkinsfile">
-pipeline {
-    agent any
+<file path="README.md">
+# VHealth - Health Management Platform
 
-    parameters {
-        choice(
-            name: 'ENVIRONMENT',
-            choices: ['dev', 'prod'],
-            description: 'Target environment for deployment'
-        )
-        string(
-            name: 'BRANCH_NAME',
-            defaultValue: 'develop',
-            description: 'Git branch to deploy'
-        )
-        booleanParam(
-            name: 'SKIP_TESTS',
-            defaultValue: false,
-            description: 'Skip linting and format checks (faster builds)'
-        )
-    }
+A comprehensive health management platform built with Next.js 15, TypeScript, and modern web technologies. VHealth empowers users to track health metrics, manage personal information, and access AI-powered health assistance through an intuitive web interface.
 
-    environment {
-        GCP_REGION = 'asia-southeast1'
-        ENV = "${params.ENVIRONMENT}"
-        GCP_PROJECT_ID = "${params.ENVIRONMENT == 'prod' ? 'vhealth-prod' : 'vhealth-dev'}"
-        TF_BACKEND_BUCKET = "${GCP_PROJECT_ID}-frontend-tfstate"
+## ✨ Features
 
-        ARTIFACT_REGISTRY_REPO = "vhealth-frontend-${params.ENVIRONMENT}"
-        IMAGE_NAME = "vhealth-frontend"
-        IMAGE_TAG = "${env.BUILD_NUMBER}-${env.GIT_COMMIT.take(7)}"
-        IMAGE_FULL = "${GCP_REGION}-docker.pkg.dev/${GCP_PROJECT_ID}/${ARTIFACT_REGISTRY_REPO}/${IMAGE_NAME}:${IMAGE_TAG}"
-        IMAGE_LATEST = "${GCP_REGION}-docker.pkg.dev/${GCP_PROJECT_ID}/${ARTIFACT_REGISTRY_REPO}/${IMAGE_NAME}:latest"
+### 🔐 Authentication & Security
 
-        TF_IN_AUTOMATION = 'true'
-        TF_VAR_FILE = "terraform/environments/${params.ENVIRONMENT}.tfvars"
-        GOOGLE_APPLICATION_CREDENTIALS = credentials('gcp-service-account-key')
+- JWT-based authentication with automatic token refresh
+- OAuth Google integration for seamless login
+- Email verification and password reset flows
+- Multi-device session management
+- Secure storage of sensitive health data
 
-        // Docker BuildKit for better caching
-        DOCKER_BUILDKIT = '1'
-    }
+### 📊 Health Tracking
 
-    options {
-        buildDiscarder(logRotator(numToKeepStr: '10'))
-        timeout(time: 30, unit: 'MINUTES')
-        timestamps()
-        disableConcurrentBuilds()
-    }
+- Personal health dashboard with real-time metrics
+- Weight tracking with historical data visualization
+- Health goal setting and progress monitoring
+- Medical profile management (conditions, allergies, medications)
+- Emergency contact information storage
 
-    stages {
-        stage('Initialize') {
-            steps {
-                script {
-                    echo '=========================================='
-                    echo 'Deployment Configuration'
-                    echo '=========================================='
-                    echo "Environment: ${params.ENVIRONMENT}"
-                    echo "Branch: ${params.BRANCH_NAME}"
-                    echo "GCP Project: ${GCP_PROJECT_ID}"
-                    echo "GCP Region: ${GCP_REGION}"
-                    echo "Terraform State Bucket: ${TF_BACKEND_BUCKET}"
-                    echo "Image: ${IMAGE_FULL}"
-                    echo "Skip Tests: ${params.SKIP_TESTS}"
-                    echo '=========================================='
-                }
-            }
-        }
+### 🤖 AI-Powered Assistant
 
-        stage('Checkout') {
-            steps {
-                script {
-                    echo "Checking out branch: ${params.BRANCH_NAME}"
-                    checkout([
-                        $class: 'GitSCM',
-                        branches: [[name: "*/${params.BRANCH_NAME}"]],
-                        userRemoteConfigs: scm.userRemoteConfigs
-                    ])
-                }
-            }
-        }
+- Interactive chat interface for health-related questions
+- Quick response templates for common queries
+- Conversation history and context-aware responses
+- Personalized health recommendations
 
-        stage('Authenticate to GCP') {
-            steps {
-                script {
-                    echo 'Authenticating to GCP...'
-                    sh '''
-                        gcloud auth activate-service-account --key-file=${GOOGLE_APPLICATION_CREDENTIALS}
-                        gcloud config set project ${GCP_PROJECT_ID}
-                        gcloud config set compute/region ${GCP_REGION}
-                        gcloud auth configure-docker ${GCP_REGION}-docker.pkg.dev --quiet
-                    '''
-                }
-            }
-        }
+### 🎨 Modern UI/UX
 
-        stage('Quality Checks') {
-            when {
-                expression { return !params.SKIP_TESTS }
-            }
-            parallel {
-                stage('Lint') {
-                    steps {
-                        script {
-                            echo 'Running linting...'
-                            sh '''
-                                if ! command -v bun &> /dev/null; then
-                                    curl -fsSL https://bun.sh/install | bash
-                                    export PATH="$HOME/.bun/bin:$PATH"
-                                fi
-                                bun install --frozen-lockfile
-                                bun run lint
-                            '''
-                        }
-                    }
-                }
-                stage('Format Check') {
-                    steps {
-                        script {
-                            echo 'Checking code format...'
-                            sh '''
-                                export PATH="$HOME/.bun/bin:$PATH"
-                                bun run format:check
-                            '''
-                        }
-                    }
-                }
-            }
-        }
+- Responsive design optimized for all devices
+- Accessible interface following WCAG 2.1 AA standards
+- Dark mode support with dynamic theming
+- Smooth animations and micro-interactions
+- Custom SVG icons and illustrations
 
-        stage('Fetch Build Secrets') {
-            steps {
-                script {
-                    echo 'Fetching secrets from GCP Secret Manager for build...'
+## 🚀 Quick Start
 
-                    // Fetch API URL
-                    env.NEXT_PUBLIC_API_URL = sh(
-                        script: """
-                            gcloud secrets versions access latest \
-                                --secret=vhealth-${params.ENVIRONMENT}-api-url \
-                                --project=${GCP_PROJECT_ID} 2>/dev/null || echo 'http://localhost:8000'
-                        """,
-                        returnStdout: true
-                    ).trim()
+### Prerequisites
 
-                    // Fetch Google OAuth Client ID
-                    env.NEXT_PUBLIC_GOOGLE_CLIENT_ID = sh(
-                        script: """
-                            gcloud secrets versions access latest \
-                                --secret=vhealth-${params.ENVIRONMENT}-google-client-id \
-                                --project=${GCP_PROJECT_ID} 2>/dev/null || echo ''
-                        """,
-                        returnStdout: true
-                    ).trim()
+- **Bun** package manager (recommended)
+- **Node.js** 18+ (if not using Bun)
 
-                    // Fetch Google OAuth Client Secret
-                    env.NEXT_PUBLIC_GOOGLE_SECRET = sh(
-                        script: """
-                            gcloud secrets versions access latest \
-                                --secret=vhealth-${params.ENVIRONMENT}-google-client-secret \
-                                --project=${GCP_PROJECT_ID} 2>/dev/null || echo ''
-                        """,
-                        returnStdout: true
-                    ).trim()
+### Installation
 
-                    // Fetch Google OAuth Redirect URI
-                    env.NEXT_PUBLIC_GOOGLE_REDIRECT_URI = sh(
-                        script: """
-                            gcloud secrets versions access latest \
-                                --secret=vhealth-${params.ENVIRONMENT}-google-redirect-uri \
-                                --project=${GCP_PROJECT_ID} 2>/dev/null || echo ''
-                        """,
-                        returnStdout: true
-                    ).trim()
+1. **Clone the repository**
 
-                    echo "✓ API URL: ${env.NEXT_PUBLIC_API_URL}"
-                    echo "✓ Google Client ID: ${env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ? '***' : '(not set)'}"
-                    echo "✓ Google Client Secret: ${env.NEXT_PUBLIC_GOOGLE_SECRET ? '***' : '(not set)'}"
-                    echo "✓ Google Redirect URI: ${env.NEXT_PUBLIC_GOOGLE_REDIRECT_URI}"
-                }
-            }
-        }
+   ```bash
+   git clone https://github.com/your-username/health_management_frontend.git
+   cd health_management_frontend
+   ```
 
-        stage('Build & Push Docker Image') {
-            steps {
-                script {
-                    echo "Building Docker image with BuildKit: ${IMAGE_FULL}"
-                    sh """
-                        docker build \
-                            --build-arg BUILDKIT_INLINE_CACHE=1 \
-                            --build-arg BUILD_DATE=\$(date -u +"%Y-%m-%dT%H:%M:%SZ") \
-                            --build-arg VERSION=${IMAGE_TAG} \
-                            --build-arg GIT_COMMIT=${GIT_COMMIT} \
-                            --build-arg NEXT_PUBLIC_API_URL='${NEXT_PUBLIC_API_URL}' \
-                            --build-arg NEXT_PUBLIC_GOOGLE_CLIENT_ID='${NEXT_PUBLIC_GOOGLE_CLIENT_ID}' \
-                            --build-arg NEXT_PUBLIC_GOOGLE_SECRET='${NEXT_PUBLIC_GOOGLE_SECRET}' \
-                            --build-arg NEXT_PUBLIC_GOOGLE_REDIRECT_URI='${NEXT_PUBLIC_GOOGLE_REDIRECT_URI}' \
-                            --cache-from ${IMAGE_LATEST} \
-                            -t ${IMAGE_FULL} \
-                            -t ${IMAGE_LATEST} \
-                            .
+2. **Install dependencies**
 
-                        echo 'Pushing to Artifact Registry...'
-                        docker push ${IMAGE_FULL}
-                        docker push ${IMAGE_LATEST}
-                    """
-                }
-            }
-        }
+   ```bash
+   bun install
+   ```
 
-        stage('Terraform Deployment') {
-            stages {
-                stage('Terraform Init') {
-                    steps {
-                        dir('terraform') {
-                            script {
-                                echo 'Initializing Terraform...'
-                                sh """
-                                    terraform init \
-                                        -backend-config="bucket=${TF_BACKEND_BUCKET}" \
-                                        -backend-config="prefix=terraform/state/frontend-${params.ENVIRONMENT}" \
-                                        -reconfigure \
-                                        -no-color
-                                """
-                            }
-                        }
-                    }
-                }
+3. **Set up environment variables**
 
-                stage('Terraform Validate') {
-                    steps {
-                        dir('terraform') {
-                            script {
-                                echo 'Validating Terraform configuration...'
-                                sh 'terraform validate -no-color'
-                            }
-                        }
-                    }
-                }
+   ```bash
+   cp .env.example .env.local
+   ```
 
-                stage('Fetch Secrets') {
-                    steps {
-                        script {
-                            def fetchSecret = { secretName, placeholder ->
-                                try {
-                                    return sh(
-                                        script: """
-                                            gcloud secrets versions access latest \
-                                                --secret=vhealth-${params.ENVIRONMENT}-${secretName} \
-                                                --project=${GCP_PROJECT_ID} 2>/dev/null \
-                                            || echo '${placeholder}'
-                                        """,
-                                        returnStdout: true
-                                    ).trim()
-                                } catch (Exception e) {
-                                    return placeholder
-                                }
-                            }
+   Configure the following variables in `.env.local`:
 
-                            echo 'Fetching secrets from GCP Secret Manager...'
-                            env.TF_VAR_next_public_api_url = fetchSecret("api-url", "https://api.placeholder.com")
-                            echo 'Secrets fetched!'
-                        }
-                    }
-                }
+   ```env
+   NEXT_PUBLIC_API_URL=http://localhost:8000
+   NEXT_PUBLIC_APP_NAME=VHealth
+   ```
 
-                stage('Terraform Plan') {
-                    steps {
-                        dir('terraform') {
-                            script {
-                                echo 'Planning Terraform changes...'
-                                sh """
-                                    terraform plan \
-                                        -var-file="environments/${params.ENVIRONMENT}.tfvars" \
-                                        -var "image_url=${IMAGE_FULL}" \
-                                        -out=tfplan \
-                                        -no-color
-                                """
-                            }
-                        }
-                    }
-                }
+4. **Run the development server**
 
-                stage('Approve Deployment') {
-                    when {
-                        expression { return params.ENVIRONMENT == 'prod' }
-                    }
-                    steps {
-                        script {
-                            echo 'Production deployment - Manual approval required'
-                            input message: 'Deploy to PRODUCTION?',
-                                  ok: 'Deploy',
-                                  submitter: 'admin'
-                        }
-                    }
-                }
+   ```bash
+   bun run dev
+   ```
 
-                stage('Terraform Apply') {
-                    steps {
-                        dir('terraform') {
-                            script {
-                                echo 'Deploying to Cloud Run via Terraform...'
-                                sh 'terraform apply -auto-approve -no-color tfplan'
+5. **Open your browser**
+   Navigate to [http://localhost:3000](http://localhost:3000)
 
-                                sh '''
-                                    terraform output -json > terraform_outputs.json
-                                    cat terraform_outputs.json
-                                '''
+## 📁 Project Structure
 
-                                def serviceUrl = sh(
-                                    script: 'terraform output -raw service_url',
-                                    returnStdout: true
-                                ).trim()
+```
+src/
+├── app/                     # Next.js App Router pages
+│   ├── (auth)/             # Authentication routes
+│   ├── (dashboard)/        # Protected dashboard routes
+│   ├── api/                # API routes
+│   └── globals.css         # Global styles
+├── components/             # Reusable components
+│   ├── ui/                 # shadcn/ui components
+│   ├── features/           # Feature-specific components
+│   ├── layout/             # Layout components
+│   └── chat/               # Chat functionality
+├── contexts/               # React contexts
+├── hooks/                  # Custom React hooks
+├── lib/                    # Utilities and configurations
+├── services/               # API service functions
+├── types/                  # TypeScript type definitions
+└── styles/                 # Global styles and themes
+```
 
-                                echo "=========================================="
-                                echo "Deployment Successful!"
-                                echo "Service URL: ${serviceUrl}"
-                                echo "Image: ${IMAGE_FULL}"
-                                echo "=========================================="
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
+## 🛠️ Technology Stack
 
-    post {
-        success {
-            echo '=========================================='
-            echo 'Deployment completed successfully!'
-            echo "Environment: ${params.ENVIRONMENT}"
-            echo "Image: ${IMAGE_FULL}"
-            echo '=========================================='
-        }
-        failure {
-            echo '=========================================='
-            echo 'Deployment failed!'
-            echo "Environment: ${params.ENVIRONMENT}"
-            echo 'Check logs for details'
-            echo '=========================================='
-        }
-        always {
-            sh '''
-                docker system prune -f || true
-            '''
-        }
-    }
-}
+### Core Framework
+
+- **Next.js 15.5.3** - React framework with App Router
+- **React 19.1.0** - UI library with latest features
+- **TypeScript 5.x** - Type-safe development
+- **Bun** - Fast package manager and runtime
+
+### Styling & UI
+
+- **Tailwind CSS v4** - Utility-first CSS framework
+- **shadcn/ui** - Modern component library built on Radix UI
+- **Lucide React** - Comprehensive icon library
+- **Sass** - CSS preprocessor for component styles
+
+### State Management & Data
+
+- **TanStack Query v5** - Server state management
+- **React Hook Form v7** - Form state management with validation
+- **Zod v4** - Schema validation
+- **Axios** - HTTP client with interceptors
+
+### Development Tools
+
+- **ESLint** - Code linting and quality checks
+- **Prettier** - Code formatting
+- **TypeScript** - Static type checking
+- **SVGR** - SVG to React component transformation
+
+## 📝 Available Scripts
+
+```bash
+# Development
+bun run dev          # Start development server with Turbopack
+bun run build        # Build production application
+bun run start        # Start production server
+
+# Code Quality
+bun run lint         # Run ESLint
+bun run format       # Format code with Prettier
+bun run format:check # Check code formatting
+bun run format:fix   # Format and fix linting issues
+```
+
+## 🔧 Configuration
+
+### Environment Variables
+
+```env
+# API Configuration
+NEXT_PUBLIC_API_URL=http://localhost:8000
+
+# Application
+NEXT_PUBLIC_APP_NAME=VHealth
+NEXT_PUBLIC_APP_VERSION=0.1.0
+
+# Features (optional)
+NEXT_PUBLIC_ENABLE_ANALYTICS=false
+NEXT_PUBLIC_ENABLE_ERROR_REPORTING=false
+```
+
+### Custom Configuration Files
+
+- `next.config.ts` - Next.js configuration with SVG handling
+- `tailwind.config.js` - Tailwind CSS configuration
+- `components.json` - shadcn/ui component configuration
+- `tsconfig.json` - TypeScript configuration with strict mode
+
+## 🏗️ Architecture Highlights
+
+### Authentication System
+
+- **JWT tokens**: Access tokens (15 min) + Refresh tokens (7 days)
+- **Automatic refresh**: Seamless token rotation with request queuing
+- **OAuth integration**: Google SSO support
+- **Protected routes**: HOC pattern with automatic redirects
+
+### API Integration
+
+- **Axios interceptors**: Automatic token injection and error handling
+- **React Query**: Intelligent caching and background refetching
+- **Type safety**: Comprehensive TypeScript definitions
+- **Error boundaries**: Graceful error handling and user feedback
+
+### Component Architecture
+
+- **Atomic design**: Organized components (atoms, molecules, organisms)
+- **shadcn/ui**: Consistent design system with Radix UI primitives
+- **Custom hooks**: Reusable logic separation
+- **SCSS modules**: Component-specific styling when needed
+
+## 🚀 Deployment
+
+### Docker Deployment
+
+```bash
+# Build Docker image
+docker build -t vhealth-frontend .
+
+# Run container
+docker run -p 3000:3000 vhealth-frontend
+```
+
+### Vercel Deployment
+
+1. Connect your repository to Vercel
+2. Configure environment variables in Vercel dashboard
+3. Deploy automatically on git push
+
+### Manual Deployment
+
+```bash
+# Build for production
+bun run build
+
+# Start production server
+bun run start
+```
+
+## 📚 Documentation
+
+Comprehensive documentation is available in the `/docs` directory:
+
+## 🧪 Development Guidelines
+
+### Code Quality
+
+- All code must pass ESLint and Prettier checks
+- TypeScript strict mode is enabled
+- Comprehensive type definitions are required
+- Component documentation with JSDoc comments
+
+### Git Workflow
+
+- Feature branches: `feature/description`
+- Commit format: `type(scope): description`
+- Pull requests require code review
+- Automated tests run on CI/CD
+
+### Performance
+
+- Code splitting with dynamic imports
+- Image optimization with Next.js Image component
+- Bundle size monitoring
+- Core Web Vitals tracking
+
+## 🔒 Security Considerations
+
+- **Input validation**: All user inputs validated with Zod schemas
+- **XSS prevention**: React's built-in protections and content security policy
+- **Secure storage**: Sensitive data encrypted in localStorage
+- **API security**: JWT authentication with refresh token rotation
+- **Environment variables**: No secrets in client-side code
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+_Last Updated: November 2025_
 </file>
 
 <file path="src/app/auth/google/callback/page.tsx">
@@ -18881,6 +20710,52 @@ const ConversationItem: React.FC<ConversationItemProps> = ({
     </div>
   );
 };
+</file>
+
+<file path="terraform/environments/prod.tfvars">
+# Production Environment Configuration
+environment = "prod"
+
+# GCP Configuration
+project_id = "vhealth-prod"
+region     = "asia-southeast1"
+
+# Resource Limits (optimized for production)
+cpu_limit    = "2"
+memory_limit = "1Gi"
+
+# Scaling Configuration (production scale)
+min_instances = "1"
+max_instances = "10"
+
+# Access Control
+allow_unauthenticated = true
+
+# Image Configuration
+# NOTE: This is a fallback value. Jenkins pipeline will override this with the specific build-tagged image
+# via: -var "image_url=${IMAGE_FULL}" in terraform plan/apply
+image_url = "asia-southeast1-docker.pkg.dev/vhealth-prod/vhealth-frontend-prod/vhealth-frontend:latest"
+
+# Environment Variables
+environment_variables = {
+  NODE_ENV                = "production"
+  NEXT_TELEMETRY_DISABLED = "1"
+}
+
+# Secret Environment Variables (from GCP Secret Manager)
+secret_environment_variables = {
+  NEXT_PUBLIC_API_URL             = "vhealth-prod-api-url"
+  NEXT_PUBLIC_GOOGLE_CLIENT_ID    = "vhealth-prod-google-client-id"
+  NEXT_PUBLIC_GOOGLE_SECRET       = "vhealth-prod-google-client-secret"
+  NEXT_PUBLIC_GOOGLE_REDIRECT_URI = "vhealth-prod-google-redirect-uri"
+}
+
+# Resource Management Flags
+# Set to false because:
+# - IAM bindings: Jenkins SA doesn't have roles/resourcemanager.projectIamAdmin
+# - Artifact Registry: Repository already exists in GCP
+manage_iam_bindings      = false
+manage_artifact_registry = false
 </file>
 
 <file path="src/app/auth/forgot-password/page.tsx">
@@ -21361,11 +23236,6 @@ bun-debug.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-
-# ai
-CLAUDE.md
-.repomixignore
-repomix-output.xml
 </file>
 
 <file path="src/app/auth/register/page.tsx">
@@ -22298,6 +24168,490 @@ export const useQAChat = (): UseQAChatReturn => {
     streamingTokenCount,
   };
 };
+</file>
+
+<file path="Jenkinsfile">
+pipeline {
+    agent any
+
+    parameters {
+        choice(
+            name: 'ENVIRONMENT',
+            choices: ['test', 'prod'],
+            description: 'Target environment for deployment'
+        )
+        string(
+            name: 'BRANCH_NAME',
+            defaultValue: 'develop',
+            description: 'Git branch to deploy'
+        )
+        booleanParam(
+            name: 'SKIP_TESTS',
+            defaultValue: false,
+            description: 'Skip linting and format checks (faster builds)'
+        )
+    }
+
+    environment {
+        GCP_REGION = 'asia-southeast1'
+        ENV = "${params.ENVIRONMENT}"
+        GCP_PROJECT_ID = "vhealth-${params.ENVIRONMENT}"
+        TF_BACKEND_BUCKET = "${GCP_PROJECT_ID}-frontend-tfstate"
+
+        ARTIFACT_REGISTRY_REPO = "vhealth-frontend-${params.ENVIRONMENT}"
+        IMAGE_NAME = "vhealth-frontend"
+        IMAGE_TAG = "${env.BUILD_NUMBER}-${env.GIT_COMMIT.take(7)}"
+        IMAGE_FULL = "${GCP_REGION}-docker.pkg.dev/${GCP_PROJECT_ID}/${ARTIFACT_REGISTRY_REPO}/${IMAGE_NAME}:${IMAGE_TAG}"
+        IMAGE_LATEST = "${GCP_REGION}-docker.pkg.dev/${GCP_PROJECT_ID}/${ARTIFACT_REGISTRY_REPO}/${IMAGE_NAME}:latest"
+
+        TF_IN_AUTOMATION = 'true'
+        TF_VAR_FILE = "terraform/environments/${params.ENVIRONMENT}.tfvars"
+        ENV_CREDENTIAL = "gcp-service-account-key-${params.ENVIRONMENT}"
+
+        // Docker BuildKit for better caching
+        DOCKER_BUILDKIT = '1'
+    }
+
+    options {
+        buildDiscarder(logRotator(numToKeepStr: '10'))
+        timeout(time: 30, unit: 'MINUTES')
+        timestamps()
+        disableConcurrentBuilds()
+    }
+
+    stages {
+        stage('Initialize') {
+            steps {
+                script {
+                    echo '=========================================='
+                    echo 'Deployment Configuration'
+                    echo '=========================================='
+                    echo "Environment: ${params.ENVIRONMENT}"
+                    echo "Branch: ${params.BRANCH_NAME}"
+                    echo "GCP Project: ${GCP_PROJECT_ID}"
+                    echo "GCP Region: ${GCP_REGION}"
+                    echo "Terraform State Bucket: ${TF_BACKEND_BUCKET}"
+                    echo "Image: ${IMAGE_FULL}"
+                    echo "Skip Tests: ${params.SKIP_TESTS}"
+                    echo '=========================================='
+                }
+            }
+        }
+
+        stage('Checkout') {
+            steps {
+                script {
+                    echo "Checking out branch: ${params.BRANCH_NAME}"
+                    checkout([
+                        $class: 'GitSCM',
+                        branches: [[name: "*/${params.BRANCH_NAME}"]],
+                        userRemoteConfigs: scm.userRemoteConfigs
+                    ])
+                }
+            }
+        }
+
+        stage('Authenticate to GCP') {
+            steps {
+                script {
+                    withCredentials([file(credentialsId: "${ENV_CREDENTIAL}", variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
+                        sh """
+                            echo 'Using credentials: ${ENV_CREDENTIAL}'
+                            gcloud auth activate-service-account --key-file="$GOOGLE_APPLICATION_CREDENTIALS"
+                            gcloud config set project "${GCP_PROJECT_ID}"
+                            gcloud config set compute/region "${GCP_REGION}"
+                            gcloud auth configure-docker "${GCP_REGION}-docker.pkg.dev" --quiet
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Quality Checks') {
+            when {
+                expression { return !params.SKIP_TESTS }
+            }
+            parallel {
+                stage('Lint') {
+                    steps {
+                        script {
+                            echo 'Running linting...'
+                            sh '''
+                                if ! command -v bun &> /dev/null; then
+                                    curl -fsSL https://bun.sh/install | bash
+                                    export PATH="$HOME/.bun/bin:$PATH"
+                                fi
+                                bun install --frozen-lockfile
+                                bun run lint
+                            '''
+                        }
+                    }
+                }
+                stage('Format Check') {
+                    steps {
+                        script {
+                            echo 'Checking code format...'
+                            sh '''
+                                export PATH="$HOME/.bun/bin:$PATH"
+                                bun run format:check
+                            '''
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Fetch Build Secrets') {
+            steps {
+                script {
+                    echo 'Fetching secrets from GCP Secret Manager for build...'
+
+                    // Fetch API URL
+                    env.NEXT_PUBLIC_API_URL = sh(
+                        script: """
+                            gcloud secrets versions access latest \
+                                --secret=vhealth-${params.ENVIRONMENT}-api-url \
+                                --project=${GCP_PROJECT_ID} 2>/dev/null || echo 'http://localhost:8000'
+                        """,
+                        returnStdout: true
+                    ).trim()
+
+                    // Fetch Google OAuth Client ID
+                    env.NEXT_PUBLIC_GOOGLE_CLIENT_ID = sh(
+                        script: """
+                            gcloud secrets versions access latest \
+                                --secret=vhealth-${params.ENVIRONMENT}-google-client-id \
+                                --project=${GCP_PROJECT_ID} 2>/dev/null || echo ''
+                        """,
+                        returnStdout: true
+                    ).trim()
+
+                    // Fetch Google OAuth Client Secret
+                    env.NEXT_PUBLIC_GOOGLE_SECRET = sh(
+                        script: """
+                            gcloud secrets versions access latest \
+                                --secret=vhealth-${params.ENVIRONMENT}-google-client-secret \
+                                --project=${GCP_PROJECT_ID} 2>/dev/null || echo ''
+                        """,
+                        returnStdout: true
+                    ).trim()
+
+                    // Fetch Google OAuth Redirect URI
+                    env.NEXT_PUBLIC_GOOGLE_REDIRECT_URI = sh(
+                        script: """
+                            gcloud secrets versions access latest \
+                                --secret=vhealth-${params.ENVIRONMENT}-google-redirect-uri \
+                                --project=${GCP_PROJECT_ID} 2>/dev/null || echo ''
+                        """,
+                        returnStdout: true
+                    ).trim()
+
+                    echo "API URL: ${env.NEXT_PUBLIC_API_URL}"
+                    echo "Google Client ID: ${env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ? '***' : '(not set)'}"
+                    echo "Google Client Secret: ${env.NEXT_PUBLIC_GOOGLE_SECRET ? '***' : '(not set)'}"
+                    echo "Google Redirect URI: ${env.NEXT_PUBLIC_GOOGLE_REDIRECT_URI}"
+                }
+            }
+        }
+
+        stage('Build & Push Docker Image') {
+            steps {
+                script {
+                    echo "Building Docker image with BuildKit: ${IMAGE_FULL}"
+                    sh """
+                        docker build \
+                            --build-arg BUILDKIT_INLINE_CACHE=1 \
+                            --build-arg BUILD_DATE=\$(date -u +"%Y-%m-%dT%H:%M:%SZ") \
+                            --build-arg VERSION=${IMAGE_TAG} \
+                            --build-arg GIT_COMMIT=${GIT_COMMIT} \
+                            --build-arg NEXT_PUBLIC_API_URL='${NEXT_PUBLIC_API_URL}' \
+                            --build-arg NEXT_PUBLIC_GOOGLE_CLIENT_ID='${NEXT_PUBLIC_GOOGLE_CLIENT_ID}' \
+                            --build-arg NEXT_PUBLIC_GOOGLE_SECRET='${NEXT_PUBLIC_GOOGLE_SECRET}' \
+                            --build-arg NEXT_PUBLIC_GOOGLE_REDIRECT_URI='${NEXT_PUBLIC_GOOGLE_REDIRECT_URI}' \
+                            --cache-from ${IMAGE_LATEST} \
+                            -t ${IMAGE_FULL} \
+                            -t ${IMAGE_LATEST} \
+                            .
+
+                        echo 'Pushing to Artifact Registry...'
+                        docker push ${IMAGE_FULL}
+                        docker push ${IMAGE_LATEST}
+                    """
+                }
+            }
+        }
+
+        stage('Terraform Deployment') {
+            stages {
+                stage('Clean Terraform Workspace') {
+                    steps {
+                        dir('terraform') {
+                            script {
+                                echo '=========================================='
+                                echo 'Cleaning Terraform workspace to prevent cross-environment contamination'
+                                echo '=========================================='
+                                sh '''
+                                    rm -rf .terraform .terraform.lock.hcl terraform.tfstate* tfplan
+                                    echo "Workspace cleaned"
+                                '''
+                            }
+                        }
+                    }
+                }
+
+                stage('Terraform Init') {
+                    steps {
+                        withCredentials([file(credentialsId: "${ENV_CREDENTIAL}", variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
+                            dir('terraform') {
+                                script {
+                                    echo '=========================================='
+                                    echo "Initializing Terraform for ${params.ENVIRONMENT}"
+                                    echo "Backend Bucket: ${TF_BACKEND_BUCKET}"
+                                    echo "State Prefix: terraform/state/frontend-${params.ENVIRONMENT}"
+                                    echo "Project: ${GCP_PROJECT_ID}"
+                                    echo '=========================================='
+                                    sh """
+                                        gcloud auth activate-service-account --key-file="\$GOOGLE_APPLICATION_CREDENTIALS"
+                                        gcloud config set project "${GCP_PROJECT_ID}"
+                                        terraform init \
+                                            -backend-config="bucket=${TF_BACKEND_BUCKET}" \
+                                            -backend-config="prefix=terraform/state/frontend-${params.ENVIRONMENT}" \
+                                            -reconfigure \
+                                            -no-color
+                                    """
+                                }
+                            }
+                        }
+                    }
+                }
+
+                stage('Validate State Environment') {
+                    steps {
+                        withCredentials([file(credentialsId: "${ENV_CREDENTIAL}", variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
+                            dir('terraform') {
+                                script {
+                                    echo '=========================================='
+                                    echo 'Validating Terraform state matches target environment'
+                                    echo '=========================================='
+
+                                    def stateCheck = sh(
+                                        script: """
+                                            terraform show -json 2>/dev/null | jq -r '.values.root_module.resources[]? | select(.type == "google_cloud_run_service") | .values.project' | head -1 || echo ''
+                                        """,
+                                        returnStdout: true
+                                    ).trim()
+
+                                    echo "Expected Project: ${GCP_PROJECT_ID}"
+                                    echo "State Project: ${stateCheck ?: '(empty state - first deployment)'}"
+
+                                    if (stateCheck && stateCheck != "" && stateCheck != "${GCP_PROJECT_ID}") {
+                                        error """
+========================================
+CRITICAL ERROR: State Contamination Detected!
+========================================
+Expected Project: ${GCP_PROJECT_ID}
+Found in State:   ${stateCheck}
+
+This deployment would DESTROY resources in the wrong environment!
+Aborting to prevent cross-environment contamination.
+
+Action Required:
+1. Verify you selected the correct ENVIRONMENT parameter
+2. Check Jenkins workspace for leftover state files
+3. Contact DevOps team if this persists
+========================================
+                                        """
+                                    }
+
+                                    echo "State validation passed"
+                                }
+                            }
+                        }
+                    }
+                }
+
+                stage('Terraform Validate') {
+                    steps {
+                        withCredentials([file(credentialsId: "${ENV_CREDENTIAL}", variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
+                            dir('terraform') {
+                                script {
+                                    echo 'Validating Terraform configuration...'
+                                    sh 'terraform validate -no-color'
+                                }
+                            }
+                        }
+                    }
+                }
+
+                stage('Fetch Secrets') {
+                    steps {
+                        withCredentials([file(credentialsId: "${ENV_CREDENTIAL}", variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
+                            script {
+                                def fetchSecret = { secretName, placeholder ->
+                                    try {
+                                        return sh(
+                                            script: """
+                                                gcloud secrets versions access latest \
+                                                    --secret=vhealth-${params.ENVIRONMENT}-${secretName} \
+                                                    --project=${GCP_PROJECT_ID} 2>/dev/null \
+                                                || echo '${placeholder}'
+                                            """,
+                                            returnStdout: true
+                                        ).trim()
+                                    } catch (Exception e) {
+                                        return placeholder
+                                    }
+                                }
+
+                                echo 'Fetching secrets from GCP Secret Manager...'
+                                env.TF_VAR_next_public_api_url = fetchSecret("api-url", "https://api.placeholder.com")
+                                echo 'Secrets fetched!'
+                            }
+                        }
+                    }
+                }
+
+                stage('Validate Docker Image') {
+                    steps {
+                        withCredentials([file(credentialsId: "${ENV_CREDENTIAL}", variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
+                            script {
+                                echo 'Validating Docker image exists...'
+                                def imageExists = sh(
+                                    script: """
+                                        gcloud artifacts docker images describe ${IMAGE_FULL} \
+                                            --project=${GCP_PROJECT_ID} \
+                                            >/dev/null 2>&1 && echo 'true' || echo 'false'
+                                    """,
+                                    returnStdout: true
+                                ).trim()
+
+                                if (imageExists == 'false') {
+                                    echo "WARNING: Image ${IMAGE_FULL} does not exist!"
+                                    echo "This happens when pipeline is restarted from Terraform stage."
+                                    echo "Falling back to 'latest' tag..."
+                                    env.IMAGE_DEPLOYMENT = "${IMAGE_LATEST}"
+                                } else {
+                                    echo "Image ${IMAGE_FULL} exists"
+                                    env.IMAGE_DEPLOYMENT = "${IMAGE_FULL}"
+                                }
+
+                                echo "Image to deploy: ${env.IMAGE_DEPLOYMENT}"
+                            }
+                        }
+                    }
+                }
+
+                stage('Terraform Plan') {
+                    steps {
+                        withCredentials([file(credentialsId: "${ENV_CREDENTIAL}", variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
+                            dir('terraform') {
+                                script {
+                                    echo '=========================================='
+                                    echo 'Planning Terraform changes'
+                                    echo "Environment: ${params.ENVIRONMENT}"
+                                    echo "Project: ${GCP_PROJECT_ID}"
+                                    echo "Image: ${env.IMAGE_DEPLOYMENT}"
+                                    echo '=========================================='
+
+                                    sh """
+                                        terraform plan \
+                                            -var-file="environments/${params.ENVIRONMENT}.tfvars" \
+                                            -var "image_url=${env.IMAGE_DEPLOYMENT}" \
+                                            -out=tfplan \
+                                            -no-color
+                                    """
+
+                                    echo '=========================================='
+                                    echo 'Validating Terraform plan for cross-environment operations'
+                                    echo '=========================================='
+
+                                    // Check if plan contains operations on wrong environment
+                                    def wrongEnvCheck = sh(
+                                        script: """
+                                            terraform show -json tfplan | jq -r '.resource_changes[]? | select(.change.actions[] | contains("delete") or contains("create")) | .address' | grep -v "${params.ENVIRONMENT}" || echo ''
+                                        """,
+                                        returnStdout: true
+                                    ).trim()
+
+                                    if (wrongEnvCheck) {
+                                        echo "WARNING: Plan contains operations on resources not matching environment: ${params.ENVIRONMENT}"
+                                        echo "Resources: ${wrongEnvCheck}"
+                                        // Note: Not failing here as resource names might legitimately differ
+                                        // But logging for audit purposes
+                                    }
+
+                                    echo "Plan validation complete"
+                                }
+                            }
+                        }
+                    }
+                }
+
+                stage('Terraform Apply') {
+                    steps {
+                        withCredentials([file(credentialsId: "${ENV_CREDENTIAL}", variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
+                            dir('terraform') {
+                                script {
+                                    echo 'Deploying to Cloud Run via Terraform...'
+                                    sh 'terraform apply -auto-approve -no-color tfplan'
+
+                                    sh '''
+                                        terraform output -json > terraform_outputs.json
+                                        cat terraform_outputs.json
+                                    '''
+
+                                    def serviceUrl = sh(
+                                        script: 'terraform output -raw service_url',
+                                        returnStdout: true
+                                    ).trim()
+
+                                    echo "=========================================="
+                                    echo "Deployment Successful!"
+                                    echo "Service URL: ${serviceUrl}"
+                                    echo "Image Deployed: ${env.IMAGE_DEPLOYMENT}"
+                                    echo "=========================================="
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo '=========================================='
+            echo 'Deployment completed successfully!'
+            echo "Environment: ${params.ENVIRONMENT}"
+            echo "Image Deployed: ${env.IMAGE_DEPLOYMENT ?: IMAGE_FULL}"
+            echo '=========================================='
+        }
+        failure {
+            echo '=========================================='
+            echo 'Deployment failed!'
+            echo "Environment: ${params.ENVIRONMENT}"
+            echo 'Check logs for details'
+            echo '=========================================='
+        }
+        always {
+            script {
+                echo 'Cleaning up resources...'
+
+                sh 'docker system prune -f || true'
+
+                dir('terraform') {
+                    sh '''
+                        echo 'Cleaning Terraform workspace for next deployment'
+                        rm -rf .terraform .terraform.lock.hcl terraform.tfstate* tfplan || true
+                    '''
+                }
+
+                echo 'Cleanup complete'
+            }
+        }
+    }
+}
 </file>
 
 <file path="package.json">

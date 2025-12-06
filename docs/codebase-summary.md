@@ -57,7 +57,7 @@ src/app/
 │   ├── health-tracking/      # Health metrics tracking
 │   ├── chatbox/              # AI chat interface
 │   ├── predict/              # Health prediction page
-│   └── practice/             # Practice plan configuration (Phase 2)
+│   └── practice/             # Practice plan configuration (Phases 2-4)
 │
 ├── api/                       # API route handlers
 │   └── health/               # Health-related API endpoints
@@ -71,7 +71,7 @@ src/app/
 
 #### components/ - React Components (Atomic Design)
 
-**8 Component Categories:**
+**10 Component Categories:**
 
 1. **ui/** - shadcn/ui Components (20+ primitives)
    - button, input, form, card, dialog, tabs, select
@@ -131,8 +131,8 @@ src/app/
    - `tab.tsx`, `heartbeat.tsx`, `history.tsx`
    - Custom SVG components generated with SVGR
 
-9. **practice/** - Practice Plan Feature (Phase 2-3)
-   - `BasicInfoSection.tsx` - Basic health info form with pre-fill
+9. **practice/** - Practice Plan Feature (Phases 2-4)
+   - `BasicInfoSection.tsx` - Basic health info form with pre-fill (Phase 2)
    - `ScheduleSection/` - Schedule configuration components (Phase 3)
      - `index.tsx` - Main schedule section with mode toggle
      - `DayPicker.tsx` - Day selection with circular buttons
@@ -140,6 +140,12 @@ src/app/
      - `FixedMode.tsx` - Single time period for all days
      - `TimePeriodInput.tsx` - Time input with validation and duration calculation
      - `ScheduleSection.test.tsx` - Unit tests for schedule components
+   - `SportsSection/` - Sports preference components (Phase 4)
+     - `index.tsx` - Main sports section with predefined and custom sports
+     - `SportBadge.tsx` - Toggleable sport selection badge
+     - `SportTagInput.tsx` - Custom sport input with validation and sanitization
+     - `SportsSection.test.tsx` - Unit tests for sports components
+   - `NotesSection.tsx` - Collapsible notes and health warnings (Phase 4)
    - `index.ts` - Barrel export
    - Handles user profile pre-fill, dynamic validation, security lock icons
 
@@ -238,8 +244,8 @@ All types centralized in one location (NOT in service files):
 
 ```
 src/types/
-├── auth.ts          # User, AuthState, LoginCredentials, AuthResponse
-├── user.ts          # UserData, UpdateUserProfileData
+├── auth.ts          # Authentication types
+├── user.ts          # User management types
 ├── api.ts           # Generic API types (ApiResponse, ApiError)
 ├── streaming.ts     # SSE and streaming types
 ├── conversation.ts  # Conversation, Message types
@@ -248,6 +254,7 @@ src/types/
 ├── health.ts        # Health metrics types
 ├── forms.ts         # Form validation types
 ├── error.ts         # Error handling types
+├── practice.ts      # Practice plan types
 └── index.ts         # Barrel export
 ```
 
@@ -257,14 +264,14 @@ src/types/
 
 | Category                   | Count     | Notes                                                                                  |
 | -------------------------- | --------- | -------------------------------------------------------------------------------------- |
-| Components                 | 105+      | Including ui/, form/, chat/, predict/, layout/, shared/, marketing/, icons/, practice/ |
+| Components                 | 115+      | Including ui/, form/, chat/, predict/, layout/, shared/, marketing/, icons/, practice/ |
 | Pages                      | 13        | Auth (8) + Dashboard (5)                                                               |
 | Services                   | 8         | API service modules                                                                    |
 | Hooks                      | 8         | Custom React hooks                                                                     |
 | Contexts                   | 2         | Auth + Conversation                                                                    |
 | Type Definition Files      | 11        | Comprehensive type coverage                                                            |
 | Config Files               | 8         | TS, ESLint, Prettier, Tailwind, etc.                                                   |
-| **Total TypeScript Files** | **~200+** | Well-organized and modular                                                             |
+| **Total TypeScript Files** | **~230+** | Well-organized and modular                                                             |
 
 ---
 
@@ -352,17 +359,29 @@ Located in `ui/`:
 - All props properly typed with Radix types
 - Consistent with design system
 
-### ScheduleSection Components (Phase 3)
+### Practice Page Components (Phases 2-4)
 
-Located in `practice/ScheduleSection/`:
+#### Phase 2: Basic Information Section
+
+**Location:** `practice/BasicInfoSection.tsx`
+
+- 4 form fields: height, weight, target weight, goal
+- User profile pre-fill from API
+- Dynamic validation for target weight based on goal
+- Security lock icons for pre-filled fields
+- Input sanitization for numeric fields
+
+#### Phase 3: Schedule Components
+
+**Location:** `practice/ScheduleSection/`
 
 **Architecture Pattern:** Compound Component + Controlled Components
 
 - **ScheduleSection** - Main container with mode toggle (flexible/fixed)
 - **DayPicker** - Circular button selection for days of week
 - **FlexibleMode** - Per-day time period configuration
-- **FixedMode** - Single time period applied to all selected days
-- **TimePeriodInput** - Reusable time input with validation
+- **FixedMode** - Single time period for all days
+- **TimePeriodInput** - Reusable time input with validation and duration calculation
 
 **Key Features:**
 
@@ -372,6 +391,30 @@ Located in `practice/ScheduleSection/`:
 - Real-time duration calculation
 - Validation ensuring end time > start time
 - Accessibility with ARIA labels and keyboard navigation
+
+#### Phase 4: Sports & Notes Sections
+
+**SportsSection Components:**
+
+- **SportsSection** - Main sports preference container
+- **SportBadge** - Toggleable sport selection badge with visual states
+- **SportTagInput** - Custom sport input with security enhancements
+
+**Security Enhancements in SportTagInput:**
+
+- Input sanitization removing HTML/script tags
+- Character validation (letters, numbers, Vietnamese characters only)
+- Length validation (2-30 characters)
+- Duplicate prevention
+- XSS prevention through regex filtering
+
+**NotesSection Components:**
+
+- **NotesSection** - Collapsible container for optional notes
+- **Collapsible UI** - Expandable/collapsible interface
+- **Dual Textarea** - Personal notes and health warnings
+- **Character counter** - 500 character limit per field
+- **Visual indicators** - Amber border for health warnings
 
 ---
 
@@ -470,11 +513,14 @@ Examples:
 - `PredictionInput` - Health metrics input
 - `PredictionResult` - AI prediction output
 - `HealthInsight` - Individual health insight
-  **practice.ts** - Practice Plan Types
+
+**practice.ts** - Practice Plan Types
 
 - `PracticeFormData` - Complete form structure
 - `PracticeBasicInfo` - Basic info section data
 - `PracticeSchedule` - Schedule configuration (flexible/fixed modes)
+- `PracticeSports` - Sports preferences (predefined + custom)
+- `PracticeNotes` - Personal notes and health warnings
 - `TimePeriod` - Time range with start/end times
 - `UserPracticeProfile` - Pre-fill profile data
 
@@ -584,7 +630,7 @@ Examples:
 | `src/contexts/auth/AuthContext.tsx` | Auth state management          | 100+  |
 | `src/lib/react-query.tsx`           | React Query provider setup     | 50+   |
 | `src/app/layout.tsx`                | Root layout with providers     | 40+   |
-| `src/lib/logger.ts`                 | Centralized logging            | 50+   |
+| `src/lib/logger.ts`                 | Centralized logging system     | 50+   |
 | `src/lib/storage.ts`                | localStorage abstraction       | 40+   |
 | `next.config.ts`                    | Next.js configuration          | 60+   |
 | `tailwind.config.js`                | Tailwind CSS setup             | 100+  |
@@ -722,6 +768,11 @@ description: what was changed and why
 - All forms validated with Zod schemas before submission
 - Backend receives only validated data
 - XSS prevention through React's built-in protections
+- **Phase 4 Enhancements:**
+  - HTML/script tag removal in SportTagInput
+  - Character whitelist for Vietnamese text
+  - Length validation with strict limits
+  - Duplicate prevention logic
 
 ### Token Management
 

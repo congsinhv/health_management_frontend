@@ -8,9 +8,15 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useQuery } from '@tanstack/react-query';
+import type { Resolver } from 'react-hook-form';
 import { useAuth } from '@/contexts/auth';
 import { userService } from '@/services/user';
-import { BasicInfoSection, ScheduleSection } from '@/components/practice';
+import {
+  BasicInfoSection,
+  ScheduleSection,
+  SportsSection,
+  NotesSection,
+} from '@/components/practice';
 import { practiceFormSchema } from './validation';
 import type { PracticeFormData } from '@/types/practice';
 
@@ -19,12 +25,14 @@ const PracticePage = () => {
   const { user } = useAuth();
 
   const form = useForm<PracticeFormData>({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    resolver: zodResolver(practiceFormSchema) as any,
+    resolver: zodResolver(practiceFormSchema) as Resolver<PracticeFormData>,
     mode: 'onChange',
     defaultValues: {
       basicInfo: {
+        height: undefined,
+        weight: undefined,
         targetWeight: 0,
+        goal: undefined,
       },
       schedule: {
         mode: 'flexible',
@@ -106,6 +114,12 @@ const PracticePage = () => {
 
             {/* Schedule Section */}
             <ScheduleSection form={form} />
+
+            {/* Sports Section */}
+            <SportsSection form={form} />
+
+            {/* Notes Section */}
+            <NotesSection form={form} />
 
             {/* Submit Button */}
             <div className='mx-auto flex w-[82.5%] items-end justify-end gap-5'>

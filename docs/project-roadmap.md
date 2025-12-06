@@ -197,7 +197,7 @@ VHealth development is organized into three phases, with Phase 1 complete and Ph
 
 #### Practice Page - Training Preferences ✅
 
-**Status:** 60% complete (Phase 3 of 5) - Schedule Components Complete
+**Status:** 80% complete (Phase 4 of 5) - Sports & Notes Sections Complete
 **Last Updated:** December 2025
 
 - [x] Phase 1: Foundation & Types (Completed)
@@ -216,13 +216,20 @@ VHealth development is organized into three phases, with Phase 1 complete and Ph
   - [x] FlexibleMode component for flexible schedule
   - [x] Form validation for schedule conflicts
   - [x] Responsive design for mobile/tablet
-- [ ] Phase 4: Sports & Notes Sections (Planned)
+- [x] Phase 4: Sports & Notes Sections (Completed - Dec 6, 2025)
+  - [x] SportsSection component with sport selection
+  - [x] SportBadge component for toggleable sports
+  - [x] SportTagInput with security enhancements
+  - [x] NotesSection with collapsible interface
+  - [x] Dual textarea for personal notes and health warnings
+  - [x] Character counters (500 limit)
+  - [x] Input sanitization and validation
 - [ ] Phase 5: API Integration (Planned)
 
 **Completed Features:**
 
 - BasicInfoSection component with 4 fields (height, weight, target weight, goal)
-- Pre-fill logic from user profile API
+- User profile pre-fill from API
 - Dynamic validation for target weight based on goal
 - Security fixes (input sanitization, removed console.log)
 - ScheduleSection with fixed and flexible modes
@@ -230,6 +237,22 @@ VHealth development is organized into three phases, with Phase 1 complete and Ph
 - TimePeriodInput for time range selection
 - Responsive design for all components
 - Form validation for schedule conflicts
+- **NEW (Phase 4):**
+  - SportsSection with predefined and custom sport selection
+  - SportBadge component with visual toggle states
+  - SportTagInput with XSS prevention and input sanitization
+  - NotesSection with collapsible UI
+  - Dual textarea for personal notes and health warnings
+  - Character counter with 500 character limit
+  - Visual indicators for health warnings (amber border)
+
+**Security Enhancements (Phase 4):**
+
+- HTML/script tag removal in SportTagInput
+- Character whitelist for Vietnamese text and common symbols
+- Length validation (2-30 characters for custom sports)
+- Duplicate prevention logic
+- XSS prevention through regex filtering
 
 **Files:**
 
@@ -436,6 +459,15 @@ Practice Page Phase 3: Schedule Components
 - Added form validation for schedule conflicts
 - Implemented responsive design for mobile/tablet
 - All components TypeScript validated with ESLint compliance
+
+Practice Page Phase 4: Sports & Notes Sections
+- Created SportsSection with predefined and custom sport selection
+- Implemented SportBadge component with toggleable states
+- Built SportTagInput with security enhancements (XSS prevention, sanitization)
+- Added NotesSection with collapsible interface
+- Implemented dual textarea for personal notes and health warnings
+- Added character counters with 500 character limit
+- Enhanced security with input validation and sanitization
 ```
 
 ---
@@ -591,11 +623,11 @@ Q4 2024          Q1 2025          Q2 2025          Q3 2025          Q4 2025
 
 ## Document History
 
-| Version | Date     | Changes                            |
-| ------- | -------- | ---------------------------------- |
-| 1.0     | Dec 2025 | Initial roadmap creation           |
-| 1.1     | -        | Pending Phase 2 completion updates |
-| 2.0     | -        | Pending Phase 3 execution          |
+| Version | Date     | Changes                    |
+| ------- | -------- | -------------------------- |
+| 1.0     | Dec 2025 | Initial roadmap creation   |
+| 1.1     | Dec 2025 | Phase 4 completion updates |
+| 2.0     | -        | Pending Phase 3 execution  |
 
 ---
 
