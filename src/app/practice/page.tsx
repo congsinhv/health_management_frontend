@@ -1,28 +1,32 @@
 'use client';
 
+import { useEffect } from 'react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import type { Resolver } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
+
 import Footer from '@/components/layout/Footer';
 import Header from '@/components/layout/Header';
-import { Button } from '@/components/ui/button';
-import { Form } from '@/components/ui/form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useState, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
-import { useQuery } from '@tanstack/react-query';
-import type { Resolver } from 'react-hook-form';
-import { useAuth } from '@/contexts/auth';
-import { userService } from '@/services/user';
 import {
   BasicInfoSection,
+  NotesSection,
   ScheduleSection,
   SportsSection,
-  NotesSection,
 } from '@/components/practice';
-import { practiceFormSchema } from './validation';
+import { LoadingOverlay } from '@/components/shared/LoadingOverlay';
+import { Button } from '@/components/ui/button';
+import { Form } from '@/components/ui/form';
+import { useAuth } from '@/contexts/auth';
+import { savePracticePreferences } from '@/services/practice';
+import { userService } from '@/services/user';
 import type { PracticeFormData } from '@/types/practice';
+import { practiceFormSchema } from './validation';
 
 const PracticePage = () => {
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const { user } = useAuth();
+  const queryClient = useQueryClient();
 
   const form = useForm<PracticeFormData>({
     resolver: zodResolver(practiceFormSchema) as Resolver<PracticeFormData>,
@@ -78,13 +82,28 @@ const PracticePage = () => {
     }
   }, [userProfile, form]);
 
-  const onSubmit = async (_data: PracticeFormData) => {
-    setIsSubmitting(true);
-    try {
-      // TODO: API integration in Phase 5
-    } finally {
-      setIsSubmitting(false);
+  // Submit mutation
+  const submitMutation = useMutation({
+    mutationFn: savePracticePreferences,
+    onSuccess: () => {
+      toast.success('Đã lưu thiết lập tập luyện!');
+      queryClient.invalidateQueries({ queryKey: ['practiceProfile'] });
+      queryClient.invalidateQueries({ queryKey: ['userProfile'] });
+    },
+    onError: error => {
+      console.error('Submit error:', error);
+      toast.error('Có lỗi xảy ra. Vui lòng thử lại.');
+    },
+  });
+
+  // Form submission handler
+  const onSubmit = async (data: PracticeFormData) => {
+    const isValid = await form.trigger();
+    if (!isValid) {
+      toast.error('Vui lòng kiểm tra lại thông tin');
+      return;
     }
+    submitMutation.mutate(data);
   };
 
   return (
@@ -126,16 +145,20 @@ const PracticePage = () => {
               <div className='h-px w-full bg-[#B3B8C3]' />
               <Button
                 type='submit'
-                disabled={isSubmitting}
+                disabled={submitMutation.isPending}
                 className='w-full rounded-none bg-black px-17 py-3.25 text-white transition-colors hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50 md:w-auto'
               >
-                {isSubmitting ? 'Đang lưu...' : 'Lưu thiết lập'}
+                {submitMutation.isPending ? 'Đang lưu...' : 'Lưu thiết lập'}
               </Button>
             </div>
           </form>
         </Form>
       </div>
       <Footer />
+      <LoadingOverlay
+        isVisible={submitMutation.isPending}
+        message='Đang lưu thiết lập...'
+      />
     </>
   );
 };

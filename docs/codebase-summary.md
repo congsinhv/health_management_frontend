@@ -119,7 +119,7 @@ src/app/
    - `Navigation.tsx` - Navigation menu
    - `ProtectedRoute.tsx` - Route protection HOC
    - `ErrorBoundary.tsx` - Error handling wrapper
-   - `LoadingOverlay.tsx` - Full-page loading state
+   - `LoadingOverlay.tsx` - Full-page loading state (Phase 5: added optional message prop)
 
 7. **marketing/** - Marketing & Landing Page
    - `FeaturesSection.tsx` - Feature highlights
@@ -217,7 +217,7 @@ src/lib/
 - `logger` - centralized logging system
 - `storage` - type-safe localStorage wrapper
 
-#### services/ - API Integration Layer (8 modules)
+#### services/ - API Integration Layer (9 modules)
 
 ```
 src/services/
@@ -228,7 +228,8 @@ src/services/
 ├── chat.ts                 # Chat message endpoints
 ├── qa.ts                   # Q&A assistant endpoints
 ├── upload.ts               # File upload endpoints
-└── health.ts               # Health metrics endpoints
+├── health.ts               # Health metrics endpoints
+└── practice.ts             # Practice profile and preferences endpoints (Phase 5)
 ```
 
 **Axios Interceptor Chain:**
@@ -416,6 +417,31 @@ Located in `ui/`:
 - **Character counter** - 500 character limit per field
 - **Visual indicators** - Amber border for health warnings
 
+#### Phase 5: API Integration (Current)
+
+**PracticePage Integration:**
+
+- **useMutation** from React Query for form submission
+- **useQuery** for loading user profile data for pre-fill
+- **queryClient.invalidateQueries()** to refresh related queries after save
+- **Toast notifications** for success/error feedback
+- **LoadingOverlay** component with custom message display
+
+**API Service Layer:**
+
+- `getPracticeProfile()` - Fetches complete practice profile from backend
+- `savePracticePreferences()` - Posts form data to save preferences
+- `formatForAPI()` - Transforms frontend form structure to backend format
+
+**Key Features:**
+
+- Automatic form pre-fill from user profile data
+- Real-time form validation with React Hook Form
+- Server-side mutation handling with loading state
+- Cache invalidation for related queries
+- Comprehensive error handling with user feedback
+- Full-page loading overlay during submission
+
 ---
 
 ## State Management Approach
@@ -522,7 +548,8 @@ Examples:
 - `PracticeSports` - Sports preferences (predefined + custom)
 - `PracticeNotes` - Personal notes and health warnings
 - `TimePeriod` - Time range with start/end times
-- `UserPracticeProfile` - Pre-fill profile data
+- `UserPracticeProfile` - Pre-fill profile data (basic fields only)
+- `PracticeProfileResponse` - Full API response with all practice profile data (Phase 5)
 
 **health.ts** - Health Metrics Types
 
@@ -569,6 +596,28 @@ Examples:
 - Holds failed requests during refresh
 - Executes all queued requests after token refresh
 - Handles concurrent refresh scenarios
+
+### Practice Service (`practice.ts` - Phase 5)
+
+**Endpoints:**
+
+- `getPracticeProfile()` - Fetches user's practice profile for pre-fill
+- `savePracticePreferences(data)` - Saves practice preferences to backend
+
+**Data Transformation:**
+
+- `formatForAPI(data)` - Transforms frontend form structure to backend API format
+  - Converts camelCase to snake_case
+  - Converts height/weight to metric units (cm/kg)
+  - Expands schedule data based on mode (flexible/fixed)
+  - Handles custom sports list and notes
+
+**Integration Points:**
+
+- Used in PracticePage with useMutation for save operations
+- Paired with useQuery for pre-fill data loading
+- Includes error handling with toast notifications
+- Integrates with React Query for cache invalidation
 
 ---
 

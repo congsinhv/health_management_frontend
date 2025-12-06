@@ -40,9 +40,34 @@ export interface PracticeFormData {
   notes: PracticeNotes;
 }
 
-// API response for pre-fill data
+// API response for pre-fill data (basic profile)
 export interface UserPracticeProfile {
   height_cm?: number;
   weight_kg?: number;
   goal?: string;
+}
+
+// Full practice profile API response
+export interface PracticeProfileResponse {
+  id: string;
+  user_id: string;
+  height_cm?: number;
+  weight_kg?: number;
+  target_weight_kg?: number;
+  goal?: string;
+  schedule?: {
+    mode: 'flexible' | 'fixed';
+    selected_days: string[];
+    periods: Record<string, TimePeriod[]>;
+  };
+  sports?: {
+    predefined: string[];
+    custom: string[];
+  };
+  notes?: {
+    personal?: string;
+    health_warnings?: string;
+  };
+  created_at: string;
+  updated_at: string;
 }
