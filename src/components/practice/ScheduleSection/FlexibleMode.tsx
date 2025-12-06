@@ -7,11 +7,6 @@ import { TimePeriodInput } from './TimePeriodInput';
 import { dayOptions } from '@/app/practice/formHelper';
 import type { TimePeriod } from '@/types/practice';
 
-// Extended TimePeriod with unique ID for stable React keys
-interface TimePeriodWithId extends TimePeriod {
-  id: string;
-}
-
 interface FlexibleModeProps {
   selectedDays: string[];
   periods: Record<string, TimePeriod[]>;
@@ -23,9 +18,7 @@ export const FlexibleMode = ({
   periods,
   onPeriodsChange,
 }: FlexibleModeProps) => {
-  // Counter for generating unique IDs
   const idCounterRef = useRef(0);
-  // Cache for period IDs to maintain stability across renders
   const periodIdsRef = useRef<Record<string, string[]>>({});
 
   const getDayLabel = (dayValue: string) =>
@@ -49,15 +42,28 @@ export const FlexibleMode = ({
   };
 
   const addPeriod = (day: string) => {
-    const dayPeriods = periods[day] || [];
+    // Get existing periods
+    const existingPeriods = periods[day] || [];
+
+    // If no periods exist, we need to add the default period first
+    // This ensures the visual default becomes part of the actual state
+    const periodsToUpdate =
+      existingPeriods.length === 0
+        ? [{ startTime: '07:00', endTime: '08:00' }]
+        : existingPeriods;
+
     // Add a new ID for the new period
     if (!periodIdsRef.current[day]) {
       periodIdsRef.current[day] = [];
     }
     periodIdsRef.current[day].push(generateId());
+
+    // Add new period with default times (07:00 - 08:00)
+    const newPeriod = { startTime: '07:00', endTime: '08:00' };
+
     onPeriodsChange({
       ...periods,
-      [day]: [...dayPeriods, { startTime: '', endTime: '' }],
+      [day]: [...periodsToUpdate, newPeriod],
     });
   };
 
@@ -67,7 +73,11 @@ export const FlexibleMode = ({
     start: string,
     end: string
   ) => {
-    const dayPeriods = [...(periods[day] || [])];
+    // Initialize with default period if no periods exist
+    const existingPeriods = periods[day] || [
+      { startTime: '07:00', endTime: '08:00' },
+    ];
+    const dayPeriods = [...existingPeriods];
     dayPeriods[index] = { startTime: start, endTime: end };
     onPeriodsChange({ ...periods, [day]: dayPeriods });
   };
@@ -99,7 +109,11 @@ export const FlexibleMode = ({
   return (
     <div className='space-y-6'>
       {sortedDays.map(day => {
-        const dayPeriods = periods[day] || [{ startTime: '', endTime: '' }];
+        // Show default period with times if no periods exist
+        const dayPeriods =
+          periods[day] && periods[day].length > 0
+            ? periods[day]
+            : [{ startTime: '07:00', endTime: '08:00' }];
         const periodIds = getPeriodIds(day, dayPeriods.length);
 
         return (
@@ -131,8 +145,11 @@ export const FlexibleMode = ({
               type='button'
               variant='ghost'
               size='sm'
-              onClick={() => addPeriod(day)}
-              className='text-primary hover:text-primary mt-3'
+              onClick={e => {
+                e.preventDefault();
+                addPeriod(day);
+              }}
+              className='text-primary hover:bg-primary/10 hover:text-primary focus:text-primary mt-3'
             >
               <Plus className='mr-1 h-4 w-4' />
               Thêm khung giờ

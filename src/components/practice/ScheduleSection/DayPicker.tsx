@@ -36,8 +36,8 @@ export const DayPicker = ({
             aria-label={`${day.fullName}, ${isSelected ? 'đã chọn' : 'chưa chọn'}`}
             aria-pressed={isSelected}
             className={cn(
-              'flex h-12 w-12 items-center justify-center rounded-full text-sm font-medium transition-all',
-              'focus:ring-primary focus:ring-2 focus:ring-offset-2 focus:outline-none',
+              'flex h-12 w-26 cursor-pointer items-center justify-center rounded-full text-sm font-medium transition-all',
+              'focus:outline-none',
               isSelected
                 ? 'bg-gradient-to-r from-[#00bba7] to-[#00bc7d] text-white'
                 : 'hover:border-primary border border-gray-300 bg-white text-gray-700 hover:bg-gray-50',

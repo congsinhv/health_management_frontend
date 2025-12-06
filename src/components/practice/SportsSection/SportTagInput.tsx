@@ -60,10 +60,13 @@ export const SportTagInput = ({
     inputRef.current?.focus();
   };
 
+  const isValidInput =
+    inputValue.trim().length >= 2 && inputValue.trim().length <= 30;
+
   return (
-    <div className='space-y-3'>
-      {/* Input row */}
-      <div className='flex gap-2'>
+    <div className='space-y-4'>
+      {/* Input row - styled consistently with other form elements */}
+      <div className='flex gap-3'>
         <Input
           ref={inputRef}
           type='text'
@@ -71,42 +74,44 @@ export const SportTagInput = ({
           onChange={e => setInputValue(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
-          className='flex-1 rounded-[4px] bg-white'
+          className='h-12 flex-1 rounded-lg border-gray-200 bg-white'
           aria-label='Thêm môn thể thao'
         />
         <Button
           type='button'
           onClick={handleAdd}
-          disabled={
-            inputValue.trim().length < 2 || inputValue.trim().length > 30
-          }
-          variant='outline'
-          className='px-3'
+          disabled={!isValidInput}
+          className={cn(
+            'h-12 rounded-lg px-5!',
+            isValidInput
+              ? 'bg-primary hover:bg-primary/90 text-white'
+              : 'bg-gray-100 text-gray-400'
+          )}
           aria-label='Thêm'
         >
-          <Plus className='h-4 w-4' />
+          Thêm
         </Button>
       </div>
 
-      {/* Tags display */}
+      {/* Tags display - styled like badges */}
       {tags.length > 0 && (
         <div className='flex flex-wrap gap-2'>
           {tags.map(tag => (
             <span
               key={tag}
               className={cn(
-                'inline-flex items-center gap-1 rounded-full',
-                'bg-gray-100 px-3 py-1 text-sm text-gray-700'
+                'inline-flex items-center gap-2 rounded-full',
+                'border-primary/20 bg-primary/5 text-muted-foreground border px-4 py-2 text-sm font-medium'
               )}
             >
               {tag}
               <button
                 type='button'
                 onClick={() => handleRemove(tag)}
-                className='ml-1 rounded-full p-0.5 hover:bg-gray-200'
+                className='hover:bg-primary/10 hover:text-primary cursor-pointer rounded-full p-0.5 text-gray-400 transition-colors'
                 aria-label={`Xóa ${tag}`}
               >
-                <X className='h-3 w-3' />
+                <X className='h-4 w-4' />
               </button>
               <span className='sr-only' aria-live='polite'>
                 Đã xóa {tag}

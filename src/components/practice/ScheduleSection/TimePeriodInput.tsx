@@ -1,6 +1,6 @@
 'use client';
 
-import { Input } from '@/components/ui/input';
+import { TimePicker } from '@/components/ui/time-picker';
 import { Button } from '@/components/ui/button';
 import { X } from 'lucide-react';
 import { calculateDuration } from '@/app/practice/formHelper';
@@ -56,12 +56,14 @@ export const TimePeriodInput = ({
       {/* Start Time */}
       <div className='flex flex-col gap-1'>
         <label className='text-xs text-gray-500'>Bắt đầu</label>
-        <Input
-          type='time'
+        <TimePicker
           value={startTime}
-          onChange={handleStartChange}
+          onChange={value =>
+            handleStartChange({
+              target: { value },
+            } as React.ChangeEvent<HTMLInputElement>)
+          }
           className={cn(
-            'w-32 rounded-[4px] bg-white',
             !isValidTime && startTime && endTime && 'border-destructive'
           )}
         />
@@ -72,12 +74,14 @@ export const TimePeriodInput = ({
       {/* End Time */}
       <div className='flex flex-col gap-1'>
         <label className='text-xs text-gray-500'>Kết thúc</label>
-        <Input
-          type='time'
+        <TimePicker
           value={endTime}
-          onChange={handleEndChange}
+          onChange={value =>
+            handleEndChange({
+              target: { value },
+            } as React.ChangeEvent<HTMLInputElement>)
+          }
           className={cn(
-            'w-32 rounded-[4px] bg-white',
             !isValidTime && startTime && endTime && 'border-destructive'
           )}
         />
@@ -108,10 +112,10 @@ export const TimePeriodInput = ({
           variant='ghost'
           size='icon'
           onClick={onRemove}
-          className='hover:text-destructive mt-5 h-8 w-8 text-gray-400'
+          className='hover:text-destructive/90 hover:bg-destructive/5 mt-5 h-8 w-8 text-gray-400'
           aria-label='Xóa khung giờ'
         >
-          <X className='h-4 w-4' />
+          <X className='size-4' />
         </Button>
       )}
     </div>

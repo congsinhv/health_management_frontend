@@ -30,7 +30,7 @@ export const NotesSection = ({ form }: NotesSectionProps) => {
     <Card className='mx-auto w-[82.5%] border-none bg-transparent pt-13.5 shadow-none'>
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         <CardHeader className='border-b border-[#B3B8C3] px-0 pb-5.5'>
-          <CollapsibleTrigger asChild>
+          <CollapsibleTrigger asChild className='cursor-pointer'>
             <button
               type='button'
               className='flex w-full items-center justify-between'

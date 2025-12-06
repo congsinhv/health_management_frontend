@@ -5,13 +5,13 @@ export const goalOptions = [
 ];
 
 export const dayOptions = [
-  { label: 'T2', value: 'monday', fullName: 'Thứ 2' },
-  { label: 'T3', value: 'tuesday', fullName: 'Thứ 3' },
-  { label: 'T4', value: 'wednesday', fullName: 'Thứ 4' },
-  { label: 'T5', value: 'thursday', fullName: 'Thứ 5' },
-  { label: 'T6', value: 'friday', fullName: 'Thứ 6' },
-  { label: 'T7', value: 'saturday', fullName: 'Thứ 7' },
-  { label: 'CN', value: 'sunday', fullName: 'Chủ nhật' },
+  { label: 'Thứ 2', value: 'monday', fullName: 'Thứ 2' },
+  { label: 'Thứ 3', value: 'tuesday', fullName: 'Thứ 3' },
+  { label: 'Thứ 4', value: 'wednesday', fullName: 'Thứ 4' },
+  { label: 'Thứ 5', value: 'thursday', fullName: 'Thứ 5' },
+  { label: 'Thứ 6', value: 'friday', fullName: 'Thứ 6' },
+  { label: 'Thứ 7', value: 'saturday', fullName: 'Thứ 7' },
+  { label: 'Chủ nhật', value: 'sunday', fullName: 'Chủ nhật' },
 ];
 
 export const predefinedSports = [

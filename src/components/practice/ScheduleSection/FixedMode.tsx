@@ -14,6 +14,12 @@ export const FixedMode = ({
   period,
   onPeriodChange,
 }: FixedModeProps) => {
+  // Use default times if period is empty
+  const displayPeriod = {
+    startTime: period.startTime || '07:00',
+    endTime: period.endTime || '08:00',
+  };
+
   if (selectedDays.length === 0) {
     return (
       <p className='py-4 text-sm text-gray-500'>
@@ -32,8 +38,8 @@ export const FixedMode = ({
       <div className='rounded-lg border border-gray-200 bg-white p-4'>
         <h4 className='mb-3 font-medium text-gray-900'>Giờ tập cố định</h4>
         <TimePeriodInput
-          startTime={period.startTime}
-          endTime={period.endTime}
+          startTime={displayPeriod.startTime}
+          endTime={displayPeriod.endTime}
           onChange={(start, end) =>
             onPeriodChange({ startTime: start, endTime: end })
           }

@@ -46,7 +46,7 @@ export const ScheduleSection = ({ form }: ScheduleSectionProps) => {
                   className='w-full'
                 >
                   <TabsList
-                    className='grid w-full max-w-[300px] grid-cols-2'
+                    className='grid h-12 w-full max-w-[300px] grid-cols-2 rounded-lg border border-gray-200'
                     role='tablist'
                     aria-label='Chế độ lịch tập'
                   >
