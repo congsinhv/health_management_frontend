@@ -1,0 +1,48 @@
+// TimePeriod for schedule
+export interface TimePeriod {
+  startTime: string; // HH:mm format
+  endTime: string;
+}
+
+// Basic info section
+export interface PracticeBasicInfo {
+  height?: number;
+  weight?: number;
+  targetWeight: number;
+  goal?: 'gain' | 'lose' | 'maintain';
+}
+
+// Schedule section
+export interface PracticeSchedule {
+  mode: 'flexible' | 'fixed';
+  selectedDays: string[];
+  flexiblePeriods?: Record<string, TimePeriod[]>;
+  fixedPeriod?: TimePeriod;
+}
+
+// Sports section
+export interface PracticeSports {
+  predefined: string[];
+  custom: string[];
+}
+
+// Notes section
+export interface PracticeNotes {
+  personal?: string;
+  healthWarnings?: string;
+}
+
+// Full form data
+export interface PracticeFormData {
+  basicInfo: PracticeBasicInfo;
+  schedule: PracticeSchedule;
+  sports: PracticeSports;
+  notes: PracticeNotes;
+}
+
+// API response for pre-fill data
+export interface UserPracticeProfile {
+  height_cm?: number;
+  weight_kg?: number;
+  goal?: string;
+}

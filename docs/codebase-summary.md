@@ -56,7 +56,8 @@ src/app/
 │   ├── settings/             # Account settings
 │   ├── health-tracking/      # Health metrics tracking
 │   ├── chatbox/              # AI chat interface
-│   └── predict/              # Health prediction page
+│   ├── predict/              # Health prediction page
+│   └── practice/             # Practice plan configuration (Phase 2)
 │
 ├── api/                       # API route handlers
 │   └── health/               # Health-related API endpoints
@@ -130,6 +131,11 @@ src/app/
    - `tab.tsx`, `heartbeat.tsx`, `history.tsx`
    - Custom SVG components generated with SVGR
 
+9. **practice/** - Practice Plan Feature (Phase 2)
+   - `BasicInfoSection.tsx` - Basic health info form with pre-fill
+   - `index.ts` - Barrel export
+   - Handles user profile pre-fill, dynamic validation, security lock icons
+
 #### contexts/ - React Context State Management
 
 **Two Context Systems:**
@@ -150,6 +156,7 @@ src/app/
    - Integrates with localStorage for persistence
 
 2. **conversation/** - Conversation Context
+
    ```
    ├── ConversationContext.tsx  # Provider and useConversation() hook
    ├── actions.ts               # Conversation actions
