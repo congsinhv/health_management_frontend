@@ -131,8 +131,15 @@ src/app/
    - `tab.tsx`, `heartbeat.tsx`, `history.tsx`
    - Custom SVG components generated with SVGR
 
-9. **practice/** - Practice Plan Feature (Phase 2)
+9. **practice/** - Practice Plan Feature (Phase 2-3)
    - `BasicInfoSection.tsx` - Basic health info form with pre-fill
+   - `ScheduleSection/` - Schedule configuration components (Phase 3)
+     - `index.tsx` - Main schedule section with mode toggle
+     - `DayPicker.tsx` - Day selection with circular buttons
+     - `FlexibleMode.tsx` - Per-day time period configuration
+     - `FixedMode.tsx` - Single time period for all days
+     - `TimePeriodInput.tsx` - Time input with validation and duration calculation
+     - `ScheduleSection.test.tsx` - Unit tests for schedule components
    - `index.ts` - Barrel export
    - Handles user profile pre-fill, dynamic validation, security lock icons
 
@@ -248,16 +255,16 @@ src/types/
 
 ## File Statistics
 
-| Category                   | Count     | Notes                                                                       |
-| -------------------------- | --------- | --------------------------------------------------------------------------- |
-| Components                 | 100+      | Including ui/, form/, chat/, predict/, layout/, shared/, marketing/, icons/ |
-| Pages                      | 13        | Auth (8) + Dashboard (5)                                                    |
-| Services                   | 8         | API service modules                                                         |
-| Hooks                      | 8         | Custom React hooks                                                          |
-| Contexts                   | 2         | Auth + Conversation                                                         |
-| Type Definition Files      | 11        | Comprehensive type coverage                                                 |
-| Config Files               | 8         | TS, ESLint, Prettier, Tailwind, etc.                                        |
-| **Total TypeScript Files** | **~200+** | Well-organized and modular                                                  |
+| Category                   | Count     | Notes                                                                                  |
+| -------------------------- | --------- | -------------------------------------------------------------------------------------- |
+| Components                 | 105+      | Including ui/, form/, chat/, predict/, layout/, shared/, marketing/, icons/, practice/ |
+| Pages                      | 13        | Auth (8) + Dashboard (5)                                                               |
+| Services                   | 8         | API service modules                                                                    |
+| Hooks                      | 8         | Custom React hooks                                                                     |
+| Contexts                   | 2         | Auth + Conversation                                                                    |
+| Type Definition Files      | 11        | Comprehensive type coverage                                                            |
+| Config Files               | 8         | TS, ESLint, Prettier, Tailwind, etc.                                                   |
+| **Total TypeScript Files** | **~200+** | Well-organized and modular                                                             |
 
 ---
 
@@ -344,6 +351,27 @@ Located in `ui/`:
 - Don't modify directly - use composition
 - All props properly typed with Radix types
 - Consistent with design system
+
+### ScheduleSection Components (Phase 3)
+
+Located in `practice/ScheduleSection/`:
+
+**Architecture Pattern:** Compound Component + Controlled Components
+
+- **ScheduleSection** - Main container with mode toggle (flexible/fixed)
+- **DayPicker** - Circular button selection for days of week
+- **FlexibleMode** - Per-day time period configuration
+- **FixedMode** - Single time period applied to all selected days
+- **TimePeriodInput** - Reusable time input with validation
+
+**Key Features:**
+
+- Mode switching between flexible and fixed scheduling
+- Multi-day selection with visual feedback
+- Dynamic time period management (add/remove)
+- Real-time duration calculation
+- Validation ensuring end time > start time
+- Accessibility with ARIA labels and keyboard navigation
 
 ---
 
@@ -442,6 +470,13 @@ Examples:
 - `PredictionInput` - Health metrics input
 - `PredictionResult` - AI prediction output
 - `HealthInsight` - Individual health insight
+  **practice.ts** - Practice Plan Types
+
+- `PracticeFormData` - Complete form structure
+- `PracticeBasicInfo` - Basic info section data
+- `PracticeSchedule` - Schedule configuration (flexible/fixed modes)
+- `TimePeriod` - Time range with start/end times
+- `UserPracticeProfile` - Pre-fill profile data
 
 **health.ts** - Health Metrics Types
 

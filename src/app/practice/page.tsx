@@ -10,7 +10,7 @@ import { useForm } from 'react-hook-form';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/auth';
 import { userService } from '@/services/user';
-import { BasicInfoSection } from '@/components/practice';
+import { BasicInfoSection, ScheduleSection } from '@/components/practice';
 import { practiceFormSchema } from './validation';
 import type { PracticeFormData } from '@/types/practice';
 
@@ -29,6 +29,8 @@ const PracticePage = () => {
       schedule: {
         mode: 'flexible',
         selectedDays: [],
+        flexiblePeriods: {},
+        fixedPeriod: { startTime: '', endTime: '' },
       },
       sports: {
         predefined: [],
@@ -101,6 +103,9 @@ const PracticePage = () => {
               form={form}
               userProfile={userProfile?.profile || undefined}
             />
+
+            {/* Schedule Section */}
+            <ScheduleSection form={form} />
 
             {/* Submit Button */}
             <div className='mx-auto flex w-[82.5%] items-end justify-end gap-5'>

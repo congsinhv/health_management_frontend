@@ -740,6 +740,23 @@ app/
     │       │   └── ChatMessage
     │       └── ChatInput
     │
+    ├── predict/page.tsx
+    │   └── PredictPage
+    │       ├── HealthMetricsCard
+    │       ├── UserInfoSection
+    │       └── PredictionResultCard
+    │
+    └── practice/page.tsx
+        └── PracticePage
+            ├── BasicInfoSection (Phase 2)
+            ├── ScheduleSection (Phase 3)
+            │   ├── DayPicker
+            │   ├── FlexibleMode
+            │   ├── FixedMode
+            │   └── TimePeriodInput
+            ├── SportsSection
+            └── NotesSection
+    │
     └── ... (other dashboard pages)
 
 root/layout.tsx
@@ -786,6 +803,59 @@ Shared Components (src/components/shared/)
   → Used across features
   → Generic/reusable
 ```
+
+### ScheduleSection Component Architecture (Phase 3)
+
+**Location:** `src/components/practice/ScheduleSection/`
+
+**Architecture Pattern:** Compound Component with Controlled Inputs
+
+**Component Hierarchy:**
+
+```
+ScheduleSection (Main Container)
+  ├── Tabs (Mode Toggle: flexible/fixed)
+  ├── DayPicker (Multi-select day buttons)
+  └── Conditional Mode Rendering
+      ├── FlexibleMode (when mode='flexible')
+      │   ├── Maps selectedDays → Day sections
+      │   ├── TimePeriodInput (per period)
+      │   └── Add Period Button
+      └── FixedMode (when mode='fixed')
+          └── Single TimePeriodInput
+```
+
+**Key Design Decisions:**
+
+- **Controlled Components**: All state managed by React Hook Form
+- **Compound Pattern**: Sub-components work together via props
+- **Conditional Rendering**: Mode switch changes entire UI structure
+- **Reusable TimeInput**: Shared between flexible and fixed modes
+- **Real-time Validation**: Immediate feedback on time conflicts
+- **Accessibility**: ARIA labels, keyboard navigation, screen reader support
+
+**Data Flow:**
+
+```
+Form State (React Hook Form)
+  ↓ watch()
+ScheduleSection
+  ↓ props
+DayPicker / FlexibleMode / FixedMode
+  ↓ callbacks
+TimePeriodInput
+  ↓ onChange
+Back to Form State
+```
+
+**Validation Features:**
+
+- Ensures endTime > startTime
+- Auto-clears invalid end times
+- Calculates duration in real-time
+- Shows visual validation states
+- Validates at least one day selected
+- Prevents overlapping periods per day
 
 ---
 
@@ -916,6 +986,95 @@ UI Updates with user data
 [Background refetch updates cache]
 ```
 
+### Pattern 6: Practice Plan Form with Schedule Configuration (Phase 3)
+
+```
+[PracticePage mounts with ScheduleSection]
+    ↓
+[useForm() initialized with schedule defaults]
+    ├─► mode: 'flexible' (default)
+    ├─► selectedDays: [] (empty array)
+    ├─► flexiblePeriods: {} (empty object)
+    └─► fixedPeriod: { startTime: '', endTime: '' }
+    ↓
+[ScheduleSection renders with form.control]
+    ├─► Mode toggle tabs (flexible/fixed)
+    ├─► DayPicker with circular buttons
+    ├─► Conditional mode rendering
+    └─► Form validation integration
+    ↓
+[User selects days in DayPicker]
+    ├─► onChange updates form.selectedDays
+    ├─► Visual feedback (selected state)
+    ├─► ARIA labels for accessibility
+    └─► Triggers mode component re-render
+    ↓
+[FlexibleMode renders when mode='flexible']
+    ├─► Maps selectedDays to day sections
+    ├─► Each day shows TimePeriodInput components
+    ├─► "Add period" button per day
+    ├─► Dynamic add/remove periods
+    └─► Real-time duration calculation
+    ↓
+[FixedMode renders when mode='fixed']
+    ├─► Single TimePeriodInput for all days
+    ├─► Helper text about multi-day application
+    ├─► No add/remove functionality needed
+    └─► Same validation as flexible mode
+    ↓
+[TimePeriodInput handles time validation]
+    ├─► Ensures endTime > startTime
+    ├─► Auto-clears invalid end times
+    ├─► Calculates duration in real-time
+    ├─► Shows visual validation states
+    └─► Supports add/remove in flexible mode
+    ↓
+[Form submission with Zod validation]
+    ├─► Validates selectedDays.length > 0
+    ├─► Validates time periods format
+    ├─► Ensures no overlapping periods per day
+    └─► Returns structured schedule data
+```
+
+### Pattern 5: Practice Plan Form with Pre-fill (Phase 2)
+
+```
+[PracticePage mounts]
+    ↓
+[useAuth() checks authentication]
+    ↓
+[useQuery('userProfile', userId) called]
+    ├─► Fetches user profile for pre-fill
+    └─► StaleTime: 5 minutes
+    ↓
+[useForm() initialized with default values]
+    ├─► basicInfo: { height: undefined, weight: undefined, targetWeight: 0 }
+    ├─► schedule: { mode: 'flexible', selectedDays: [] }
+    ├─► sports: { predefined: [], custom: [] }
+    └─► notes: { personal: '', healthWarnings: '' }
+    ↓
+[useEffect() watches userProfile load]
+    ├─► If profile.height_cm → setValue('basicInfo.height')
+    ├─► If profile.weight_kg → setValue('basicInfo.weight')
+    ├─► If profile.goal → setValue('basicInfo.goal')
+    └─► Fields show lock icon if pre-filled
+    ↓
+[User interacts with BasicInfoSection]
+    ├─► Pre-filled fields show lock icon
+    ├─► "From your profile" helper text
+    ├─► Target weight validates based on goal
+    │   ├─► If goal='gain': target > current
+    │   ├─► If goal='lose': target < current
+    │   └─► If goal='maintain': target ≈ current (±1kg)
+    └─► Real-time validation messages
+    ↓
+[User submits form]
+    ├─► Zod schema validation (client-side)
+    ├─► If valid: setIsSubmitting(true)
+    ├─► TODO: API integration (Phase 5)
+    └─► On error: show toast notification
+```
+
 ---
 
 ## Routing Architecture
@@ -937,6 +1096,8 @@ src/app/(dashboard)/
   ├── dashboard/page.tsx       → /dashboard
   ├── profile/page.tsx         → /profile
   ├── chatbox/page.tsx         → /chatbox
+  ├── predict/page.tsx         → /predict
+  ├── practice/page.tsx        → /practice (Phase 2)
   └── layout.tsx               → Dashboard layout
 
 src/app/
