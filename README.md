@@ -225,11 +225,6 @@ bun run start
 
 Comprehensive documentation is available in the `/docs` directory:
 
-- **[Project Overview & PDR](docs/project-overview-pdr.md)** - Project requirements and specifications
-- **[System Architecture](docs/system-architecture.md)** - Technical architecture and design patterns
-- **[Codebase Summary](docs/codebase-summary.md)** - Detailed codebase analysis
-- **[Code Standards](docs/code-standards.md)** - Development guidelines and best practices
-
 ## 🧪 Development Guidelines
 
 ### Code Quality
@@ -261,49 +256,8 @@ Comprehensive documentation is available in the `/docs` directory:
 - **API security**: JWT authentication with refresh token rotation
 - **Environment variables**: No secrets in client-side code
 
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch (`feature/amazing-feature`)
-3. Commit your changes (`feat: add amazing feature`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🆘 Support
-
-- **Documentation**: Check the `/docs` directory for comprehensive guides
-- **Issues**: Report bugs and request features via GitHub Issues
-- **Discussions**: Join community discussions for questions and ideas
-
-## 🗺️ Roadmap
-
-### Phase 1: Foundation ✅
-
-- [x] Authentication system
-- [x] User profile management
-- [x] Basic health tracking
-- [x] Dashboard implementation
-
-### Phase 2: Enhancement 🚧
-
-- [x] AI-powered chat assistant
-- [x] Advanced health metrics
-- [ ] Mobile responsiveness improvements
-- [ ] Data visualization enhancements
-
-### Phase 3: Scaling 📋
-
-- [ ] Advanced analytics and reporting
-- [ ] Healthcare provider integration
-- [ ] Wearable device synchronization
-- [ ] Premium features and subscriptions
-
----
-
-**Built with ❤️ for better health management**
 
 _Last Updated: November 2025_
