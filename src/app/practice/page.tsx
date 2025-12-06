@@ -6,13 +6,14 @@ import WorkoutMain from '@/app/practice/practiceMain';
 import Nutrition from '@/app/eat/page';
 
 import { Button } from '@/components/ui/button';
+import Header from '@/components/layout/Header';
 
 export default function PracticePage() {
   const [activeTab, setActiveTab] = useState('workout');
 
   return (
     <div className='min-h-screen bg-gray-50'>
-      <header className='border-b bg-white dark:bg-gray-800'>
+      {/* <header className='border-b bg-white dark:bg-gray-800'>
         <div className='container mx-auto flex h-16 items-center justify-between px-4'>
           <div className='flex items-center space-x-2'>
             <div className='h-8 w-8 rounded-full bg-gradient-to-r from-blue-500 to-emerald-500'></div>
@@ -55,7 +56,8 @@ export default function PracticePage() {
             Logout
           </Button>
         </div>
-      </header>
+      </header> */}
+      <Header className='sticky top-0 left-0 z-50 w-full' />
 
       <div className='mx-auto max-w-5xl px-4 py-12'>
         <h1 className='mb-4 text-4xl font-bold text-gray-800'>

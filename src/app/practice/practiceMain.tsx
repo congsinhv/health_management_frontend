@@ -14,6 +14,18 @@ import {
   Edit,
 } from 'lucide-react';
 
+interface TimeSlot {
+  id: number;
+  startTime: string;
+  endTime: string;
+  availableHours: string;
+}
+
+interface DaySchedule {
+  day: string;
+  timeSlots: TimeSlot[];
+}
+
 interface Exercise {
   id: number;
   type: string;
@@ -26,11 +38,8 @@ interface FormData {
   weight: string;
   goalWeight: string;
   goal: string;
-  selectedDays: string[];
+  daySchedules: DaySchedule[];
   selectedSports: string[];
-  startTime: string;
-  endTime: string;
-  availableHours: string;
   exercises: Exercise[];
   notes: string;
   healthConstraints: string;
@@ -45,11 +54,13 @@ export default function WorkoutPlanForm() {
     weight: '70',
     goalWeight: '65',
     goal: 'Giảm cân',
-    selectedDays: ['Thứ 2', 'Thứ 4', 'Thứ 6'],
+    daySchedules: [
+      {
+        day: 'Thứ 2',
+        timeSlots: [{ id: 1, startTime: '06:00', endTime: '07:30', availableHours: '1.5' }],
+      },
+    ],
     selectedSports: ['Cardio', 'Tạ'],
-    startTime: '06:00',
-    endTime: '07:30',
-    availableHours: '1.5',
     exercises: [],
     notes: '',
     healthConstraints: '',
@@ -82,11 +93,77 @@ export default function WorkoutPlanForm() {
   };
 
   const toggleDay = (day: string) => {
+    setFormData(prev => {
+      const existingSchedule = prev.daySchedules.find(ds => ds.day === day);
+      
+      if (existingSchedule) {
+        // Remove day
+        return {
+          ...prev,
+          daySchedules: prev.daySchedules.filter(ds => ds.day !== day),
+        };
+      } else {
+        // Add day with default time slot
+        return {
+          ...prev,
+          daySchedules: [
+            ...prev.daySchedules,
+            {
+              day,
+              timeSlots: [
+                { id: Date.now(), startTime: '06:00', endTime: '07:30', availableHours: '1.5' },
+              ],
+            },
+          ],
+        };
+      }
+    });
+  };
+
+  const addTimeSlot = (day: string) => {
     setFormData(prev => ({
       ...prev,
-      selectedDays: prev.selectedDays.includes(day)
-        ? prev.selectedDays.filter(d => d !== day)
-        : [...prev.selectedDays, day],
+      daySchedules: prev.daySchedules.map(ds =>
+        ds.day === day
+          ? {
+              ...ds,
+              timeSlots: [
+                ...ds.timeSlots,
+                { id: Date.now(), startTime: '18:00', endTime: '19:30', availableHours: '1.5' },
+              ],
+            }
+          : ds
+      ),
+    }));
+  };
+
+  const removeTimeSlot = (day: string, slotId: number) => {
+    setFormData(prev => ({
+      ...prev,
+      daySchedules: prev.daySchedules.map(ds =>
+        ds.day === day
+          ? {
+              ...ds,
+              timeSlots: ds.timeSlots.filter(slot => slot.id !== slotId),
+            }
+          : ds
+      ),
+    }));
+  };
+
+  const updateTimeSlot = (day: string, slotId: number, field: string, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      daySchedules: prev.daySchedules.map(ds =>
+        ds.day === day
+          ? {
+              ...ds,
+              timeSlots: ds.timeSlots.map(slot =>
+                slot.id === slotId ? { ...slot, [field]: value } : slot
+              ),
+            }
+          : ds
+      ),
     }));
   };
 
@@ -174,6 +251,14 @@ export default function WorkoutPlanForm() {
     ).toFixed(1);
   };
 
+  const getTotalTrainingDays = () => {
+    return formData.daySchedules.length;
+  };
+
+  const getTotalTimeSlots = () => {
+    return formData.daySchedules.reduce((total, ds) => total + ds.timeSlots.length, 0);
+  };
+
   // Step 1: Nhập thông tin
   if (step === 1) {
     return (
@@ -259,12 +344,12 @@ export default function WorkoutPlanForm() {
             <div className='rounded-2xl bg-white p-6 shadow-lg'>
               <h2 className='mb-4 flex items-center gap-2 text-xl font-bold text-gray-800'>
                 <Calendar className='h-5 w-5 text-blue-600' />
-                Thời gian tập luyện
+                Lịch tập luyện trong tuần
               </h2>
 
               <div className='mb-4'>
                 <label className='mb-3 block text-sm font-medium text-gray-700'>
-                  Ngày tập trong tuần <span className='text-red-500'>*</span>
+                  Chọn ngày tập <span className='text-red-500'>*</span>
                 </label>
                 <div className='flex flex-wrap gap-2'>
                   {daysOfWeek.map(day => (
@@ -273,7 +358,7 @@ export default function WorkoutPlanForm() {
                       type='button'
                       onClick={() => toggleDay(day)}
                       className={`rounded-lg px-4 py-2 font-medium transition ${
-                        formData.selectedDays.includes(day)
+                        formData.daySchedules.some(ds => ds.day === day)
                           ? 'bg-blue-600 text-white shadow-md'
                           : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                       }`}
@@ -284,50 +369,124 @@ export default function WorkoutPlanForm() {
                 </div>
               </div>
 
-              <div className='grid grid-cols-1 gap-4 md:grid-cols-3'>
-                <div>
-                  <label className='mb-2 block flex items-center gap-2 text-sm font-medium text-gray-700'>
-                    <Clock className='h-4 w-4' />
-                    Thời gian bắt đầu <span className='text-red-500'>*</span>
-                  </label>
-                  <input
-                    type='time'
-                    value={formData.startTime}
-                    onChange={e =>
-                      handleInputChange('startTime', e.target.value)
-                    }
-                    className='w-full rounded-lg border border-blue-300 bg-blue-50 px-4 py-3 transition focus:border-transparent focus:ring-2 focus:ring-blue-500'
-                  />
-                </div>
-                <div>
-                  <label className='mb-2 block flex items-center gap-2 text-sm font-medium text-gray-700'>
-                    <Clock className='h-4 w-4' />
-                    Thời gian kết thúc <span className='text-red-500'>*</span>
-                  </label>
-                  <input
-                    type='time'
-                    value={formData.endTime}
-                    onChange={e => handleInputChange('endTime', e.target.value)}
-                    className='w-full rounded-lg border border-blue-300 bg-blue-50 px-4 py-3 transition focus:border-transparent focus:ring-2 focus:ring-blue-500'
-                  />
-                </div>
-                <div>
-                  <label className='mb-2 block text-sm font-medium text-gray-700'>
-                    Thời gian rảnh (giờ/ngày){' '}
-                    <span className='text-red-500'>*</span>
-                  </label>
-                  <input
-                    type='number'
-                    step='0.5'
-                    value={formData.availableHours}
-                    onChange={e =>
-                      handleInputChange('availableHours', e.target.value)
-                    }
-                    className='w-full rounded-lg border border-blue-300 bg-blue-50 px-4 py-3 transition focus:border-transparent focus:ring-2 focus:ring-blue-500'
-                    placeholder='1.5'
-                  />
-                </div>
+              {/* Time slots for each selected day */}
+              <div className='space-y-4'>
+                {formData.daySchedules.map(daySchedule => (
+                  <div
+                    key={daySchedule.day}
+                    className='rounded-lg border border-blue-200 bg-blue-50 p-4'
+                  >
+                    <div className='mb-3 flex items-center justify-between'>
+                      <h3 className='font-semibold text-gray-800'>
+                        {daySchedule.day}
+                      </h3>
+                      <button
+                        type='button'
+                        onClick={() => addTimeSlot(daySchedule.day)}
+                        className='flex items-center gap-1 rounded-lg bg-blue-600 px-3 py-1 text-sm text-white transition hover:bg-blue-700'
+                      >
+                        <Plus className='h-4 w-4' />
+                        Thêm khung giờ
+                      </button>
+                    </div>
+
+                    <div className='space-y-3'>
+                      {daySchedule.timeSlots.map((slot, index) => (
+                        <div
+                          key={slot.id}
+                          className='rounded-lg border border-blue-300 bg-white p-3'
+                        >
+                          <div className='mb-2 flex items-center justify-between'>
+                            <span className='text-sm font-medium text-gray-700'>
+                              Khung giờ {index + 1}
+                            </span>
+                            {daySchedule.timeSlots.length > 1 && (
+                              <button
+                                type='button'
+                                onClick={() =>
+                                  removeTimeSlot(daySchedule.day, slot.id)
+                                }
+                                className='text-red-600 transition hover:text-red-700'
+                              >
+                                <Trash2 className='h-4 w-4' />
+                              </button>
+                            )}
+                          </div>
+                          <div className='grid grid-cols-1 gap-3 md:grid-cols-3'>
+                            <div>
+                              <label className='mb-1 block flex items-center gap-1 text-xs font-medium text-gray-700'>
+                                <Clock className='h-3 w-3' />
+                                Bắt đầu
+                              </label>
+                              <input
+                                type='time'
+                                value={slot.startTime}
+                                onChange={e =>
+                                  updateTimeSlot(
+                                    daySchedule.day,
+                                    slot.id,
+                                    'startTime',
+                                    e.target.value
+                                  )
+                                }
+                                className='w-full rounded-lg border border-blue-300 px-3 py-2 text-sm transition focus:border-transparent focus:ring-2 focus:ring-blue-500'
+                              />
+                            </div>
+                            <div>
+                              <label className='mb-1 block flex items-center gap-1 text-xs font-medium text-gray-700'>
+                                <Clock className='h-3 w-3' />
+                                Kết thúc
+                              </label>
+                              <input
+                                type='time'
+                                value={slot.endTime}
+                                onChange={e =>
+                                  updateTimeSlot(
+                                    daySchedule.day,
+                                    slot.id,
+                                    'endTime',
+                                    e.target.value
+                                  )
+                                }
+                                className='w-full rounded-lg border border-blue-300 px-3 py-2 text-sm transition focus:border-transparent focus:ring-2 focus:ring-blue-500'
+                              />
+                            </div>
+                            <div>
+                              <label className='mb-1 block text-xs font-medium text-gray-700'>
+                                Thời gian (giờ)
+                              </label>
+                              <input
+                                type='number'
+                                step='0.5'
+                                value={slot.availableHours}
+                                onChange={e =>
+                                  updateTimeSlot(
+                                    daySchedule.day,
+                                    slot.id,
+                                    'availableHours',
+                                    e.target.value
+                                  )
+                                }
+                                className='w-full rounded-lg border border-blue-300 px-3 py-2 text-sm transition focus:border-transparent focus:ring-2 focus:ring-blue-500'
+                                placeholder='1.5'
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
               </div>
+
+              {formData.daySchedules.length === 0 && (
+                <div className='rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 p-8 text-center'>
+                  <Calendar className='mx-auto mb-2 h-12 w-12 text-gray-400' />
+                  <p className='text-gray-600'>
+                    Chọn các ngày trong tuần để bắt đầu lập lịch tập
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Môn thể thao */}
@@ -402,7 +561,7 @@ export default function WorkoutPlanForm() {
               <button
                 type='button'
                 onClick={handleSubmitInfo}
-                disabled={isLoading}
+                disabled={isLoading || formData.daySchedules.length === 0}
                 className='flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 px-8 py-3 font-medium text-white shadow-lg transition hover:from-blue-700 hover:to-purple-700 disabled:opacity-50'
               >
                 {isLoading ? (
@@ -484,21 +643,35 @@ export default function WorkoutPlanForm() {
               </div>
 
               <div className='mb-4 rounded-lg bg-blue-50 p-4'>
-                <p className='mb-2 text-sm text-gray-600'>Ngày tập</p>
-                <div className='flex flex-wrap gap-2'>
-                  {formData.selectedDays.map(day => (
-                    <span
-                      key={day}
-                      className='rounded-full bg-blue-600 px-3 py-1 text-sm font-medium text-white'
+                <p className='mb-3 text-sm font-medium text-gray-700'>
+                  Lịch tập trong tuần ({getTotalTrainingDays()} ngày, {getTotalTimeSlots()} khung giờ)
+                </p>
+                <div className='space-y-3'>
+                  {formData.daySchedules.map(daySchedule => (
+                    <div
+                      key={daySchedule.day}
+                      className='rounded-lg border border-blue-200 bg-white p-3'
                     >
-                      {day}
-                    </span>
+                      <p className='mb-2 font-semibold text-blue-600'>
+                        {daySchedule.day}
+                      </p>
+                      <div className='space-y-1'>
+                        {daySchedule.timeSlots.map((slot, index) => (
+                          <div
+                            key={slot.id}
+                            className='flex items-center gap-2 text-sm text-gray-600'
+                          >
+                            <Clock className='h-4 w-4 text-blue-500' />
+                            <span>
+                              Khung {index + 1}: {slot.startTime} - {slot.endTime}{' '}
+                              ({slot.availableHours}h)
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   ))}
                 </div>
-                <p className='mt-3 text-sm text-gray-600'>
-                  Thời gian: {formData.startTime} - {formData.endTime} (
-                  {formData.availableHours}h)
-                </p>
               </div>
 
               <div className='mb-4 rounded-lg bg-green-50 p-4'>
@@ -637,13 +810,13 @@ export default function WorkoutPlanForm() {
               <div>
                 <p className='text-sm text-blue-100'>Ngày tập</p>
                 <p className='text-xl font-bold'>
-                  {formData.selectedDays.length} ngày/tuần
+                  {getTotalTrainingDays()} ngày/tuần
                 </p>
               </div>
               <div>
-                <p className='text-sm text-blue-100'>Thời gian</p>
+                <p className='text-sm text-blue-100'>Khung giờ</p>
                 <p className='text-xl font-bold'>
-                  {formData.availableHours}h/ngày
+                  {getTotalTimeSlots()} khung
                 </p>
               </div>
               <div>
@@ -652,6 +825,41 @@ export default function WorkoutPlanForm() {
                   {formData.exercises.length} bài
                 </p>
               </div>
+            </div>
+          </div>
+
+          {/* Lịch theo ngày */}
+          <div className='rounded-2xl bg-white p-6 shadow-lg'>
+            <h2 className='mb-4 flex items-center gap-2 text-xl font-bold text-gray-800'>
+              <Calendar className='h-5 w-5 text-blue-600' />
+              Lịch tập theo ngày
+            </h2>
+
+            <div className='space-y-4'>
+              {formData.daySchedules.map(daySchedule => (
+                <div
+                  key={daySchedule.day}
+                  className='rounded-xl border border-blue-200 bg-gradient-to-r from-blue-50 to-purple-50 p-4'
+                >
+                  <h3 className='mb-3 text-lg font-bold text-blue-600'>
+                    {daySchedule.day}
+                  </h3>
+                  <div className='space-y-2'>
+                    {daySchedule.timeSlots.map((slot, index) => (
+                      <div
+                        key={slot.id}
+                        className='rounded-lg border border-blue-300 bg-white p-3'
+                      >
+                        <div className='flex items-center gap-2 text-sm font-medium text-gray-700'>
+                          <Clock className='h-4 w-4 text-blue-500' />
+                          Khung {index + 1}: {slot.startTime} - {slot.endTime} (
+                          {slot.availableHours}h)
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
 
