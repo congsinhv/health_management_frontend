@@ -1,8 +1,37 @@
 import { z } from 'zod';
 
+// Accepts HH:mm, HH:mm:ss, or ISO datetime formats
+const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)(?::([0-5]\d))?$/;
+
+const timeSchema = z
+  .string()
+  .transform(val => {
+    // If already ISO format, return as-is
+    if (val.includes('T')) {
+      return val;
+    }
+
+    // Parse HH:mm or HH:mm:ss and convert to ISO string
+    const match = val.match(timeRegex);
+    if (!match) {
+      return val; // Let refine handle invalid format
+    }
+
+    const [, hours, minutes, seconds = '00'] = match;
+    const date = new Date();
+    date.setHours(
+      parseInt(hours, 10),
+      parseInt(minutes, 10),
+      parseInt(seconds, 10),
+      0
+    );
+    return date.toISOString();
+  })
+  .refine(val => !isNaN(Date.parse(val)), { message: 'Invalid time format' });
+
 const timePeriodSchema = z.object({
-  startTime: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/, 'Invalid time'),
-  endTime: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/, 'Invalid time'),
+  startTime: timeSchema,
+  endTime: timeSchema,
 });
 
 export const practiceFormSchema = z.object({

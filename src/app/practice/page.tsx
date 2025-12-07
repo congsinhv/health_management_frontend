@@ -151,10 +151,15 @@ const PracticePage = () => {
               <div className='h-px w-full bg-[#B3B8C3]' />
               <Button
                 type='submit'
-                disabled={submitMutation.isPending}
+                onClick={() => onSubmit(form.getValues())}
+                disabled={
+                  submitMutation.isPending || form.formState.isSubmitting
+                }
                 className='w-full rounded-none bg-black px-17 py-3.25 text-white transition-colors hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50 md:w-auto'
               >
-                {submitMutation.isPending ? 'Đang lưu...' : 'Lưu thiết lập'}
+                {submitMutation.isPending || form.formState.isSubmitting
+                  ? 'Đang lưu...'
+                  : 'Lưu thiết lập'}
               </Button>
             </div>
           </form>
