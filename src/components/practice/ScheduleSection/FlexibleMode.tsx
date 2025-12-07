@@ -1,11 +1,13 @@
 'use client';
 
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import { TimePeriodInput } from './TimePeriodInput';
 import { dayOptions } from '@/app/practice/formHelper';
 import type { TimePeriod } from '@/types/practice';
+
+const DEFAULT_PERIOD: TimePeriod = { startTime: '07:00', endTime: '08:00' };
 
 interface FlexibleModeProps {
   selectedDays: string[];
@@ -20,6 +22,26 @@ export const FlexibleMode = ({
 }: FlexibleModeProps) => {
   const idCounterRef = useRef(0);
   const periodIdsRef = useRef<Record<string, string[]>>({});
+
+  // Initialize default periods for selected days that don't have periods yet
+  useEffect(() => {
+    if (selectedDays.length === 0) return;
+
+    const updatedPeriods = { ...periods };
+    let hasChanges = false;
+
+    for (const day of selectedDays) {
+      if (!updatedPeriods[day] || updatedPeriods[day].length === 0) {
+        updatedPeriods[day] = [{ ...DEFAULT_PERIOD }];
+        hasChanges = true;
+      }
+    }
+
+    if (hasChanges) {
+      onPeriodsChange(updatedPeriods);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedDays]); // Only depend on selectedDays to avoid infinite loops
 
   const getDayLabel = (dayValue: string) =>
     dayOptions.find(d => d.value === dayValue)?.fullName || dayValue;
@@ -42,15 +64,7 @@ export const FlexibleMode = ({
   };
 
   const addPeriod = (day: string) => {
-    // Get existing periods
     const existingPeriods = periods[day] || [];
-
-    // If no periods exist, we need to add the default period first
-    // This ensures the visual default becomes part of the actual state
-    const periodsToUpdate =
-      existingPeriods.length === 0
-        ? [{ startTime: '07:00', endTime: '08:00' }]
-        : existingPeriods;
 
     // Add a new ID for the new period
     if (!periodIdsRef.current[day]) {
@@ -58,12 +72,9 @@ export const FlexibleMode = ({
     }
     periodIdsRef.current[day].push(generateId());
 
-    // Add new period with default times (07:00 - 08:00)
-    const newPeriod = { startTime: '07:00', endTime: '08:00' };
-
     onPeriodsChange({
       ...periods,
-      [day]: [...periodsToUpdate, newPeriod],
+      [day]: [...existingPeriods, { ...DEFAULT_PERIOD }],
     });
   };
 
@@ -73,10 +84,7 @@ export const FlexibleMode = ({
     start: string,
     end: string
   ) => {
-    // Initialize with default period if no periods exist
-    const existingPeriods = periods[day] || [
-      { startTime: '07:00', endTime: '08:00' },
-    ];
+    const existingPeriods = periods[day] || [];
     const dayPeriods = [...existingPeriods];
     dayPeriods[index] = { startTime: start, endTime: end };
     onPeriodsChange({ ...periods, [day]: dayPeriods });
@@ -109,12 +117,11 @@ export const FlexibleMode = ({
   return (
     <div className='space-y-6'>
       {sortedDays.map(day => {
-        // Show default period with times if no periods exist
-        const dayPeriods =
-          periods[day] && periods[day].length > 0
-            ? periods[day]
-            : [{ startTime: '07:00', endTime: '08:00' }];
+        const dayPeriods = periods[day] || [];
         const periodIds = getPeriodIds(day, dayPeriods.length);
+
+        // Skip rendering if no periods (will be initialized by useEffect)
+        if (dayPeriods.length === 0) return null;
 
         return (
           <div
