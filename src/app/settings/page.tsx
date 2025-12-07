@@ -129,7 +129,7 @@ function SettingsContent() {
                   <Label htmlFor='emailNotifications'>
                     Email Notifications
                   </Label>
-                  <p className='text-sm text-gray-600 dark:text-gray-400'>
+                  <p className='text-[0.85rem] text-gray-600 dark:text-gray-400'>
                     Receive health reminders via email
                   </p>
                 </div>
@@ -146,7 +146,7 @@ function SettingsContent() {
               <div className='flex items-center justify-between'>
                 <div>
                   <Label htmlFor='pushNotifications'>Push Notifications</Label>
-                  <p className='text-sm text-gray-600 dark:text-gray-400'>
+                  <p className='text-[0.85rem] text-gray-600 dark:text-gray-400'>
                     Get browser notifications
                   </p>
                 </div>
@@ -163,7 +163,7 @@ function SettingsContent() {
               <div className='flex items-center justify-between'>
                 <div>
                   <Label htmlFor='smsNotifications'>SMS Notifications</Label>
-                  <p className='text-sm text-gray-600 dark:text-gray-400'>
+                  <p className='text-[0.85rem] text-gray-600 dark:text-gray-400'>
                     Receive text message reminders
                   </p>
                 </div>
@@ -193,7 +193,7 @@ function SettingsContent() {
               <div className='flex items-center justify-between'>
                 <div>
                   <Label>Share Data for Research</Label>
-                  <p className='text-sm text-gray-600 dark:text-gray-400'>
+                  <p className='text-[0.85rem] text-gray-600 dark:text-gray-400'>
                     Help improve healthcare through anonymous data sharing
                   </p>
                 </div>
@@ -205,7 +205,7 @@ function SettingsContent() {
               <div className='flex items-center justify-between'>
                 <div>
                   <Label>Analytics & Improvements</Label>
-                  <p className='text-sm text-gray-600 dark:text-gray-400'>
+                  <p className='text-[0.85rem] text-gray-600 dark:text-gray-400'>
                     Help us improve the app with usage analytics
                   </p>
                 </div>
@@ -230,7 +230,7 @@ function SettingsContent() {
             <CardContent className='space-y-4'>
               <div>
                 <h4 className='mb-2 font-medium'>Export Data</h4>
-                <p className='mb-3 text-sm text-gray-600 dark:text-gray-400'>
+                <p className='mb-3 text-[0.85rem] text-gray-600 dark:text-gray-400'>
                   Download all your health data in a portable format
                 </p>
                 <Button variant='outline'>Export All Data</Button>
@@ -239,7 +239,7 @@ function SettingsContent() {
                 <h4 className='mb-2 font-medium text-red-600 dark:text-red-400'>
                   Danger Zone
                 </h4>
-                <p className='mb-3 text-sm text-gray-600 dark:text-gray-400'>
+                <p className='mb-3 text-[0.85rem] text-gray-600 dark:text-gray-400'>
                   Permanently delete your account and all associated data
                 </p>
                 <Button variant='destructive'>Delete Account</Button>

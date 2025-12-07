@@ -20,7 +20,7 @@ const Card = ({ description, image, index }: CardProps) => {
       )}
     >
       {index !== 1 && (
-        <p className='absolute right-0 bottom-0 left-0 z-20 p-4 text-sm font-medium text-white'>
+        <p className='absolute right-0 bottom-0 left-0 z-20 p-4 text-[0.85rem] font-medium text-white'>
           {description}
         </p>
       )}

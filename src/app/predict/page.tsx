@@ -94,7 +94,7 @@ const PredictPage = () => {
             <h2 className='mb-2 text-5xl font-semibold text-gray-900'>
               Điền biểu mẫu sau để dự đoán sức khoẻ
             </h2>
-            <p className='mx-auto max-w-3xl text-sm text-gray-600'>
+            <p className='mx-auto max-w-3xl text-[0.85rem] text-gray-600'>
               Trò chuyện trực tiếp với trợ lý sức khỏe, nhận gợi ý chế độ ăn cá
               nhân hoá và dự đoán nguy cơ thừa cân, béo phì Lorem Ipsum is
               simply dummy text of the printing and typesetting industry. Lorem

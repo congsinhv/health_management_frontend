@@ -22,6 +22,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import Image from 'next/image';
+import Loading from '@/components/loading/Loading';
 
 function LoginContent() {
   const router = useRouter();
@@ -44,6 +45,7 @@ function LoginContent() {
   // State for URL-based messages
   const [urlError, setUrlError] = useState<string | null>(null);
   const [urlSuccess, setUrlSuccess] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   // Redirect to dashboard if already authenticated
   useEffect(() => {
@@ -125,19 +127,17 @@ function LoginContent() {
         {/* Header */}
         <div className='flex items-start justify-between px-12 pt-12'>
           <Logo />
-          <div className='flex items-center gap-3'>
-            <span className='text-xs text-[#657282] italic'>
-              Chưa có tài khoản?
+          <div className='flex items-center gap-2'>
+            <span className='text-[0.85rem] text-[#657282] italic'>
+              Bạn chưa có tài khoản?
             </span>
             <Link href={ROUTES.AUTH.REGISTER}>
               <Button
                 variant='outline'
-                size='default'
-                className='h-9 rounded-full px-6'
+                size='sm'
+                className='h-9 cursor-pointer rounded-full border border-gray-300 bg-white px-4 text-[0.85rem] font-[var(--font-gilroy)] font-medium text-gray-900 transition-all duration-200 hover:border-gray-400 hover:bg-gray-50 active:scale-95 md:h-8 md:px-3'
               >
-                <span className='mt-[3px] text-xs font-medium text-gray-600 italic'>
-                  ĐĂNG KÝ
-                </span>
+                ĐĂNG KÝ
               </Button>
             </Link>
           </div>
@@ -194,7 +194,6 @@ function LoginContent() {
                   )}
                 />
 
-                {/* Password */}
                 <FormField
                   control={form.control}
                   name='password'
@@ -202,12 +201,57 @@ function LoginContent() {
                     <FormItem>
                       <FormLabel>Mật khẩu</FormLabel>
                       <FormControl>
-                        <Input
-                          type='password'
-                          placeholder='Nhập mật khẩu của bạn'
-                          disabled={isFormLoading}
-                          {...field}
-                        />
+                        <div className='relative'>
+                          <Input
+                            type={showPassword ? 'text' : 'password'}
+                            placeholder='Nhập mật khẩu của bạn'
+                            disabled={isFormLoading}
+                            {...field}
+                            className='pr-10'
+                          />
+                          <button
+                            type='button'
+                            onClick={() => setShowPassword(!showPassword)}
+                            className='absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600'
+                            disabled={isFormLoading}
+                          >
+                            {showPassword ? (
+                              <svg
+                                className='h-5 w-5'
+                                fill='none'
+                                stroke='currentColor'
+                                viewBox='0 0 24 24'
+                              >
+                                <path
+                                  strokeLinecap='round'
+                                  strokeLinejoin='round'
+                                  strokeWidth={2}
+                                  d='M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21'
+                                />
+                              </svg>
+                            ) : (
+                              <svg
+                                className='h-5 w-5'
+                                fill='none'
+                                stroke='currentColor'
+                                viewBox='0 0 24 24'
+                              >
+                                <path
+                                  strokeLinecap='round'
+                                  strokeLinejoin='round'
+                                  strokeWidth={2}
+                                  d='M15 12a3 3 0 11-6 0 3 3 0 016 0z'
+                                />
+                                <path
+                                  strokeLinecap='round'
+                                  strokeLinejoin='round'
+                                  strokeWidth={2}
+                                  d='M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z'
+                                />
+                              </svg>
+                            )}
+                          </button>
+                        </div>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -215,7 +259,7 @@ function LoginContent() {
                 />
 
                 {/* Forgot Password Link */}
-                <div className='flex justify-end pt-1 pb-3'>
+                <div className='flex justify-end pt-1 pb-1'>
                   <Link
                     href={ROUTES.AUTH.FORGOT_PASSWORD}
                     className={`text-xs text-[#657282] italic hover:text-[#101828] hover:underline ${
@@ -231,16 +275,13 @@ function LoginContent() {
                   type='submit'
                   variant='gradient'
                   size='lg'
-                  className='w-full'
+                  className='w-full bg-linear-to-l from-cyan-200 via-emerald-400 to-cyan-200'
                   disabled={isFormLoading}
                 >
                   {isFormLoading ? (
-                    <>
-                      <div className='mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent'></div>
-                      <span className='font-semibold'>Đang đăng nhập...</span>
-                    </>
+                    <Loading></Loading>
                   ) : (
-                    <span className='font-semibold'>Đăng nhập</span>
+                    <span className='text-[1rem] font-semibold'>ĐĂNG NHẬP</span>
                   )}
                 </Button>
               </form>

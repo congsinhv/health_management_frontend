@@ -75,7 +75,7 @@ const MetricCard: React.FC<MetricCardProps> = ({
         <div className='pl-4'>
           <p className='font-semibold text-gray-900'>{label}</p>
           <div className='flex items-baseline gap-1'>
-            <span className='text-sm text-gray-900'>{value}</span>
+            <span className='text-[0.85rem] text-gray-900'>{value}</span>
             <span className='text-gray-600'>{unit}</span>
           </div>
         </div>

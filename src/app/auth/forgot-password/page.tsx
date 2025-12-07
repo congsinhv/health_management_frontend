@@ -76,9 +76,7 @@ export default function ForgotPasswordPage() {
                   size='default'
                   className='h-9 rounded-full px-6'
                 >
-                  <span className='mt-[3px] text-xs font-medium text-gray-600 italic'>
-                    ĐĂNG NHẬP
-                  </span>
+                  ĐĂNG NHẬP
                 </Button>
               </Link>
             </div>
@@ -103,7 +101,7 @@ export default function ForgotPasswordPage() {
                   liên kết đặt lại mật khẩu.
                 </p>
 
-                <p className='mb-8 text-sm text-[#95a1af]'>
+                <p className='mb-8 text-[0.85rem] text-[#95a1af]'>
                   Kiểm tra hộp thư đến và thư mục spam của bạn. Liên kết sẽ hết
                   hạn sau 1 giờ.
                 </p>

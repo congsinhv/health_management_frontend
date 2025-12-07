@@ -167,7 +167,7 @@ function ResendVerificationContent() {
         <CardContent className='space-y-4'>
           {user?.email && (
             <div className='rounded-md border border-blue-200 bg-blue-50 p-3 text-center'>
-              <p className='text-sm text-blue-800'>
+              <p className='text-[0.85rem] text-blue-800'>
                 Email sẽ được gửi đến: <strong>{user.email}</strong>
               </p>
             </div>

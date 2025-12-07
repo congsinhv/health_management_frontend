@@ -23,16 +23,16 @@ const number: NumberCard[] = [
 const NumberInput = () => {
   return (
     <section className='w-full'>
-      <div className='mx-auto flex w-[65%] flex-wrap items-center justify-between gap-4 py-28'>
+      <div className='mx-auto flex w-[65%] flex-wrap items-center justify-between gap-4 py-32'>
         {number.map((item, index) => (
           <div
             className='flex max-w-[190px] flex-col items-center justify-center text-center'
             key={index}
           >
-            <h2 className='text-4xl font-[var(--font-gilroy)] font-semibold'>
+            <h2 className='text-5xl font-[var(--font-gilroy)] font-semibold'>
               {item.value}
             </h2>
-            <p className='text-sm font-[var(--font-gilroy)] text-gray-600'>
+            <p className='text-[0.85rem] font-[var(--font-gilroy)] text-gray-600'>
               {item.description}
             </p>
           </div>

@@ -72,7 +72,7 @@ export default function HealthTrackingPage() {
         <div className='mb-6 flex space-x-1 rounded-lg bg-gray-100 p-1 dark:bg-gray-800'>
           <button
             onClick={() => setActiveTab('vitals')}
-            className={`rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+            className={`rounded-md px-3 py-2 text-[0.85rem] font-medium transition-colors ${
               activeTab === 'vitals'
                 ? 'bg-white text-gray-900 shadow-sm dark:bg-gray-700 dark:text-white'
                 : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'
@@ -82,7 +82,7 @@ export default function HealthTrackingPage() {
           </button>
           <button
             onClick={() => setActiveTab('symptoms')}
-            className={`rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+            className={`rounded-md px-3 py-2 text-[0.85rem] font-medium transition-colors ${
               activeTab === 'symptoms'
                 ? 'bg-white text-gray-900 shadow-sm dark:bg-gray-700 dark:text-white'
                 : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'
@@ -92,7 +92,7 @@ export default function HealthTrackingPage() {
           </button>
           <button
             onClick={() => setActiveTab('medications')}
-            className={`rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+            className={`rounded-md px-3 py-2 text-[0.85rem] font-medium transition-colors ${
               activeTab === 'medications'
                 ? 'bg-white text-gray-900 shadow-sm dark:bg-gray-700 dark:text-white'
                 : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'
@@ -102,7 +102,7 @@ export default function HealthTrackingPage() {
           </button>
           <button
             onClick={() => setActiveTab('lifestyle')}
-            className={`rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+            className={`rounded-md px-3 py-2 text-[0.85rem] font-medium transition-colors ${
               activeTab === 'lifestyle'
                 ? 'bg-white text-gray-900 shadow-sm dark:bg-gray-700 dark:text-white'
                 : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'
@@ -223,7 +223,7 @@ export default function HealthTrackingPage() {
                 <Label htmlFor='notes'>Additional Notes</Label>
                 <textarea
                   id='notes'
-                  className='border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex min-h-[80px] w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50'
+                  className='border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex min-h-[80px] w-full rounded-md border px-3 py-2 text-[0.85rem] focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50'
                   placeholder='Describe the symptom in more detail...'
                 />
               </div>

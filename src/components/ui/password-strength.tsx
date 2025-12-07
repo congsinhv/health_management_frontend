@@ -54,7 +54,7 @@ export function PasswordStrength({ password }: PasswordStrengthProps) {
     <div className='space-y-3'>
       {/* Strength Bar */}
       <div className='space-y-2'>
-        <div className='flex justify-between text-sm'>
+        <div className='flex justify-between text-[0.85rem]'>
           <span className='text-gray-600 dark:text-gray-400'>
             Độ mạnh mật khẩu
           </span>
@@ -85,7 +85,7 @@ export function PasswordStrength({ password }: PasswordStrengthProps) {
           return (
             <div
               key={index}
-              className={`flex items-center space-x-2 text-sm transition-colors ${
+              className={`flex items-center space-x-2 text-[0.85rem] transition-colors ${
                 isValid
                   ? 'text-green-600 dark:text-green-400'
                   : 'text-gray-500 dark:text-gray-400'

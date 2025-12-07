@@ -81,7 +81,7 @@ const PredictionResultCard: React.FC<PredictionResultCardProps> = ({
           <div className='text-2xl text-gray-900'>
             {Math.round(result.confidence)}%
           </div>
-          <div className='text-sm text-gray-600'>Dự đoán</div>
+          <div className='text-[0.85rem] text-gray-600'>Dự đoán</div>
           <div className='text-center text-lg font-bold text-gray-900'>
             {getLevelDisplayText(result.level)}
           </div>
@@ -121,7 +121,7 @@ const PredictionResultCard: React.FC<PredictionResultCardProps> = ({
                 backgroundColor: getReliabilityColor(result.reliability),
               }}
             />
-            <span className='text-sm font-medium'>
+            <span className='text-[0.85rem] font-medium'>
               {result.reliability === 'high' && 'Cao'}
               {result.reliability === 'medium' && 'Trung bình'}
               {result.reliability === 'low' && 'Thấp'}
@@ -130,7 +130,7 @@ const PredictionResultCard: React.FC<PredictionResultCardProps> = ({
         </div>
 
         {/* Description */}
-        <div className='text-sm leading-relaxed text-gray-700'>
+        <div className='text-[0.85rem] leading-relaxed text-gray-700'>
           <p>
             Bạn có kết quả dự đoán là{' '}
             <span className='font-semibold'>

@@ -6,6 +6,7 @@ import { ConversationProvider } from '@/contexts/conversation';
 import { ReactQueryProvider } from '@/lib/react-query';
 import { Toaster } from '@/components/ui/sonner';
 import ChatFloatingButton from '@/components/chat/ChatFloatingButton';
+import NavigationLoader from '@/components/loading/NavigationLoader';
 
 // Gilroy font family configuration
 const gilroy = localFont({
@@ -63,7 +64,10 @@ export default function RootLayout({
         */}
         <ReactQueryProvider>
           <AuthProvider>
-            <ConversationProvider>{children}</ConversationProvider>
+            <ConversationProvider>
+              <NavigationLoader />
+              {children}
+            </ConversationProvider>
           </AuthProvider>
           <Toaster />
           <ChatFloatingButton />

@@ -498,7 +498,7 @@ function DashboardContent() {
       days.push(
         <div
           key={`prev-${i}`}
-          className='py-2 text-center text-sm text-gray-400 dark:text-gray-600'
+          className='py-2 text-center text-[0.85rem] text-gray-400 dark:text-gray-600'
         >
           {prevMonthDays - i}
         </div>
@@ -510,7 +510,7 @@ function DashboardContent() {
       days.push(
         <div
           key={day}
-          className={`cursor-pointer rounded-lg py-2 text-center text-sm transition-all ${
+          className={`cursor-pointer rounded-lg py-2 text-center text-[0.85rem] transition-all ${
             isToday
               ? 'bg-blue-500 font-bold text-white shadow-md'
               : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800'
@@ -589,7 +589,7 @@ function DashboardContent() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className='text-sm text-gray-600 dark:text-gray-400'>
+              <p className='text-[0.85rem] text-gray-600 dark:text-gray-400'>
                 Trạng thái:{' '}
                 {dashboardOverviewData?.key_metrics?.exercise?.status ||
                   'Không có dữ liệu'}
@@ -625,7 +625,7 @@ function DashboardContent() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className='text-sm text-gray-600 dark:text-gray-400'>
+              <p className='text-[0.85rem] text-gray-600 dark:text-gray-400'>
                 {dashboardOverviewData?.key_metrics?.heart_rate?.comment ||
                   'Nhịp tim nghỉ ngơi'}
               </p>
@@ -659,7 +659,7 @@ function DashboardContent() {
             </CardHeader>
             <CardContent>
               <p
-                className={`text-sm ${
+                className={`text-[0.85rem] ${
                   dashboardOverviewData?.key_metrics?.sleep?.status === 'tốt'
                     ? 'text-green-600 dark:text-green-400'
                     : dashboardOverviewData?.key_metrics?.sleep?.status ===
@@ -702,7 +702,7 @@ function DashboardContent() {
             </CardHeader>
             <CardContent>
               <p
-                className={`text-sm ${
+                className={`text-[0.85rem] ${
                   (dashboardOverviewData?.key_metrics?.water?.percentage ||
                     0) >= 80
                     ? 'text-green-600 dark:text-green-400'
@@ -748,7 +748,7 @@ function DashboardContent() {
             <CardContent>
               <div className='grid grid-cols-2 gap-4 md:grid-cols-4'>
                 <div>
-                  <p className='text-sm text-gray-500 dark:text-gray-400'>
+                  <p className='text-[0.85rem] text-gray-500 dark:text-gray-400'>
                     Tuổi
                   </p>
                   <p className='text-lg font-semibold'>
@@ -759,7 +759,7 @@ function DashboardContent() {
                   </p>
                 </div>
                 <div>
-                  <p className='text-sm text-gray-500 dark:text-gray-400'>
+                  <p className='text-[0.85rem] text-gray-500 dark:text-gray-400'>
                     BMI
                   </p>
                   <p className='text-lg font-semibold'>
@@ -782,7 +782,7 @@ function DashboardContent() {
                   </p>
                 </div>
                 <div>
-                  <p className='text-sm text-gray-500 dark:text-gray-400'>
+                  <p className='text-[0.85rem] text-gray-500 dark:text-gray-400'>
                     Hoạt động hôm nay
                   </p>
                   <p className='text-lg font-semibold'>
@@ -796,7 +796,7 @@ function DashboardContent() {
                   </p>
                 </div>
                 <div>
-                  <p className='text-sm text-gray-500 dark:text-gray-400'>
+                  <p className='text-[0.85rem] text-gray-500 dark:text-gray-400'>
                     Mục tiêu
                   </p>
                   <p className='truncate text-lg font-semibold'>
@@ -812,11 +812,11 @@ function DashboardContent() {
                 <div className='mt-4 rounded-lg bg-blue-50 p-3 dark:bg-blue-950'>
                   <div className='mb-1 flex items-center'>
                     <Brain className='mr-2 h-4 w-4 text-blue-500' />
-                    <p className='text-sm font-medium text-blue-900 dark:text-blue-100'>
+                    <p className='text-[0.85rem] font-medium text-blue-900 dark:text-blue-100'>
                       Tóm tắt sức khỏe
                     </p>
                   </div>
-                  <p className='text-sm text-blue-700 dark:text-blue-300'>
+                  <p className='text-[0.85rem] text-blue-700 dark:text-blue-300'>
                     {healthSummaryData.summary}
                   </p>
                 </div>
@@ -927,7 +927,7 @@ function DashboardContent() {
               {/* Hiển thị thông tin activity summary từ API */}
               {timeView === 'weekly' &&
                 dashboardOverviewData?.activity_summary?.weekly && (
-                  <div className='mt-4 text-sm text-gray-600 dark:text-gray-400'>
+                  <div className='mt-4 text-[0.85rem] text-gray-600 dark:text-gray-400'>
                     <div className='grid grid-cols-2 gap-4'>
                       <div>
                         <p className='font-medium'>Tổng thời gian tập:</p>
@@ -955,7 +955,7 @@ function DashboardContent() {
 
               {timeView === 'monthly' &&
                 dashboardOverviewData?.activity_summary?.monthly && (
-                  <div className='mt-4 text-sm text-gray-600 dark:text-gray-400'>
+                  <div className='mt-4 text-[0.85rem] text-gray-600 dark:text-gray-400'>
                     <div className='grid grid-cols-2 gap-4'>
                       <div>
                         <p className='font-medium'>Trung bình tháng:</p>
@@ -1087,7 +1087,7 @@ function DashboardContent() {
                 </ResponsiveContainer>
                 <div className='mt-4 flex items-center justify-between rounded-lg bg-orange-50 p-3 dark:bg-orange-950'>
                   <div>
-                    <p className='text-sm text-gray-600 dark:text-gray-400'>
+                    <p className='text-[0.85rem] text-gray-600 dark:text-gray-400'>
                       Hôm nay
                     </p>
                     <p className='text-2xl font-bold text-orange-600 dark:text-orange-400'>
@@ -1095,7 +1095,7 @@ function DashboardContent() {
                     </p>
                   </div>
                   <div className='text-right'>
-                    <p className='text-sm text-gray-600 dark:text-gray-400'>
+                    <p className='text-[0.85rem] text-gray-600 dark:text-gray-400'>
                       Mục tiêu
                     </p>
                     <p className='text-lg font-semibold text-gray-700 dark:text-gray-300'>
@@ -1132,16 +1132,16 @@ function DashboardContent() {
                             : 'border-blue-500 bg-blue-50 dark:bg-blue-950'
                       }`}
                     >
-                      <h4 className='mb-1 text-sm font-semibold text-gray-900 dark:text-white'>
+                      <h4 className='mb-1 text-[0.85rem] font-semibold text-gray-900 dark:text-white'>
                         {suggestion.title}
                       </h4>
-                      <p className='text-sm text-gray-600 dark:text-gray-400'>
+                      <p className='text-[0.85rem] text-gray-600 dark:text-gray-400'>
                         {suggestion.message}
                       </p>
                     </div>
                   ))
                 ) : (
-                  <p className='text-sm text-gray-600 dark:text-gray-400'>
+                  <p className='text-[0.85rem] text-gray-600 dark:text-gray-400'>
                     Không có đề xuất nào vào lúc này.
                   </p>
                 )}
@@ -1165,7 +1165,7 @@ function DashboardContent() {
               <CardContent className='space-y-3'>
                 <div className='rounded-lg bg-gradient-to-r from-blue-50 to-cyan-50 p-4 dark:from-blue-950 dark:to-cyan-950'>
                   <div className='mb-3 flex items-center justify-between'>
-                    <p className='text-sm font-medium text-gray-900 dark:text-white'>
+                    <p className='text-[0.85rem] font-medium text-gray-900 dark:text-white'>
                       Điểm sức khỏe tổng thể
                     </p>
                     <span
@@ -1181,7 +1181,7 @@ function DashboardContent() {
                       {dashboardOverviewData?.health_score?.overall || 0}/100
                     </span>
                   </div>
-                  <p className='mt-2 text-sm text-gray-600 dark:text-gray-400'>
+                  <p className='mt-2 text-[0.85rem] text-gray-600 dark:text-gray-400'>
                     {dashboardOverviewData?.health_score?.status
                       ? `Sức khỏe của bạn đang ở mức "${dashboardOverviewData.health_score.status}".`
                       : 'Không có đủ dữ liệu để đánh giá.'}
@@ -1193,11 +1193,11 @@ function DashboardContent() {
                   <div className='rounded-lg bg-gradient-to-r from-purple-50 to-pink-50 p-4 dark:from-purple-950 dark:to-pink-950'>
                     <div className='mb-2 flex items-center'>
                       <Brain className='mr-2 h-4 w-4 text-purple-500' />
-                      <p className='text-sm font-medium text-purple-900 dark:text-purple-100'>
+                      <p className='text-[0.85rem] font-medium text-purple-900 dark:text-purple-100'>
                         📊 Tổng kết AI
                       </p>
                     </div>
-                    <p className='text-sm text-purple-700 dark:text-purple-300'>
+                    <p className='text-[0.85rem] text-purple-700 dark:text-purple-300'>
                       {dashboardOverviewData.ai_summary}
                     </p>
                   </div>
@@ -1207,10 +1207,10 @@ function DashboardContent() {
                 {dashboardOverviewData?.quick_tips &&
                   dashboardOverviewData.quick_tips.length > 0 && (
                     <div className='rounded-lg bg-gradient-to-r from-green-50 to-emerald-50 p-4 dark:from-green-950 dark:to-emerald-950'>
-                      <p className='mb-2 text-sm font-medium text-green-900 dark:text-green-100'>
+                      <p className='mb-2 text-[0.85rem] font-medium text-green-900 dark:text-green-100'>
                         💡 Mẹo nhanh cho bạn
                       </p>
-                      <ul className='space-y-2 text-sm text-green-700 dark:text-green-300'>
+                      <ul className='space-y-2 text-[0.85rem] text-green-700 dark:text-green-300'>
                         {dashboardOverviewData.quick_tips
                           .slice(0, 3)
                           .map((tip, index) => (
