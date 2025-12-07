@@ -1,13 +1,12 @@
 'use client';
 
-import Header from '@/components/layout/Header';
-import { Button } from '@/components/ui/button';
-import Star from '@/components/icons/star';
-import Card from '@/components/shared/Card';
 import NumberInput from '@/components/form/NumberInput';
+import Footer from '@/components/layout/Footer';
+import Header from '@/components/layout/Header';
 import FeaturesSection from '@/components/marketing/FeaturesSection';
 import InformationSection from '@/components/marketing/InformationSection';
-import Footer from '@/components/layout/Footer';
+import Card from '@/components/shared/Card';
+import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 
@@ -16,19 +15,19 @@ const gridData = [
     id: 1,
     image: '/healthcare-image1.png',
     description:
-      'Lorem Ipsum is simply  dummy  text of the printing and typesetting industry',
+      'Trợ lý ảo cá nhân hoá giúp bạn xây dựng kế hoạch ăn uống và lối sống phù hợp.',
   },
   {
     id: 2,
     image: '/healthcare_image2.png',
     description:
-      'Lorem Ipsum is simply  dummy  text of the printing and typesetting industry',
+      'Công nghệ AI tiên tiến giúp bạn hiểu rõ cơ thể và đưa ra quyết định sức khỏe chính xác.',
   },
   {
     id: 3,
     image: '/healthcare_image3.png',
     description:
-      'Lorem Ipsum is simply  dummy  text of the printing and typesetting industry',
+      'Cung cấp thông tin và công cụ hỗ trợ để bạn duy trì lối sống lành mạnh và cân bằng.',
   },
 ];
 
@@ -45,7 +44,7 @@ export default function LandingPage() {
 
       {/* Hero Section */}
       <div className='grid w-full grid-cols-14 gap-4 px-4'>
-        <div className='col-span-14 h-[55vh] rounded-2xl bg-linear-to-l from-emerald-400 via-cyan-300 to-emerald-500 opacity-80'>
+        <div className='col-span-14 h-[55vh] rounded-2xl bg-linear-to-l from-emerald-400 via-cyan-200 to-emerald-300'>
           <div className='flex h-full w-[60%] flex-col items-start justify-center gap-2 pl-16'>
             <h1 className='text-5xl leading-tight font-semibold text-white'>
               Kiểm Soát Cân Nặng <br /> Ăn Lành Mạnh
@@ -58,9 +57,8 @@ export default function LandingPage() {
               onClick={handleChat}
               variant='gradient'
               size='lg'
-              className='h-auto gap-2 bg-white px-6 py-2 font-semibold text-black'
+              className='h-auto gap-2 bg-white px-6 py-2 font-semibold text-black hover:border-gray-400 hover:bg-gray-50'
             >
-              <Star />
               Dự đoán sức khỏe ngay
             </Button>
           </div>
@@ -78,11 +76,11 @@ export default function LandingPage() {
           <div className='relative flex min-h-[200px] w-[24%] shrink-0 flex-col items-start justify-center gap-12 overflow-hidden rounded-2xl bg-linear-to-br from-[#f0fff9] via-[#fff0f7] p-8'>
             <div className='flex h-max w-[90%] flex-col gap-2'>
               <h3 className='font-semibold text-emerald-600'>
-                Lorem Ipsum is simply{' '}
+                Người bạn đồng hành{' '}
               </h3>
-              <p className='text-sm leading-relaxed text-gray-800'>
-                Lorem Ipsum is simply dummy text of the printing and typesetting
-                industry
+              <p className='text-[0.85rem] leading-relaxed text-gray-800'>
+                Người bạn đồng hành đáng tin cậy trong hành trình sức khỏe của
+                bạn.
               </p>
               <div className='relative'>
                 <Image

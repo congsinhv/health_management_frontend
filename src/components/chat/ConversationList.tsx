@@ -107,7 +107,7 @@ export const ConversationList: React.FC<ConversationListProps> = ({
                 placeholder='Tìm kiếm...'
                 value={searchTerm}
                 onChange={e => setSearchTerm(e.target.value)}
-                className='h-8 pl-7 text-sm'
+                className='h-8 pl-7 text-[0.85rem]'
               />
             </div>
           </div>
@@ -204,7 +204,7 @@ const ConversationItem: React.FC<ConversationItemProps> = ({
   return (
     <div
       className={cn(
-        'flex cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors',
+        'flex cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-[0.85rem] transition-colors',
         isActive && 'bg-blue-50 text-blue-600',
         !isActive && 'hover:bg-gray-50'
       )}

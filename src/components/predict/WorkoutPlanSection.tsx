@@ -35,49 +35,49 @@ const WorkoutPlanSection: React.FC<WorkoutPlanSectionProps> = ({
               className='flex flex-col items-center gap-2 rounded-full border border-[#EFEFEF] bg-transparent px-2 py-4 transition duration-300 ease-in-out hover:border-[#1E1E1E] data-[state=active]:bg-[#1E1E1E] data-[state=active]:text-white'
             >
               <span className='text-xs'>Ngày</span>
-              <span className='text-sm'>1</span>
+              <span className='text-[0.85rem]'>1</span>
             </TabsTrigger>
             <TabsTrigger
               value='DAY_2'
               className='flex flex-col items-center gap-2 rounded-full border border-[#EFEFEF] bg-transparent px-2 py-4 transition duration-300 ease-in-out hover:border-[#1E1E1E] data-[state=active]:bg-[#1E1E1E] data-[state=active]:text-white'
             >
               <span className='text-xs'>Ngày</span>
-              <span className='text-sm'>2</span>
+              <span className='text-[0.85rem]'>2</span>
             </TabsTrigger>
             <TabsTrigger
               value='DAY_3'
               className='flex flex-col items-center gap-2 rounded-full border border-[#EFEFEF] bg-transparent px-2 py-4 transition duration-300 ease-in-out hover:border-[#1E1E1E] data-[state=active]:bg-[#1E1E1E] data-[state=active]:text-white'
             >
               <span className='text-xs'>Ngày</span>
-              <span className='text-sm'>3</span>
+              <span className='text-[0.85rem]'>3</span>
             </TabsTrigger>
             <TabsTrigger
               value='DAY_4'
               className='flex flex-col items-center gap-2 rounded-full border border-[#EFEFEF] bg-transparent px-2 py-4 transition duration-300 ease-in-out hover:border-[#1E1E1E] data-[state=active]:bg-[#1E1E1E] data-[state=active]:text-white'
             >
               <span className='text-xs'>Ngày</span>
-              <span className='text-sm'>4</span>
+              <span className='text-[0.85rem]'>4</span>
             </TabsTrigger>
             <TabsTrigger
               value='DAY_5'
               className='flex flex-col items-center gap-2 rounded-full border border-[#EFEFEF] bg-transparent px-2 py-4 transition duration-300 ease-in-out hover:border-[#1E1E1E] data-[state=active]:bg-[#1E1E1E] data-[state=active]:text-white'
             >
               <span className='text-xs'>Ngày</span>
-              <span className='text-sm'>5</span>
+              <span className='text-[0.85rem]'>5</span>
             </TabsTrigger>
             <TabsTrigger
               value='DAY_6'
               className='flex flex-col items-center gap-2 rounded-full border border-[#EFEFEF] bg-transparent px-2 py-4 transition duration-300 ease-in-out hover:border-[#1E1E1E] data-[state=active]:bg-[#1E1E1E] data-[state=active]:text-white'
             >
               <span className='text-xs'>Ngày</span>
-              <span className='text-sm'>6</span>
+              <span className='text-[0.85rem]'>6</span>
             </TabsTrigger>
             <TabsTrigger
               value='DAY_7'
               className='flex flex-col items-center gap-2 rounded-full border border-[#EFEFEF] bg-transparent px-2 py-4 transition duration-300 ease-in-out hover:border-[#1E1E1E] data-[state=active]:bg-[#1E1E1E] data-[state=active]:text-white'
             >
               <span className='text-xs'>Ngày</span>
-              <span className='text-sm'>7</span>
+              <span className='text-[0.85rem]'>7</span>
             </TabsTrigger>
           </TabsList>
         </div>
@@ -87,7 +87,10 @@ const WorkoutPlanSection: React.FC<WorkoutPlanSectionProps> = ({
           <TabsContent key={day} value={`DAY_${day}`}>
             {currentDayPlan && (
               <div className='space-y-1 rounded-xl border-2 border-[#EFEFEF] p-4'>
-                <Badge variant='secondary' className='mb-4 text-sm font-bold'>
+                <Badge
+                  variant='secondary'
+                  className='mb-4 text-[0.85rem] font-bold'
+                >
                   {currentDayPlan.name}
                 </Badge>
                 {currentDayPlan.exercises.map((exercise, index) => (
@@ -109,7 +112,7 @@ interface ExerciseCardProps {
 
 const ExerciseCard: React.FC<ExerciseCardProps> = ({ exercise }) => {
   return (
-    <p className='text-sm leading-relaxed text-[#1E1E1E] before:mr-2 before:text-[#1E1E1E] before:content-["•"]'>
+    <p className='text-[0.85rem] leading-relaxed text-[#1E1E1E] before:mr-2 before:text-[#1E1E1E] before:content-["•"]'>
       {exercise.name}: {exercise.duration} {exercise.unit} ({' '}
       {exercise.description} {exercise.sets ? `${exercise.sets} sets` : ''}{' '}
       {exercise.reps ? `${exercise.reps} reps` : ''} )

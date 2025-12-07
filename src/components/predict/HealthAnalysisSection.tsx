@@ -17,7 +17,7 @@ const HealthAnalysisSection: React.FC<HealthAnalysisSectionProps> = ({
             key={index}
             className='bg-[#F9FAFA] p-4 leading-relaxed text-gray-700 first:rounded-t-xl last:rounded-b-xl'
           >
-            <p className='text-sm'>{paragraph}</p>
+            <p className='text-[0.85rem]'>{paragraph}</p>
           </div>
         ))}
       </div>

@@ -109,7 +109,7 @@ export class ErrorBoundary extends Component<Props, State> {
                   Chi tiết lỗi (chỉ hiển thị trong môi trường phát triển)
                 </summary>
                 <div className='mt-3 space-y-2'>
-                  <p className='text-sm font-semibold text-red-600'>
+                  <p className='text-[0.85rem] font-semibold text-red-600'>
                     {this.state.error.name}: {this.state.error.message}
                   </p>
                   {this.state.error.stack && (
@@ -119,7 +119,7 @@ export class ErrorBoundary extends Component<Props, State> {
                   )}
                   {this.state.errorInfo?.componentStack && (
                     <div className='mt-3'>
-                      <p className='text-sm font-medium text-gray-700'>
+                      <p className='text-[0.85rem] font-medium text-gray-700'>
                         Component Stack:
                       </p>
                       <pre className='overflow-x-auto text-xs text-gray-600'>
@@ -179,7 +179,7 @@ export function ErrorFallback({
         <h3 className='mb-2 text-lg font-semibold text-red-600'>
           Đã xảy ra lỗi
         </h3>
-        <p className='mb-4 text-sm text-gray-600'>{error.message}</p>
+        <p className='mb-4 text-[0.85rem] text-gray-600'>{error.message}</p>
         <Button onClick={resetError} size='sm'>
           Thử lại
         </Button>

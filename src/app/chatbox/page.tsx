@@ -164,7 +164,7 @@ function ChatboxContent() {
                 Xin chào, <br />
                 Tôi có thể giúp gì cho bạn?
               </h1>
-              <p className='mx-auto w-[80%] max-w-[600px] text-sm leading-relaxed text-gray-600'>
+              <p className='mx-auto w-[80%] max-w-[600px] text-[0.85rem] leading-relaxed text-gray-600'>
                 Trò chuyện trực tiếp với trợ lý sức khỏe, nhận gợi ý chế độ ăn
                 cá nhân hóa và dự đoán nguy cơ thừa cân, béo phì
               </p>
@@ -192,7 +192,7 @@ function ChatboxContent() {
             <div className='sticky top-0 z-10 mb-6 flex items-center justify-between border-b border-[#e5e5e5] bg-[#fcfcfc] px-0 py-6'>
               <Button
                 variant='outline'
-                className='hover:svg:rotate-45 hover:svg:transition-transform hover:svg:duration-300 flex cursor-pointer items-center gap-2 rounded-[12px] border border-[rgba(79,209,199,0.3)] bg-[rgba(79,209,199,0.1)] px-5 py-2.5 text-sm font-medium text-[#2c7a7b] backdrop-blur-lg transition-all duration-300 hover:-translate-y-px hover:border-[rgba(79,209,199,0.4)] hover:bg-[rgba(79,209,199,0.2)]'
+                className='hover:svg:rotate-45 hover:svg:transition-transform hover:svg:duration-300 flex cursor-pointer items-center gap-2 rounded-[12px] border border-[rgba(79,209,199,0.3)] bg-[rgba(79,209,199,0.1)] px-5 py-2.5 text-[0.85rem] font-medium text-[#2c7a7b] backdrop-blur-lg transition-all duration-300 hover:-translate-y-px hover:border-[rgba(79,209,199,0.4)] hover:bg-[rgba(79,209,199,0.2)]'
                 onClick={handleNewChat}
               >
                 <X className='h-5 w-5' />
@@ -212,7 +212,7 @@ function ChatboxContent() {
                   <div className='flex w-full max-w-[400px] flex-col gap-3'>
                     <Button
                       variant='outline'
-                      className='cursor-pointer rounded-[8px] border border-[#e5e5e5] bg-white/25 px-5 py-3.5 text-left text-sm text-[#1e1e1e] backdrop-blur-lg transition-all duration-300 hover:translate-y-[-2px] hover:border-[rgba(79,209,199,0.3)] hover:bg-[rgba(79,209,199,0.1)]'
+                      className='cursor-pointer rounded-[8px] border border-[#e5e5e5] bg-white/25 px-5 py-3.5 text-left text-[0.85rem] text-[#1e1e1e] backdrop-blur-lg transition-all duration-300 hover:translate-y-[-2px] hover:border-[rgba(79,209,199,0.3)] hover:bg-[rgba(79,209,199,0.1)]'
                       onClick={() =>
                         handleSuggestionClick(
                           'Dự đoán khả năng thừa cân, béo phì'
@@ -223,7 +223,7 @@ function ChatboxContent() {
                     </Button>
                     <Button
                       variant='outline'
-                      className='cursor-pointer rounded-[8px] border border-[#e5e5e5] bg-white/25 px-5 py-3.5 text-left text-sm text-[#1e1e1e] backdrop-blur-lg transition-all duration-300 hover:translate-y-[-2px] hover:border-[rgba(79,209,199,0.3)] hover:bg-[rgba(79,209,199,0.1)]'
+                      className='cursor-pointer rounded-[8px] border border-[#e5e5e5] bg-white/25 px-5 py-3.5 text-left text-[0.85rem] text-[#1e1e1e] backdrop-blur-lg transition-all duration-300 hover:translate-y-[-2px] hover:border-[rgba(79,209,199,0.3)] hover:bg-[rgba(79,209,199,0.1)]'
                       onClick={() =>
                         handleSuggestionClick('Gợi ý chế độ ăn cá nhân hóa')
                       }
@@ -320,7 +320,7 @@ function ChatboxContent() {
               </div>
             </div>
             {qaError && currentConversation && (
-              <div className='mt-2 rounded-[8px] border border-[rgba(239,68,68,0.2)] bg-[rgba(239,68,68,0.1)] px-4 py-3 text-center text-sm text-[#dc2626]'>
+              <div className='mt-2 rounded-[8px] border border-[rgba(239,68,68,0.2)] bg-[rgba(239,68,68,0.1)] px-4 py-3 text-center text-[0.85rem] text-[#dc2626]'>
                 {qaError}
               </div>
             )}

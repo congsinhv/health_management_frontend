@@ -31,7 +31,7 @@ const InformationSection = () => {
         <h2 className='text-4xl leading-tight font-semibold md:text-4xl'>
           Sống Khỏe Mỗi Ngày
         </h2>
-        <p className='text-sm leading-relaxed'>
+        <p className='text-[0.85rem] leading-relaxed'>
           Nền tảng sử dụng thuật toán học máy đã thẩm định nội bộ, hiệu năng đo
           bằng AUC/F1 (≥ ghi số thực tế của bạn) và được đối chiếu bởi đội ngũ
           chuyên môn. Chúng tôi khuyến cáo người dùng kiểm tra định kỳ các chỉ

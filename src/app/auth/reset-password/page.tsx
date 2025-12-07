@@ -214,9 +214,7 @@ function ResetPasswordContent() {
                   size='default'
                   className='h-9 rounded-full px-6'
                 >
-                  <span className='mt-[3px] text-xs font-medium text-gray-600 italic'>
-                    ĐĂNG NHẬP
-                  </span>
+                  ĐĂNG NHẬP
                 </Button>
               </Link>
             </div>

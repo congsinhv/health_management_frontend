@@ -139,7 +139,7 @@ export const ConversationSwitcher: React.FC<ConversationSwitcherProps> = ({
               <div className='text-muted-foreground p-4 text-center'>
                 {searchTerm ? (
                   <>
-                    <p className='text-sm'>
+                    <p className='text-[0.85rem]'>
                       Không tìm thấy cuộc trò chuyện nào
                     </p>
                     <p className='mt-1 text-xs'>
@@ -148,7 +148,9 @@ export const ConversationSwitcher: React.FC<ConversationSwitcherProps> = ({
                   </>
                 ) : (
                   <>
-                    <p className='text-sm'>Chưa có cuộc trò chuyện nào</p>
+                    <p className='text-[0.85rem]'>
+                      Chưa có cuộc trò chuyện nào
+                    </p>
                     <p className='mt-1 text-xs'>
                       Bắt đầu trò chuyện để thấy lịch sử
                     </p>

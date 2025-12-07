@@ -37,7 +37,7 @@ const RatioField = (props: RatioFieldProps) => {
               onChange={e => props.onChange && props.onChange(e.target.value)}
               className='h-4 w-4 cursor-pointer accent-teal-600 focus:ring-2 focus:ring-teal-600 focus:ring-offset-2 focus:outline-none'
             />
-            <span className='text-sm font-normal text-slate-700 group-hover:text-teal-600'>
+            <span className='text-[0.85rem] font-normal text-slate-700 group-hover:text-teal-600'>
               {option.label}
             </span>
           </label>

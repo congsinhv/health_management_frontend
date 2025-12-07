@@ -74,7 +74,7 @@ export function Navigation() {
         </nav>
         <div className='flex items-center space-x-4'>
           {user && (
-            <span className='text-sm text-gray-600 dark:text-gray-300'>
+            <span className='text-[0.85rem] text-gray-600 dark:text-gray-300'>
               Welcome, {user.firstName}!
             </span>
           )}

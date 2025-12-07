@@ -33,49 +33,49 @@ const DietPlanSection: React.FC<DietPlanSectionProps> = ({ dietPlan }) => {
               className='flex flex-col items-center gap-2 rounded-full border border-[#EFEFEF] bg-transparent px-2 py-4 transition duration-300 ease-in-out hover:border-[#1E1E1E] data-[state=active]:bg-[#1E1E1E] data-[state=active]:text-white'
             >
               <span className='text-xs'>Ngày</span>
-              <span className='text-sm'>1</span>
+              <span className='text-[0.85rem]'>1</span>
             </TabsTrigger>
             <TabsTrigger
               value='DAY_2'
               className='flex flex-col items-center gap-2 rounded-full border border-[#EFEFEF] bg-transparent px-2 py-4 transition duration-300 ease-in-out hover:border-[#1E1E1E] data-[state=active]:bg-[#1E1E1E] data-[state=active]:text-white'
             >
               <span className='text-xs'>Ngày</span>
-              <span className='text-sm'>2</span>
+              <span className='text-[0.85rem]'>2</span>
             </TabsTrigger>
             <TabsTrigger
               value='DAY_3'
               className='flex flex-col items-center gap-2 rounded-full border border-[#EFEFEF] bg-transparent px-2 py-4 transition duration-300 ease-in-out hover:border-[#1E1E1E] data-[state=active]:bg-[#1E1E1E] data-[state=active]:text-white'
             >
               <span className='text-xs'>Ngày</span>
-              <span className='text-sm'>3</span>
+              <span className='text-[0.85rem]'>3</span>
             </TabsTrigger>
             <TabsTrigger
               value='DAY_4'
               className='flex flex-col items-center gap-2 rounded-full border border-[#EFEFEF] bg-transparent px-2 py-4 transition duration-300 ease-in-out hover:border-[#1E1E1E] data-[state=active]:bg-[#1E1E1E] data-[state=active]:text-white'
             >
               <span className='text-xs'>Ngày</span>
-              <span className='text-sm'>4</span>
+              <span className='text-[0.85rem]'>4</span>
             </TabsTrigger>
             <TabsTrigger
               value='DAY_5'
               className='flex flex-col items-center gap-2 rounded-full border border-[#EFEFEF] bg-transparent px-2 py-4 transition duration-300 ease-in-out hover:border-[#1E1E1E] data-[state=active]:bg-[#1E1E1E] data-[state=active]:text-white'
             >
               <span className='text-xs'>Ngày</span>
-              <span className='text-sm'>5</span>
+              <span className='text-[0.85rem]'>5</span>
             </TabsTrigger>
             <TabsTrigger
               value='DAY_6'
               className='flex flex-col items-center gap-2 rounded-full border border-[#EFEFEF] bg-transparent px-2 py-4 transition duration-300 ease-in-out hover:border-[#1E1E1E] data-[state=active]:bg-[#1E1E1E] data-[state=active]:text-white'
             >
               <span className='text-xs'>Ngày</span>
-              <span className='text-sm'>6</span>
+              <span className='text-[0.85rem]'>6</span>
             </TabsTrigger>
             <TabsTrigger
               value='DAY_7'
               className='flex flex-col items-center gap-2 rounded-full border border-[#EFEFEF] bg-transparent px-2 py-4 transition duration-300 ease-in-out hover:border-[#1E1E1E] data-[state=active]:bg-[#1E1E1E] data-[state=active]:text-white'
             >
               <span className='text-xs'>Ngày</span>
-              <span className='text-sm'>7</span>
+              <span className='text-[0.85rem]'>7</span>
             </TabsTrigger>
           </TabsList>
         </div>
@@ -98,10 +98,10 @@ const DietPlanSection: React.FC<DietPlanSectionProps> = ({ dietPlan }) => {
       {/* Recommended Foods */}
       {currentDayPlan?.recommendedFoods && (
         <div className='bg-[#F9FAFA] p-4'>
-          <h4 className='mb-2 text-sm font-semibold text-[#1E1E1E]'>
+          <h4 className='mb-2 text-[0.85rem] font-semibold text-[#1E1E1E]'>
             Loại thực phẩm nên ăn
           </h4>
-          <p className='text-sm text-[#1E1E1E]'>
+          <p className='text-[0.85rem] text-[#1E1E1E]'>
             {currentDayPlan.recommendedFoods}
           </p>
         </div>
@@ -110,10 +110,10 @@ const DietPlanSection: React.FC<DietPlanSectionProps> = ({ dietPlan }) => {
       {/* Foods to Limit */}
       {currentDayPlan?.foodsToLimit && (
         <div className='rounded-b-2xl bg-[#F9FAFA] p-4'>
-          <h4 className='mb-2 text-sm font-semibold text-[#1E1E1E]'>
+          <h4 className='mb-2 text-[0.85rem] font-semibold text-[#1E1E1E]'>
             Loại thực phẩm cần hạn chế
           </h4>
-          <p className='text-sm text-[#1E1E1E]'>
+          <p className='text-[0.85rem] text-[#1E1E1E]'>
             {currentDayPlan.foodsToLimit}
           </p>
         </div>
@@ -139,7 +139,7 @@ const MealColumn: React.FC<MealColumnProps> = ({ title, meals }) => {
       </div>
 
       {/* Meal Items */}
-      <ul className='text-sm text-[#1E1E1E]'>
+      <ul className='text-[0.85rem] text-[#1E1E1E]'>
         {meals.map((meal, index) => (
           <li
             key={index}

@@ -104,7 +104,7 @@ const HeaderVertical = ({
             >
               <AddIcon />
               <p
-                className={`text-sm font-medium transition-all duration-500 ${isExpanded ? 'translate-x-0 opacity-100' : 'pointer-events-none hidden opacity-0'}`}
+                className={`text-[0.85rem] font-medium transition-all duration-500 ${isExpanded ? 'translate-x-0 opacity-100' : 'pointer-events-none hidden opacity-0'}`}
               >
                 Tạo đoạn chat mới
               </p>
@@ -129,7 +129,7 @@ const HeaderVertical = ({
               <div
                 className={`flex flex-col items-start transition-all duration-500 ${isExpanded ? 'translate-x-0 opacity-100' : 'pointer-events-none -translate-x-2.5 opacity-0'}`}
               >
-                <h4 className='text-sm font-medium'>
+                <h4 className='text-[0.85rem] font-medium'>
                   {user?.firstName + ' ' + user?.lastName}
                 </h4>
                 <p className='text-xs font-normal text-gray-600'>

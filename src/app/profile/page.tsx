@@ -338,7 +338,7 @@ function ProfileContent() {
           <h1 className='mb-4 text-5xl font-semibold text-[#1e1e1e] dark:text-white'>
             Thông tin cá nhân
           </h1>
-          <p className='mx-auto max-w-2xl text-sm leading-relaxed text-[#1e1e1e] dark:text-gray-300'>
+          <p className='mx-auto max-w-2xl text-[0.85rem] leading-relaxed text-[#1e1e1e] dark:text-gray-300'>
             Cập nhật thông tin cá nhân và sức khỏe của bạn để nhận được các gợi
             ý chế độ ăn cá nhân hóa và dự đoán nguy cơ sức khỏe phù hợp nhất.
           </p>
@@ -497,7 +497,7 @@ function ProfileContent() {
                                   onChange={e => field.onChange(e.target.value)}
                                   className='[appearance:textfield] pr-10 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none'
                                 />
-                                <span className='absolute top-1/2 right-3 -translate-y-1/2 text-sm text-gray-500 dark:text-gray-400'>
+                                <span className='absolute top-1/2 right-3 -translate-y-1/2 text-[0.85rem] text-gray-500 dark:text-gray-400'>
                                   cm
                                 </span>
                               </div>
@@ -522,7 +522,7 @@ function ProfileContent() {
                                   onChange={e => field.onChange(e.target.value)}
                                   className='[appearance:textfield] pr-10 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none'
                                 />
-                                <span className='absolute top-1/2 right-3 -translate-y-1/2 text-sm text-gray-500 dark:text-gray-400'>
+                                <span className='absolute top-1/2 right-3 -translate-y-1/2 text-[0.85rem] text-gray-500 dark:text-gray-400'>
                                   kg
                                 </span>
                               </div>
@@ -606,7 +606,7 @@ function ProfileContent() {
                       <Button
                         type='submit'
                         size='lg'
-                        className='h-10 min-w-[182px] rounded bg-gradient-to-r from-[#32f6b4] to-[#14b6e2] text-sm font-semibold text-white hover:opacity-90'
+                        className='h-10 min-w-[182px] rounded bg-gradient-to-r from-[#32f6b4] to-[#14b6e2] text-[0.85rem] font-semibold text-white hover:opacity-90'
                         disabled={isSubmitting || form.formState.isSubmitting}
                       >
                         {isSubmitting || form.formState.isSubmitting

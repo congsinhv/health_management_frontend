@@ -215,7 +215,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
                           {children}
                         </code>
                       ) : (
-                        <code className='bg-[rgba(0,0,0,0.06)] font-mono text-[0.875rem] leading-[1.6] text-[#1e1e1e]'>
+                        <code className='bg-[rgba(0,0,0,0.06)] font-mono text-[0.85rem] leading-[1.6] text-[#1e1e1e]'>
                           {children}
                         </code>
                       );

@@ -122,7 +122,7 @@ const PredictionResultPage = () => {
             <h1 className='text-3xl font-bold text-white md:text-4xl'>
               Kết quả dự đoán
             </h1>
-            <p className='mt-2 text-sm text-white md:text-base'>
+            <p className='mt-2 text-[0.85rem] text-white md:text-base'>
               Trò chuyện trực tiếp với trợ lý sức khỏe, nhận gợi ý chế độ ăn{' '}
               <br className='hidden md:block' />
               cá nhân hoá và dự đoán nguy cơ thừa cân, béo phì

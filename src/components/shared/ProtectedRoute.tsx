@@ -4,6 +4,8 @@ import { useEffect, useRef } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/contexts/auth';
 import Header from '@/components/layout/Header';
+import Loading from '../loading/Loading';
+import NavigationLoader from '../loading/NavigationLoader';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -100,15 +102,7 @@ export function ProtectedRoute({
 
   // Show redirect message if not authenticated
   if (!isAuthenticated) {
-    return (
-      <div className='flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-900'>
-        <div className='flex flex-col items-center space-y-4'>
-          <div className='text-lg text-gray-600 dark:text-gray-300'>
-            Đang chuyển hướng đến trang đăng nhập...
-          </div>
-        </div>
-      </div>
-    );
+    return <NavigationLoader />;
   }
 
   return <>{children}</>;
