@@ -24,6 +24,12 @@ const timePeriodSchema = z.object({
   endTime: timeSchema,
 });
 
+// Optional time period that allows empty strings (for when not in use)
+const optionalTimePeriodSchema = z.object({
+  startTime: z.string(),
+  endTime: z.string(),
+});
+
 export const practiceFormSchema = z.object({
   // Basic Info
   basicInfo: z.object({
@@ -36,13 +42,58 @@ export const practiceFormSchema = z.object({
     goal: z.enum(['gain', 'lose', 'maintain']).optional(),
   }),
 
-  // Schedule
-  schedule: z.object({
-    mode: z.enum(['flexible', 'fixed']),
-    selectedDays: z.array(z.string()).min(1, 'Chọn ít nhất 1 ngày'),
-    flexiblePeriods: z.record(z.string(), z.array(timePeriodSchema)).optional(),
-    fixedPeriod: timePeriodSchema.optional(),
-  }),
+  // Schedule - validated conditionally based on mode
+  schedule: z
+    .object({
+      mode: z.enum(['flexible', 'fixed']),
+      selectedDays: z.array(z.string()).min(1, 'Chọn ít nhất 1 ngày'),
+      flexiblePeriods: z
+        .record(z.string(), z.array(timePeriodSchema))
+        .optional(),
+      fixedPeriod: optionalTimePeriodSchema.optional(),
+    })
+    .superRefine((data, ctx) => {
+      if (data.mode === 'fixed') {
+        // Validate fixedPeriod when in fixed mode
+        if (!data.fixedPeriod?.startTime || !data.fixedPeriod?.endTime) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: 'Vui lòng nhập thời gian bắt đầu và kết thúc',
+            path: ['fixedPeriod'],
+          });
+          return;
+        }
+        if (!timeRegex.test(data.fixedPeriod.startTime)) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: 'Invalid time format (HH:mm or HH:mm:ss)',
+            path: ['fixedPeriod', 'startTime'],
+          });
+        }
+        if (!timeRegex.test(data.fixedPeriod.endTime)) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: 'Invalid time format (HH:mm or HH:mm:ss)',
+            path: ['fixedPeriod', 'endTime'],
+          });
+        }
+      } else if (data.mode === 'flexible') {
+        // Validate flexiblePeriods when in flexible mode
+        const periods = data.flexiblePeriods || {};
+        const selectedDays = data.selectedDays || [];
+
+        for (const day of selectedDays) {
+          const dayPeriods = periods[day];
+          if (!dayPeriods || dayPeriods.length === 0) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: `Vui lòng thêm ít nhất 1 khung giờ cho ${day}`,
+              path: ['flexiblePeriods', day],
+            });
+          }
+        }
+      }
+    }),
 
   // Sports
   sports: z.object({
