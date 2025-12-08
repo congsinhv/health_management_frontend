@@ -1,7 +1,7 @@
 'use client';
 
 import { Suspense, useEffect, useState, useRef } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { Resolver } from 'react-hook-form';
@@ -33,6 +33,7 @@ import { ProtectedRoute } from '@/components/shared/ProtectedRoute';
 
 const PracticePageContent = () => {
   const { user } = useAuth();
+  const router = useRouter();
   const queryClient = useQueryClient();
   const searchParams = useSearchParams();
 
@@ -182,6 +183,7 @@ const PracticePageContent = () => {
       toast.success('Đã lưu thiết lập tập luyện!');
       queryClient.invalidateQueries({ queryKey: ['practiceProfile'] });
       queryClient.invalidateQueries({ queryKey: ['userProfile'] });
+      router.push('/profile');
     },
     onError: error => {
       console.error('Submit error:', error);
