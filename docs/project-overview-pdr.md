@@ -135,12 +135,21 @@ Provide accessible, user-friendly health management tools that leverage AI to de
 
 ### 5. Device Management
 
-**Status:** Implemented (Phase 11)
-
 - Users can view a list of their registered devices (e.g., mobile phones, web browsers).
 - Users can delete registered devices from their profile.
 - Integration with notification systems (e.g., FCM) for device registration.
 - Clear indication of device platform (iOS, Android, Web).
+
+---
+
+### 6. Schedule Management
+
+**Status:** Implemented (Phase 11)
+
+- Users can create and manage personalized health schedules.
+- Support for different schedule modes (fixed/flexible) and health goals (gain/lose/maintain).
+- Ability to update the status of individual exercises and overall schedules.
+- Filtering of superseded schedules for a clear view of active plans.
 
 ---
 
@@ -232,6 +241,16 @@ Provide accessible, user-friendly health management tools that leverage AI to de
 2. Users can maintain medication list with schedules
 3. Users can store emergency contact information
 4. Users can manage healthcare provider contacts
+
+#### Schedule Management Module
+
+1. Users can create new health schedules with specific goals (gain, lose, maintain).
+2. Users can define schedule mode (fixed or flexible) and select days of the week.
+3. Users can add exercises to weekly plans, specifying duration, estimated calories, and description.
+4. Users can update the status of individual exercises (pending, completed, skipped, in_progress).
+5. Users can update the overall status of a schedule (active, paused).
+6. Superseded schedules are automatically filtered and not displayed as active.
+7. Users can view a list of all their active and paused schedules.
 
 ### Non-Functional Requirements
 
@@ -531,6 +550,7 @@ Browser/User Interface
 - User-facing device list on profile page.
 - Functionality to remove registered devices.
 - Backend integration for device management operations.
+- Schedule management feature implemented, allowing users to create, view, and update health schedules.
 
 ---
 
@@ -548,11 +568,11 @@ Browser/User Interface
 
 ## Document Control
 
-| Version | Date     | Author       | Changes                             |
-| ------- | -------- | ------------ | ----------------------------------- |
-| 1.0     | Dec 2025 | Docs Manager | Initial PDR creation                |
-| 1.1     | Dec 2025 | Docs Manager | Phase 11: Device Management updates |
-| 1.2     | -        | -            | Pending Phase 2 updates             |
+| Version | Date     | Author       | Changes                               |
+| ------- | -------- | ------------ | ------------------------------------- | --- | --- | --- | --- | ----------------------- |
+| 1.0     | Dec 2025 | Docs Manager | Initial PDR creation                  |
+| 1.1     | Dec 2025 | Docs Manager | Phase 11: Device Management updates   |
+| 1.2     | 251208   | Docs Manager | Phase 11: Schedule Management updates | \n  | 1.3 | -   | -   | Pending Phase 2 updates |
 
 ---
 

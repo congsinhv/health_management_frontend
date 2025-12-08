@@ -1,8 +1,8 @@
 # VHealth - Project Roadmap
 
 **Project:** health_management_frontend
-**Last Updated:** 2025-12-08
-**Version:** 0.1.0
+**Last Updated:** 251208
+**Version:** 0.1.1
 
 ---
 
@@ -198,7 +198,7 @@ VHealth development is organized into three phases, with Phase 1 complete and Ph
 #### Practice Page - Training Preferences ✅
 
 **Status:** Phase 6: Profile Page Device List (Completed - Dec 8, 2025)
-**Last Updated:** 2025-12-08
+**Last Updated:** 251208
 
 - [x] Phase 1: Foundation & Types (Completed)
 - [x] Phase 2: Basic Information Section (Completed - Dec 6, 2025)
@@ -285,6 +285,15 @@ VHealth development is organized into three phases, with Phase 1 complete and Ph
 **Test Coverage:** 90%+ (TypeScript & ESLint validated)
 
 #### Real-Time Streaming 🚧
+
+#### Profile Schedule Section (In Progress 🚧)
+
+**Status:** Phase 1: Types & Service Layer (Completed - Dec 8, 2025)
+**Last Updated:** 251208
+
+- [x] Phase 1: Types & Service Layer (Completed - Dec 8, 2025)
+  - [x] Create schedule types
+  - [x] Implement API service for schedules
 
 **Status:** 30% complete
 **Est. Completion:** January 2025

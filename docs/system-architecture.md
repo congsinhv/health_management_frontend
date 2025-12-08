@@ -72,6 +72,7 @@ Layer 3: Hooks & Context
   ├─── useChat() - Chat state
   ├─── useQuery() - Server state (React Query)
   ├─── useDevices(), useDeleteDevice() - Device management
+  ├─── useSchedules(), useUpdateScheduleStatus() - Schedule management
   └─── useState(), useEffect() - Local state
          │
          ▼
@@ -200,6 +201,7 @@ health.ts    → GET/POST health metrics, goals, etc.
 upload.ts    → POST file uploads, avatars, etc.
 qa.ts        → POST Q&A queries, GET suggestions
 practice.ts  → GET /practice/profile, POST /practice/preferences (Phase 5)
+schedule.ts  → GET /schedules, PATCH /schedules/{id} (Phase 11)
 device.ts    → GET /devices, POST /devices, DELETE /devices/{id} (Phase 6 & 11)
 notification.ts → POST /notifications, GET /notifications (Phase 11, if applicable)
 ```
@@ -316,6 +318,18 @@ device.ts (Phase 6 & 11)
   - Device
   - RegisterDeviceInput
   - DeviceListResponse
+
+schedule.ts (Phase 11)
+  - ExerciseStatus
+  - ScheduleStatus
+  - DayOfWeek
+  - HealthGoal
+  - ScheduleMode
+  - WeeklyExercise
+  - Schedule
+  - ScheduleListResponse
+  - UpdateScheduleStatusRequest
+  - UpdateScheduleStatusResponse
 
 notification.ts (Phase 11, if applicable)
   - Notification
@@ -730,6 +744,25 @@ useMutation({ // Example for Device Management (Phase 11)
 })
   → Handles deletion of a device
   → Invalidates device list to trigger refetch
+
+useQuery({ // Example for Schedule Management (Phase 11)
+  queryKey: ['schedules'],
+  queryFn: () => scheduleService.getSchedules(),
+})
+  → Fetches and caches list of user schedules
+  → Filters out superseded schedules
+  → Automatic background updates
+
+useMutation({ // Example for Schedule Management (Phase 11)
+  mutationFn: ({ id, status }) => scheduleService.updateScheduleStatus(id, status),
+  onSuccess: () => {
+    queryClient.invalidateQueries({
+      queryKey: ['schedules']
+    });
+  },
+})
+  → Handles status update of a schedule
+  → Invalidates schedule list to trigger refetch
 ```
 
 ### Local Component State
@@ -996,6 +1029,11 @@ app/
     │       ├── HealthMetricsCard
     │       ├── UserInfoSection
     │       └── PredictionResultCard
+    │
+    ├── schedule/page.tsx
+    │   └── SchedulePage
+    │       ├── ScheduleList
+    │       └── ScheduleEditor
     │
     └── practice/page.tsx
         └── PracticePage
