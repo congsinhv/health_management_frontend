@@ -7,7 +7,15 @@ import {
   SkipForward,
   Moon,
   LucideIcon,
+  Timer,
+  X,
 } from 'lucide-react';
+
+// Helper to format time from "HH:mm:ss" to "HH:mm"
+const formatTime = (time: string): string => {
+  if (!time) return '';
+  return time.slice(0, 5);
+};
 
 const dayLabels: Record<DayOfWeek, string> = {
   monday: 'T2',
@@ -38,10 +46,15 @@ const statusConfig: Record<
     icon: SkipForward,
     bg: 'bg-gray-100 dark:bg-gray-800',
   },
-  in_progress: {
+  sent: {
     color: 'text-blue-600',
     icon: Play,
     bg: 'bg-blue-50 dark:bg-blue-900/20',
+  },
+  failed: {
+    color: 'text-red-600',
+    icon: X,
+    bg: 'bg-red-50 dark:bg-red-900/20',
   },
 };
 
@@ -110,14 +123,25 @@ export const DayExerciseCard = ({
         >
           {exercise.exercise}
         </p>
-        <div className='mt-1 flex items-center gap-1'>
-          <span className='text-[10px] whitespace-nowrap text-gray-500'>
-            {exercise.duration_minutes}p
-          </span>
-          <span className='text-[10px] text-gray-400'>•</span>
-          <span className='text-[10px] whitespace-nowrap text-gray-500'>
-            {exercise.estimated_calories}kcal
-          </span>
+        <div className='mt-1 space-y-0.5'>
+          {exercise.workout_start_time && exercise.workout_end_time && (
+            <div className='flex items-center gap-1'>
+              <Timer className='h-2.5 w-2.5 text-gray-400' />
+              <span className='text-[10px] whitespace-nowrap text-gray-500'>
+                {formatTime(exercise.workout_start_time)} -{' '}
+                {formatTime(exercise.workout_end_time)}
+              </span>
+            </div>
+          )}
+          <div className='flex items-center gap-1'>
+            <span className='text-[10px] whitespace-nowrap text-gray-500'>
+              {exercise.duration_minutes}p
+            </span>
+            <span className='text-[10px] text-gray-400'>•</span>
+            <span className='text-[10px] whitespace-nowrap text-gray-500'>
+              {exercise.estimated_calories}kcal
+            </span>
+          </div>
         </div>
       </div>
     </div>

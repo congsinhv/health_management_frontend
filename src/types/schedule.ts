@@ -3,7 +3,8 @@ export type ExerciseStatus =
   | 'pending'
   | 'completed'
   | 'skipped'
-  | 'in_progress';
+  | 'failed'
+  | 'sent';
 export type ScheduleStatus = 'active' | 'paused' | 'superseded';
 export type DayOfWeek =
   | 'monday'
@@ -22,6 +23,8 @@ export interface WeeklyExercise {
   duration_minutes: number;
   estimated_calories: number;
   description: string;
+  workout_start_time: string;
+  workout_end_time: string;
   status: ExerciseStatus;
   error_message: string | null;
 }

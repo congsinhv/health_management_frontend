@@ -50,7 +50,7 @@ export const practiceFormSchema = z.object({
       flexiblePeriods: z
         .record(z.string(), z.array(timePeriodSchema))
         .optional(),
-      fixedPeriod: optionalTimePeriodSchema.optional(),
+      fixedPeriod: timePeriodSchema.optional(),
     })
     .superRefine((data, ctx) => {
       if (data.mode === 'fixed') {

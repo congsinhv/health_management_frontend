@@ -297,7 +297,6 @@ const PracticePageContent = () => {
               <div className='h-px w-full bg-[#B3B8C3]' />
               <Button
                 type='submit'
-                onClick={() => onSubmit(form.getValues())}
                 disabled={
                   submitMutation.isPending ||
                   form.formState.isSubmitting ||
