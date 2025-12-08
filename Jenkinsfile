@@ -173,10 +173,81 @@ pipeline {
                         returnStdout: true
                     ).trim()
 
+                    // Fetch Firebase Configuration
+                    env.NEXT_PUBLIC_FIREBASE_API_KEY = sh(
+                        script: """
+                            gcloud secrets versions access latest \
+                                --secret=vhealth-${params.ENVIRONMENT}-firebase-api-key \
+                                --project=${GCP_PROJECT_ID} 2>/dev/null || echo ''
+                        """,
+                        returnStdout: true
+                    ).trim()
+
+                    env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN = sh(
+                        script: """
+                            gcloud secrets versions access latest \
+                                --secret=vhealth-${params.ENVIRONMENT}-firebase-auth-domain \
+                                --project=${GCP_PROJECT_ID} 2>/dev/null || echo ''
+                        """,
+                        returnStdout: true
+                    ).trim()
+
+                    env.NEXT_PUBLIC_FIREBASE_PROJECT_ID = sh(
+                        script: """
+                            gcloud secrets versions access latest \
+                                --secret=vhealth-${params.ENVIRONMENT}-firebase-project-id \
+                                --project=${GCP_PROJECT_ID} 2>/dev/null || echo ''
+                        """,
+                        returnStdout: true
+                    ).trim()
+
+                    env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET = sh(
+                        script: """
+                            gcloud secrets versions access latest \
+                                --secret=vhealth-${params.ENVIRONMENT}-firebase-storage-bucket \
+                                --project=${GCP_PROJECT_ID} 2>/dev/null || echo ''
+                        """,
+                        returnStdout: true
+                    ).trim()
+
+                    env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID = sh(
+                        script: """
+                            gcloud secrets versions access latest \
+                                --secret=vhealth-${params.ENVIRONMENT}-firebase-messaging-sender-id \
+                                --project=${GCP_PROJECT_ID} 2>/dev/null || echo ''
+                        """,
+                        returnStdout: true
+                    ).trim()
+
+                    env.NEXT_PUBLIC_FIREBASE_APP_ID = sh(
+                        script: """
+                            gcloud secrets versions access latest \
+                                --secret=vhealth-${params.ENVIRONMENT}-firebase-app-id \
+                                --project=${GCP_PROJECT_ID} 2>/dev/null || echo ''
+                        """,
+                        returnStdout: true
+                    ).trim()
+
+                    env.NEXT_PUBLIC_FIREBASE_VAPID_KEY = sh(
+                        script: """
+                            gcloud secrets versions access latest \
+                                --secret=vhealth-${params.ENVIRONMENT}-firebase-vapid-key \
+                                --project=${GCP_PROJECT_ID} 2>/dev/null || echo ''
+                        """,
+                        returnStdout: true
+                    ).trim()
+
                     echo "API URL: ${env.NEXT_PUBLIC_API_URL}"
                     echo "Google Client ID: ${env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ? '***' : '(not set)'}"
                     echo "Google Client Secret: ${env.NEXT_PUBLIC_GOOGLE_SECRET ? '***' : '(not set)'}"
                     echo "Google Redirect URI: ${env.NEXT_PUBLIC_GOOGLE_REDIRECT_URI}"
+                    echo "Firebase API Key: ${env.NEXT_PUBLIC_FIREBASE_API_KEY ? '***' : '(not set)'}"
+                    echo "Firebase Auth Domain: ${env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN ? '***' : '(not set)'}"
+                    echo "Firebase Project ID: ${env.NEXT_PUBLIC_FIREBASE_PROJECT_ID ? '***' : '(not set)'}"
+                    echo "Firebase Storage Bucket: ${env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET ? '***' : '(not set)'}"
+                    echo "Firebase Messaging Sender ID: ${env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID ? '***' : '(not set)'}"
+                    echo "Firebase App ID: ${env.NEXT_PUBLIC_FIREBASE_APP_ID ? '***' : '(not set)'}"
+                    echo "Firebase VAPID Key: ${env.NEXT_PUBLIC_FIREBASE_VAPID_KEY ? '***' : '(not set)'}"
                 }
             }
         }
@@ -195,6 +266,13 @@ pipeline {
                             --build-arg NEXT_PUBLIC_GOOGLE_CLIENT_ID='${NEXT_PUBLIC_GOOGLE_CLIENT_ID}' \
                             --build-arg NEXT_PUBLIC_GOOGLE_SECRET='${NEXT_PUBLIC_GOOGLE_SECRET}' \
                             --build-arg NEXT_PUBLIC_GOOGLE_REDIRECT_URI='${NEXT_PUBLIC_GOOGLE_REDIRECT_URI}' \
+                            --build-arg NEXT_PUBLIC_FIREBASE_API_KEY='${NEXT_PUBLIC_FIREBASE_API_KEY}' \
+                            --build-arg NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN='${NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN}' \
+                            --build-arg NEXT_PUBLIC_FIREBASE_PROJECT_ID='${NEXT_PUBLIC_FIREBASE_PROJECT_ID}' \
+                            --build-arg NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET='${NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET}' \
+                            --build-arg NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID='${NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID}' \
+                            --build-arg NEXT_PUBLIC_FIREBASE_APP_ID='${NEXT_PUBLIC_FIREBASE_APP_ID}' \
+                            --build-arg NEXT_PUBLIC_FIREBASE_VAPID_KEY='${NEXT_PUBLIC_FIREBASE_VAPID_KEY}' \
                             --cache-from ${IMAGE_LATEST} \
                             -t ${IMAGE_FULL} \
                             -t ${IMAGE_LATEST} \
