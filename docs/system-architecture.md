@@ -415,28 +415,47 @@ USER LOGGED IN
 | **Storage**          | localStorage (frontend)     | Plan to migrate to httpOnly cookies   |
 | **Secrets**          | Environment variables       | NEXT*PUBLIC*\* for client config only |
 
-### Push Notification Architecture (FCM) (Phase 6)
+### Push Notification Architecture (FCM) (Phase 6-8)
 
 ```
 ┌──────────────────────────────────────────────────────┐
 │         Firebase Cloud Messaging (FCM)               │
 └──────────────────────────────────────────────────────┘
 
-Device Registration Flow:
-  User Install App (iOS/Android/Web)
+Initialization (Phase 8):
+  App loads in browser
     ↓
-  FCM generates unique token
+  Root layout mounts
+    ├─► Checks NEXT_PUBLIC_FIREBASE_* env vars
+    └─► Firebase configuration validated
+    ↓
+  Service worker registration triggered
+    ├─► /firebase-messaging-sw.js registered
+    ├─► Config passed via postMessage()
+    └─► Service worker becomes ready
+    ↓
+  Notification permission requested (on-demand)
+    ├─► Notification.requestPermission() called
+    ├─► User sees system prompt
+    └─► Returns 'granted', 'denied', or 'default'
+
+Device Registration Flow (Phase 6):
+  Permission granted
+    ↓
+  Frontend calls requestNotificationPermission()
+    ├─► getToken(messaging, { vapidKey })
+    └─► Returns FCM device token
     ↓
   Frontend calls deviceService.registerDevice(token, platform)
     ↓
   POST /api/v1/devices/
-    ├─► fcm_token: string
+    ├─► fcm_token: string (from Firebase)
     ├─► platform: 'ios' | 'android' | 'web'
     └─► device_name?: string (e.g., "iPhone 15")
     ↓
   Backend stores Device record with user_id
     ↓
-  Device registered for push notifications
+  Device now eligible for push notifications
 
 Device Management:
   Frontend useDevices() hook
@@ -452,18 +471,128 @@ Device Management:
 Notification Flow (Backend-initiated):
   Backend event triggered (practice reminder, health alert, etc.)
     ↓
-  Query user's registered devices
+  Backend queries user's registered devices
+    ├─► SELECT * FROM devices WHERE user_id = ?
+    └─► Get all fcm_tokens for user
     ↓
-  Send FCM message to device tokens
-    ├─► Title, body, custom data
-    ├─► Device-specific handling
-    └─► Multi-platform support
+  For each device:
+    ├─► Send FCM message via Firebase Admin SDK
+    │   {
+    │     notification: {
+    │       title: "Practice Reminder",
+    │       body: "Time for morning session!"
+    │     },
+    │     data: {
+    │       link: "/practice"
+    │     }
+    │   }
+    └─► Firebase delivers to device
     ↓
-  Device receives push notification
+  If app is open (foreground):
+    ├─► onMessage() handler in app captures it
+    ├─► Shows in-app toast/notification
+    └─► User can dismiss or navigate
     ↓
-  User opens notification or app
+  If app is closed (background):
+    ├─► Service worker receives message
+    ├─► firebase-messaging-sw.js processes
+    ├─► Shows system notification with icon/badge
+    └─► User clicks notification
+        ├─► App opens
+        └─► Routes to specified URL (data.link)
+```
+
+### Progressive Web App (PWA) Architecture (Phase 8)
+
+```
+┌──────────────────────────────────────────────────────┐
+│     Progressive Web App (PWA) Configuration           │
+└──────────────────────────────────────────────────────┘
+
+Installation Support:
+  manifest.json
+    ├─► name: "VHealth - Health Management"
+    ├─► short_name: "VHealth"
+    ├─► start_url: "/"
+    ├─► display: "standalone"
+    ├─► theme_color: "#3B82F6"
+    ├─► background_color: "#ffffff"
+    └─► icons: [72x72, 96x96, 128x128, 144x144, 152x152, 192x192, 384x384, 512x512]
+
+Service Worker Lifecycle:
+  Install Event
+    ├─► Created by next-pwa
+    ├─► Workbox caches core assets
+    └─► Service worker ready
+
+  Activate Event
+    ├─► Old caches cleaned up
+    ├─► Service worker becomes active
+    └─► Handles requests for cached assets
+
+  Request Handling
+    ├─► Network first for API calls
+    ├─► Cache first for static assets
+    ├─► Stale while revalidate for fonts
+    └─► Offline fallback for HTML
+
+Installation Prompt:
+  Browser detects manifest.json
     ↓
-  Frontend displays notification/alert
+  Service worker registered and active
+    ↓
+  Security checks pass:
+    ├─► Valid manifest with icons
+    ├─► Service worker installed
+    ├─► HTTPS enabled (or localhost)
+    └─► Engagement criteria met
+    ↓
+  Browser shows install prompt
+    ├─► Chrome: Address bar popup
+    ├─► Android: Menu option
+    └─► iOS: "Add to home screen"
+    ↓
+  User installs
+    ├─► App shortcuts created
+    ├─► Standalone window opened
+    └─► App works like native app
+
+Offline Functionality:
+  Cached Routes:
+    ├─► / (landing page)
+    ├─► /dashboard
+    ├─► /profile
+    └─► (other pre-cached pages)
+
+  Network Strategy:
+    ├─► API calls: Network first (needs backend)
+    ├─► Static assets: Cache first (CSS, JS)
+    ├─► Fonts: Stale while revalidate
+    └─► Images: Cache first with expiry
+    ↓
+  When offline:
+    ├─► Cached pages load instantly
+    ├─► Static content fully available
+    ├─► API calls fail gracefully
+    ├─► Error messages shown to user
+    └─► Sync attempted when online
+
+Service Worker Files:
+  public/sw.js (auto-generated by next-pwa)
+    ├─► Main service worker
+    ├─► Imported by browser
+    └─► Not directly edited
+
+  public/firebase-messaging-sw.js (manual)
+    ├─► FCM message handler
+    ├─► Imported by Firebase
+    └─► Loaded into service worker scope
+
+  Workbox Integration:
+    ├─► Precaching for build assets
+    ├─► Runtime caching strategies
+    ├─► Cache versioning
+    └─► Background sync (future)
 ```
 
 ---

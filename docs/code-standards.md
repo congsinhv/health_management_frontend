@@ -1070,7 +1070,7 @@ import { ChatMessage } from '@/components/chat';
 - `ChatMessage.tsx` - Main message component
 - `useChat.ts` - Chat state management hook
 
-```
+````
 
 ---
 
@@ -1095,8 +1095,84 @@ Before committing code:
 
 ---
 
+## Library-Specific Standards
+
+### Firebase (Phase 8)
+
+**Location:** `src/lib/firebase.ts`
+
+**Conventions:**
+
+```typescript
+// Always check if window exists (SSR safety)
+if (typeof window === 'undefined') return undefined;
+
+// Always handle async with try-catch
+try {
+  const token = await requestNotificationPermission();
+} catch (error) {
+  console.error('Error:', error);
+}
+
+// Return null instead of throwing for optional features
+const messaging = await getFirebaseMessaging();
+if (!messaging) return null;  // Browser doesn't support FCM
+
+// Use singleton pattern for initialization
+let app: FirebaseApp | undefined;
+if (!getApps().length) {
+  app = initializeApp(config);
+} else {
+  app = getApps()[0];
+}
+````
+
+**Rules:**
+
+1. Always check configuration before use
+2. Return null for unsupported browsers (don't throw)
+3. Use async/await, handle errors explicitly
+4. Validate env vars at initialization
+5. Never expose private VAPID key (only public)
+6. Pass config to service worker via postMessage
+
+### PWA Configuration (Phase 8)
+
+**Location:** `public/manifest.json`, `next.config.ts`
+
+**Conventions:**
+
+```json
+{
+  "name": "Full Name - VHealth",
+  "short_name": "VHealth",
+  "description": "Concise app description",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#3B82F6",
+  "background_color": "#ffffff"
+}
+```
+
+**Rules:**
+
+1. short_name max 12 characters (for home screen)
+2. All required icons provided (at least 192x192, 512x512)
+3. Maskable icons for adaptive Android icons
+4. Icons should be square (1:1 aspect ratio)
+5. Use PNG format with transparency where needed
+6. Test with manifest validator before deployment
+
+---
+
 **For more details, see:**
+
 - `docs/codebase-summary.md` - Architecture and file organization
 - `docs/system-architecture.md` - Technical design
+- `docs/phase-08-firebase-pwa.md` - Firebase and PWA setup
 - `/CONTRIBUTING.md` - Contribution guidelines
+
+```
+
 ```

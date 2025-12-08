@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import localFont from 'next/font/local';
 import './globals.css';
 import { AuthProvider } from '@/contexts/auth';
@@ -41,7 +41,18 @@ export const metadata: Metadata = {
     'A comprehensive health management platform for tracking and monitoring your health journey',
   icons: {
     icon: '/favicon.svg',
+    apple: '/icons/icon-192x192.png',
   },
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'VHealth',
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: '#00bc7d',
 };
 
 export default function RootLayout({

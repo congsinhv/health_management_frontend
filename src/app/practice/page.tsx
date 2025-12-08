@@ -19,7 +19,7 @@ import { LoadingOverlay } from '@/components/shared/LoadingOverlay';
 import { Button } from '@/components/ui/button';
 import { Form } from '@/components/ui/form';
 import { useAuth } from '@/contexts/auth';
-import { savePracticePreferences } from '@/services/practice';
+import { savePracticeSchedule } from '@/services/practice';
 import { userService } from '@/services/user';
 import type { PracticeFormData } from '@/types/practice';
 import { practiceFormSchema } from './validation';
@@ -84,7 +84,7 @@ const PracticePage = () => {
 
   // Submit mutation
   const submitMutation = useMutation({
-    mutationFn: savePracticePreferences,
+    mutationFn: savePracticeSchedule,
     onSuccess: () => {
       toast.success('Đã lưu thiết lập tập luyện!');
       queryClient.invalidateQueries({ queryKey: ['practiceProfile'] });

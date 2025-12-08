@@ -1,12 +1,14 @@
 /**
  * Practice service
- * Handles practice preferences CRUD operations
+ * Handles practice schedule CRUD operations
  */
 
 import apiClient from './api';
 import type {
   PracticeFormData,
   PracticeProfileResponse,
+  ScheduleApiRequest,
+  ScheduleApiResponse,
 } from '@/types/practice';
 
 /**
@@ -21,56 +23,73 @@ export const getPracticeProfile =
   };
 
 /**
- * Save practice preferences
+ * Save practice schedule (NEW ENDPOINT)
  */
-export const savePracticePreferences = async (
+export const savePracticeSchedule = async (
   data: PracticeFormData
-): Promise<void> => {
-  await apiClient.post(
-    '/api/v1/users/practice-preferences',
-    formatForAPI(data)
+): Promise<ScheduleApiResponse> => {
+  const response = await apiClient.post<ScheduleApiResponse>(
+    '/api/v1/schedules/',
+    formatForScheduleAPI(data)
   );
+  return response.data;
 };
 
 /**
- * Format form data for API submission
+ * Format form data for new schedule API
  */
-const formatForAPI = (data: PracticeFormData) => {
+const formatForScheduleAPI = (data: PracticeFormData): ScheduleApiRequest => {
+  // Build time periods with snake_case keys
+  const timePeriods: Record<
+    string,
+    Array<{ start_time: string; end_time: string }>
+  > = {};
+
+  if (data.schedule.mode === 'flexible' && data.schedule.flexiblePeriods) {
+    Object.entries(data.schedule.flexiblePeriods).forEach(([day, periods]) => {
+      timePeriods[day] = periods.map(p => ({
+        start_time: p.startTime,
+        end_time: p.endTime,
+      }));
+    });
+  } else if (data.schedule.mode === 'fixed' && data.schedule.fixedPeriod) {
+    // Expand fixed period to all selected days
+    data.schedule.selectedDays.forEach(day => {
+      timePeriods[day] = [
+        {
+          start_time: data.schedule.fixedPeriod!.startTime,
+          end_time: data.schedule.fixedPeriod!.endTime,
+        },
+      ];
+    });
+  }
+
   return {
-    basic_info: {
-      height_cm: data.basicInfo.height,
-      weight_kg: data.basicInfo.weight,
-      target_weight_kg: data.basicInfo.targetWeight,
-      goal: data.basicInfo.goal,
-    },
-    schedule: {
-      mode: data.schedule.mode,
-      selected_days: data.schedule.selectedDays,
-      periods:
-        data.schedule.mode === 'flexible'
-          ? data.schedule.flexiblePeriods
-          : {
-              // Expand fixed period to all selected days
-              ...Object.fromEntries(
-                data.schedule.selectedDays.map(day => [
-                  day,
-                  [data.schedule.fixedPeriod],
-                ])
-              ),
-            },
-    },
-    sports: {
-      predefined: data.sports.predefined,
-      custom: data.sports.custom,
-    },
-    notes: {
-      personal: data.notes.personal || null,
-      health_warnings: data.notes.healthWarnings || null,
-    },
+    height_cm: data.basicInfo.height,
+    weight_kg: data.basicInfo.weight,
+    target_weight_kg: data.basicInfo.targetWeight,
+    goal: data.basicInfo.goal,
+    schedule_mode: data.schedule.mode,
+    schedule_days: data.schedule.selectedDays,
+    time_periods: timePeriods,
+    sports_predefined: data.sports.predefined,
+    sports_custom: data.sports.custom,
+    notes_personal: data.notes.personal || null,
+    notes_health: data.notes.healthWarnings || null,
   };
+};
+
+/**
+ * @deprecated Use savePracticeSchedule instead
+ */
+export const savePracticePreferences = async (
+  data: PracticeFormData
+): Promise<ScheduleApiResponse> => {
+  return savePracticeSchedule(data);
 };
 
 export const practiceService = {
   getPracticeProfile,
-  savePracticePreferences,
+  savePracticeSchedule,
+  savePracticePreferences, // deprecated alias
 };

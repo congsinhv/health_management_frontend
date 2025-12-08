@@ -71,3 +71,37 @@ export interface PracticeProfileResponse {
   created_at: string;
   updated_at: string;
 }
+
+// Schedule API request schema (new /schedules/ endpoint)
+export interface ScheduleApiRequest {
+  height_cm?: number;
+  weight_kg?: number;
+  target_weight_kg: number;
+  goal?: 'gain' | 'lose' | 'maintain';
+  schedule_mode: 'flexible' | 'fixed';
+  schedule_days: string[];
+  time_periods: Record<string, Array<{ start_time: string; end_time: string }>>;
+  sports_predefined: string[];
+  sports_custom: string[];
+  notes_personal?: string | null;
+  notes_health?: string | null;
+}
+
+// Schedule API response
+export interface ScheduleApiResponse {
+  id: string;
+  user_id: string;
+  height_cm?: number;
+  weight_kg?: number;
+  target_weight_kg: number;
+  goal?: 'gain' | 'lose' | 'maintain';
+  schedule_mode: 'flexible' | 'fixed';
+  schedule_days: string[];
+  time_periods: Record<string, Array<{ start_time: string; end_time: string }>>;
+  sports_predefined: string[];
+  sports_custom: string[];
+  notes_personal?: string | null;
+  notes_health?: string | null;
+  created_at: string;
+  updated_at: string;
+}
