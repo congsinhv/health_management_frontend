@@ -238,14 +238,13 @@ const PracticePageContent = () => {
         {/* Notification Gate Banner */}
         {!hasMobileDevice && (
           <div className='mx-auto mb-6 w-[82.5%]'>
-            <div className='flex items-center justify-between rounded-lg border border-yellow-200 bg-yellow-50 p-4'>
+            <div className='border-primary bg-primary/5 flex items-center justify-between rounded-lg border p-4'>
               <div className='flex items-center gap-3'>
-                <span className='text-2xl'>📱</span>
                 <div>
-                  <p className='font-medium text-yellow-800'>
+                  <p className='text-primary font-medium'>
                     Chưa có thiết bị di động
                   </p>
-                  <p className='text-sm text-yellow-700'>
+                  <p className='text-primary text-sm'>
                     Đăng ký thiết bị để nhận nhắc nhở tập luyện
                   </p>
                 </div>
@@ -253,7 +252,7 @@ const PracticePageContent = () => {
               <Button
                 variant='outline'
                 onClick={() => setShowNotificationModal(true)}
-                className='border-yellow-400 bg-yellow-100 text-yellow-800 hover:bg-yellow-200'
+                className='border-primary bg-primary/10 text-primary hover:bg-primary/20'
               >
                 Đăng ký ngay
               </Button>

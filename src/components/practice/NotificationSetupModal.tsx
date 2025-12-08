@@ -221,8 +221,13 @@ const DesktopQRContent = ({
       disabled={isLoading}
       className='gap-2'
     >
-      <RefreshCw className={cn('h-4 w-4', isLoading && 'animate-spin')} />
-      Kiểm tra lại
+      <RefreshCw
+        className={cn(
+          'h-4 w-4',
+          isLoading && 'bg-primary/10 text-primary animate-spin'
+        )}
+      />
+      {isLoading ? 'Đang kiểm tra...' : 'Kiểm tra lại'}
     </Button>
   </div>
 );
