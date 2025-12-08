@@ -14,8 +14,13 @@ import type {
  * Get all registered devices for current user
  */
 export const getDevices = async (): Promise<DeviceListResponse> => {
-  const response = await apiClient.get<DeviceListResponse>('/api/v1/devices/');
-  return response.data;
+  const response = await apiClient.get<Device[]>('/api/v1/devices/');
+  // API returns array directly, wrap it in expected format
+  const devices = response.data;
+  return {
+    devices,
+    total: devices.length,
+  };
 };
 
 /**
