@@ -2,21 +2,22 @@
  * Device types for FCM notification management
  */
 
-export type DevicePlatform = 'ios' | 'android' | 'web';
+export type DeviceType = 'ios' | 'android' | 'web';
 
 export interface Device {
-  id: string;
-  user_id: string;
-  fcm_token: string;
-  platform: DevicePlatform;
-  device_name?: string;
-  created_at: string;
-  updated_at: string;
+  id: number;
+  device_type: DeviceType | null;
+  device_name: string | null;
+  is_active: boolean;
+  last_used_at: string;
+  fcm_token?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface RegisterDeviceInput {
   fcm_token: string;
-  platform: DevicePlatform;
+  device_type: DeviceType;
   device_name?: string;
 }
 

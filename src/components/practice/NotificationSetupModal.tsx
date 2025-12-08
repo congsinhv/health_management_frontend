@@ -94,7 +94,7 @@ export const NotificationSetupModal = ({
 
       await registerDevice.mutateAsync({
         fcm_token: result.token,
-        platform: 'android',
+        device_type: 'android',
         device_name: navigator.userAgent.substring(0, 50),
       });
     } catch (error) {
@@ -128,7 +128,7 @@ export const NotificationSetupModal = ({
 
       await registerDevice.mutateAsync({
         fcm_token: result.token,
-        platform: 'ios',
+        device_type: 'ios',
         device_name: 'iPhone/iPad',
       });
     } catch (error) {
@@ -362,7 +362,7 @@ const IOSContent = ({
 // Registered devices info
 const RegisteredDevicesInfo = ({ devices }: { devices: Device[] }) => {
   const mobileCount = devices.filter(
-    d => d.platform === 'ios' || d.platform === 'android'
+    d => d.device_type === 'ios' || d.device_type === 'android'
   ).length;
 
   if (mobileCount === 0) return null;

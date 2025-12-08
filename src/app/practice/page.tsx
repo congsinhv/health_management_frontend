@@ -150,13 +150,13 @@ const PracticePageContent = () => {
         return;
       }
 
-      const platform = /iphone|ipad|ipod/i.test(navigator.userAgent)
+      const device_type = /iphone|ipad|ipod/i.test(navigator.userAgent)
         ? 'ios'
         : 'android';
 
       await registerDevice.mutateAsync({
         fcm_token: result.token,
-        platform,
+        device_type,
         device_name: navigator.userAgent.substring(0, 50),
       });
 

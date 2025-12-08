@@ -39,7 +39,9 @@ export const deleteDevice = async (deviceId: string): Promise<void> => {
  * Check if user has any mobile devices registered
  */
 export const hasMobileDevice = (devices: Device[]): boolean => {
-  return devices.some(d => d.platform === 'ios' || d.platform === 'android');
+  return devices.some(
+    d => d.device_type === 'ios' || d.device_type === 'android'
+  );
 };
 
 export const deviceService = {

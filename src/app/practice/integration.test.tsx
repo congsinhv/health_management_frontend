@@ -196,7 +196,18 @@ describe('Practice Page Integration', () => {
       vi.mocked(deviceService.hasMobileDevice).mockReturnValue(true);
       vi.mocked(deviceService.getDevices).mockResolvedValue({
         success: true,
-        data: { devices: [{ platform: 'ios' }], total: 1 },
+        data: {
+          devices: [
+            {
+              device_type: 'ios',
+              id: 1,
+              device_name: 'iPhone',
+              is_active: true,
+              last_used_at: '2025-01-01T00:00:00Z',
+            },
+          ],
+          total: 1,
+        },
       });
 
       renderPracticePage(queryClient);
@@ -263,7 +274,18 @@ describe('Practice Page Integration', () => {
       vi.mocked(deviceService.hasMobileDevice).mockReturnValue(true);
       vi.mocked(deviceService.getDevices).mockResolvedValue({
         success: true,
-        data: { devices: [{ platform: 'ios' }], total: 1 },
+        data: {
+          devices: [
+            {
+              device_type: 'ios',
+              id: 1,
+              device_name: 'iPhone',
+              is_active: true,
+              last_used_at: '2025-01-01T00:00:00Z',
+            },
+          ],
+          total: 1,
+        },
       });
 
       renderPracticePage(queryClient);

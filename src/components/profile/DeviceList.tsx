@@ -15,11 +15,11 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { useDevices, useDeleteDevice } from '@/hooks/useDevices';
-import type { Device, DevicePlatform } from '@/types/device';
+import type { Device, DeviceType } from '@/types/device';
 
-// Platform icon mapping
-const PlatformIcon = ({ platform }: { platform: DevicePlatform }) => {
-  switch (platform) {
+// Device type icon mapping
+const DeviceTypeIcon = ({ deviceType }: { deviceType: DeviceType | null }) => {
+  switch (deviceType) {
     case 'ios':
       return <Smartphone className='h-5 w-5 text-gray-600' />;
     case 'android':
@@ -31,9 +31,9 @@ const PlatformIcon = ({ platform }: { platform: DevicePlatform }) => {
   }
 };
 
-// Platform label mapping
-const getPlatformLabel = (platform: DevicePlatform): string => {
-  switch (platform) {
+// Device type label mapping
+const getDeviceTypeLabel = (deviceType: DeviceType | null): string => {
+  switch (deviceType) {
     case 'ios':
       return 'iPhone/iPad';
     case 'android':
@@ -52,11 +52,12 @@ const DeviceItem = ({
   isDeleting,
 }: {
   device: Device;
-  onDelete: (id: string) => void;
+  onDelete: (id: number) => void;
   isDeleting: boolean;
 }) => {
-  const displayName = device.device_name || getPlatformLabel(device.platform);
-  const registeredDate = format(new Date(device.created_at), 'dd/MM/yyyy', {
+  const displayName =
+    device.device_name || getDeviceTypeLabel(device.device_type);
+  const lastUsedDate = format(new Date(device.last_used_at), 'dd/MM/yyyy', {
     locale: vi,
   });
 
@@ -64,7 +65,7 @@ const DeviceItem = ({
     <div className='flex items-center justify-between rounded-lg border bg-white p-4 dark:bg-gray-800'>
       <div className='flex items-center gap-3'>
         <div className='flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700'>
-          <PlatformIcon platform={device.platform} />
+          <DeviceTypeIcon deviceType={device.device_type} />
         </div>
         <div>
           <p
@@ -74,7 +75,7 @@ const DeviceItem = ({
             {displayName}
           </p>
           <p className='text-xs text-gray-500 dark:text-gray-400'>
-            Đăng ký: {registeredDate}
+            Hoạt động: {lastUsedDate}
           </p>
         </div>
       </div>
@@ -131,17 +132,17 @@ export const DeviceList = () => {
   const { data, isLoading, error } = useDevices();
   const deleteDevice = useDeleteDevice();
 
-  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
 
-  const handleDeleteClick = (id: string) => {
+  const handleDeleteClick = (id: number) => {
     setDeleteConfirmId(id);
   };
 
   const handleDeleteConfirm = async () => {
-    if (!deleteConfirmId) return;
+    if (deleteConfirmId === null) return;
 
     try {
-      await deleteDevice.mutateAsync(deleteConfirmId);
+      await deleteDevice.mutateAsync(String(deleteConfirmId));
     } finally {
       setDeleteConfirmId(null);
     }

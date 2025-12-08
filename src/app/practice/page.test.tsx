@@ -262,7 +262,16 @@ describe('Practice Page Integration Tests', () => {
       vi.mocked(deviceService.getDevices).mockResolvedValue({
         success: true,
         data: {
-          devices: [{ id: 1, platform: 'ios', fcm_token: 'token' }],
+          devices: [
+            {
+              id: 1,
+              device_type: 'ios',
+              fcm_token: 'token',
+              device_name: 'iPhone',
+              is_active: true,
+              last_used_at: '2025-01-01T00:00:00Z',
+            },
+          ],
           total: 1,
           page: 1,
           limit: 10,
@@ -325,7 +334,16 @@ describe('Practice Page Integration Tests', () => {
       vi.mocked(deviceService.getDevices).mockResolvedValue({
         success: true,
         data: {
-          devices: [{ id: 1, platform: 'ios', fcm_token: 'token' }],
+          devices: [
+            {
+              id: 1,
+              device_type: 'ios',
+              fcm_token: 'token',
+              device_name: 'iPhone',
+              is_active: true,
+              last_used_at: '2025-01-01T00:00:00Z',
+            },
+          ],
           total: 1,
           page: 1,
           limit: 10,
@@ -375,7 +393,16 @@ describe('Practice Page Integration Tests', () => {
       vi.mocked(deviceService.getDevices).mockResolvedValue({
         success: true,
         data: {
-          devices: [{ id: 1, platform: 'ios', fcm_token: 'token' }],
+          devices: [
+            {
+              id: 1,
+              device_type: 'ios',
+              fcm_token: 'token',
+              device_name: 'iPhone',
+              is_active: true,
+              last_used_at: '2025-01-01T00:00:00Z',
+            },
+          ],
           total: 1,
           page: 1,
           limit: 10,
@@ -398,7 +425,16 @@ describe('Practice Page Integration Tests', () => {
       vi.mocked(deviceService.getDevices).mockResolvedValue({
         success: true,
         data: {
-          devices: [{ id: 1, platform: 'ios', fcm_token: 'token' }],
+          devices: [
+            {
+              id: 1,
+              device_type: 'ios',
+              fcm_token: 'token',
+              device_name: 'iPhone',
+              is_active: true,
+              last_used_at: '2025-01-01T00:00:00Z',
+            },
+          ],
           total: 1,
           page: 1,
           limit: 10,
@@ -476,7 +512,16 @@ describe('Practice Page Integration Tests', () => {
       vi.mocked(deviceService.getDevices).mockResolvedValue({
         success: true,
         data: {
-          devices: [{ id: 1, platform: 'ios', fcm_token: 'token' }],
+          devices: [
+            {
+              id: 1,
+              device_type: 'ios',
+              fcm_token: 'token',
+              device_name: 'iPhone',
+              is_active: true,
+              last_used_at: '2025-01-01T00:00:00Z',
+            },
+          ],
           total: 1,
           page: 1,
           limit: 10,
@@ -525,7 +570,7 @@ describe('Practice Page Integration Tests', () => {
       // Mock successful device registration
       const mockRegister = vi.fn().mockResolvedValue({
         success: true,
-        data: { id: 1, platform: 'ios' },
+        data: { id: 1, device_type: 'ios' },
       });
 
       const { useRegisterDevice } = await import('@/hooks/useDevices');
@@ -539,7 +584,7 @@ describe('Practice Page Integration Tests', () => {
       await waitFor(() => {
         expect(mockRegister).toHaveBeenCalledWith({
           fcm_token: 'mock-token',
-          platform: 'ios',
+          device_type: 'ios',
           device_name: expect.stringContaining('Mozilla'),
         });
       });
@@ -592,7 +637,7 @@ describe('Practice Page Integration Tests', () => {
 
       const mockRegister = vi.fn().mockResolvedValue({
         success: true,
-        data: { id: 1, platform: 'ios' },
+        data: { id: 1, device_type: 'ios' },
       });
 
       const { useRegisterDevice } = await import('@/hooks/useDevices');
@@ -624,7 +669,16 @@ describe('Practice Page Integration Tests', () => {
       vi.mocked(deviceService.getDevices).mockResolvedValue({
         success: true,
         data: {
-          devices: [{ id: 1, platform: 'ios', fcm_token: 'token' }],
+          devices: [
+            {
+              id: 1,
+              device_type: 'ios',
+              fcm_token: 'token',
+              device_name: 'iPhone',
+              is_active: true,
+              last_used_at: '2025-01-01T00:00:00Z',
+            },
+          ],
           total: 1,
           page: 1,
           limit: 10,
