@@ -75,7 +75,7 @@ export const DayExerciseCard = ({
     return (
       <div
         className={cn(
-          'flex h-[85px] flex-col rounded-md border p-2 transition-colors',
+          'flex h-28 flex-col rounded-md border p-2 transition-colors',
           isActiveSchedule
             ? 'border-gray-100 bg-gray-50/50 dark:border-gray-800 dark:bg-gray-800/20'
             : 'bg-gray-50 opacity-50'
@@ -101,7 +101,7 @@ export const DayExerciseCard = ({
   return (
     <div
       className={cn(
-        'relative flex h-[85px] flex-col overflow-hidden rounded-md border p-2 transition-all',
+        'relative flex h-28 flex-col overflow-hidden rounded-md border p-2 transition-all',
         isActiveSchedule
           ? 'border-primary/30 cursor-pointer bg-white dark:bg-gray-900'
           : 'bg-gray-50 opacity-60',
