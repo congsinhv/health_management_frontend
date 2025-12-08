@@ -1,79 +1,46 @@
 # Codebase Summary
 
-This document provides a high-level overview of the `health_management_frontend` codebase, generated from a `repomix` compaction.
+This document provides an overview of the codebase structure and key files, generated using `repomix`.
 
-## Project Overview
+## Overall Statistics
 
-The `health_management_frontend` is a Next.js 15 application called "VHealth" designed for health management. It leverages a modern frontend stack with TypeScript, Tailwind CSS, shadcn/ui, React Query, Axios, and React Hook Form.
+- **Total Files**: 187
+- **Total Tokens**: 176,960
+- **Total Characters**: 723,340
 
-## Core Structure
+## Top 5 Files by Token Count
 
-- **Next.js App Router**: For routing and server-side capabilities.
-- **TypeScript**: Ensuring type safety across the codebase.
-- **Tailwind CSS v4**: Exclusive styling framework with custom CSS variables.
-- **shadcn/ui**: Component library for UI elements (New York style).
-- **React Query (TanStack Query)**: For server state management and data fetching.
-- **Axios**: HTTP client for API calls with automatic token refresh.
-- **React Hook Form** with Zod validation: For robust form handling.
-- **Custom authentication context**: Manages JWT-based authentication with access/refresh token rotation.
+1.  `src/app/predict/validation.test.ts` (6,197 tokens, 22,276 chars, 3.5%)
+2.  `src/app/predict/page.tsx` (5,042 tokens, 31,063 chars, 2.8%)
+3.  `src/app/practice/page.test.tsx` (4,707 tokens, 20,310 chars, 2.7%)
+4.  `src/app/profile/page.tsx` (4,502 tokens, 22,037 chars, 2.5%)
+5.  `src/components/predict/HealthMetricsCard.tsx` (3,582 tokens, 7,926 chars, 2%)
 
-## Key Directories
+## Security Review
 
-- `src/app/`: Next.js app router pages and API routes.
-- `src/components/`: Reusable React components, including `ui/` for shadcn components.
-- `src/contexts/`: React contexts (e.g., AuthContext).
-- `src/hooks/`: Custom React hooks.
-- `src/lib/`: Utilities, constants, and configuration (e.g., `utils/cn.ts`, `storage.ts`).
-- `src/services/`: API service functions.
-- `src/types/`: Centralized TypeScript type definitions.
+- No suspicious files detected.
 
-## Authentication System
+## Binary Files Detected
 
-- **JWT-based authentication**: Secure token management with access and refresh tokens.
-- **OAuth Google login**: Integration for Google authentication.
-- **Automatic token refresh**: Ensures continuous user sessions.
-- **Protected routes**: Implemented using Higher-Order Components (HOC) and React context.
-- **Email verification**: Supports user email verification flows.
+The following 4 binary files were detected and excluded from the output:
 
-## API Integration
+1. `src/fonts/SVN-Gilroy-Bold.otf`
+2. `src/fonts/SVN-Gilroy-Medium.otf`
+3. `src/fonts/SVN-Gilroy-Regular.otf`
+4. `src/fonts/SVN-Gilroy-SemiBold.otf`
 
-- **Base URL**: Configurable via `NEXT_PUBLIC_API_URL`.
-- **Axios interceptors**: Handle token injection, automatic refresh, and error handling.
-- **Request/Response logging**: Custom logger for development and debugging.
-- **Error handling**: Integrated with toast notifications for user feedback.
+These files are typically font files and their exclusion is expected.
 
-## State Management
+## Project Structure Highlights (based on included patterns: `src/**,*.md`)
 
-- **AuthContext**: Manages global authentication state.
-- **React Query**: Manages server-side data fetching and caching.
-- **Local storage**: Persists authentication tokens.
-- **React hooks**: Manages component-level state.
+The `src` directory contains the core application logic, including:
 
-## Styling
+- `app/`: Next.js App Router pages and API routes.
+- `components/`: Reusable React components, organized into feature-specific (e.g., `profile/`, `predict/`), shared, form, and layout categories.
+- `contexts/`: React contexts for global state management.
+- `hooks/`: Custom React hooks.
+- `lib/`: Utilities, constants, and configurations.
+- `services/`: API service functions.
+- `types/`: TypeScript type definitions.
 
-- **100% Tailwind CSS**: No SCSS modules are used.
-- **Custom CSS variables**: Defined in `globals.css`.
-- **Custom fonts**: SVN-Gilroy family, loaded locally.
-- **shadcn/ui**: Components themed consistently with Tailwind.
-- **`cn()` utility**: For conditional class application.
-
-## New UI Components for Phase 2 (Profile Schedule Section)
-
-The recent update introduced a new set of UI components for the profile's schedule section, demonstrating the project's adherence to modular and reusable component architecture. These components include:
-
-- `src/components/profile/ScheduleSection/index.tsx`: Main entry point for the Schedule Section.
-- `src/components/profile/ScheduleSection/ScheduleCard.tsx`: Displays individual schedule entries.
-- `src/components/profile/ScheduleSection/DayExerciseCard.tsx`: Card for daily exercises within a schedule.
-- `src/components/profile/ScheduleSection/EmptyState.tsx`: Component for when no schedule data is available.
-- `src/components/profile/ScheduleSection/ScheduleSkeleton.tsx`: Loading skeleton for the schedule section.
-- `src/components/profile/ScheduleSection/__tests__/ScheduleSection.test.tsx`: Unit tests for the Schedule Section.
-- `src/components/profile/index.ts`: Updated to export the new `ScheduleSection` components.
-
-## Code Quality
-
-- **ESLint**: Enforces code style and best practices.
-- **Prettier**: Maintains consistent code formatting.
-- **Husky & lint-staged**: Pre-commit hooks for quality assurance.
-- **TypeScript strict mode**: Ensures high type safety.
-
-This summary will be periodically updated to reflect the current state of the codebase.
+The root directory also contains Markdown files such as `README.md` and other documentation.

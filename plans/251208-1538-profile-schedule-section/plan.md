@@ -1,7 +1,7 @@
 # Plan: Profile Schedule Section
 
 > Created: 2025-12-08
-> Status: Planning
+> Status: Completed
 > Feature: Display scheduled workout plans in Profile page
 
 ---
@@ -20,7 +20,7 @@ Add a new section to the Profile page displaying user's scheduled workout plans 
 | ----- | --------------------- | -------------------------- | -------------------------------------------- |
 | 1     | Types & Service Layer | completed (25-12-08 15:38) | Create schedule types and API service        |
 | 2     | UI Components         | completed (25-12-08 15:45) | Build ScheduleSection components             |
-| 3     | Integration & Testing | pending                    | Integrate into profile page, test all states |
+| 3     | Integration & Testing | completed (25-12-08 15:52) | Integrate into profile page, test all states |
 
 ---
 

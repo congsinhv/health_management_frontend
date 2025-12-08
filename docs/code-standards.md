@@ -14,7 +14,7 @@ This document outlines the code standards and best practices for the `health_man
 ## 2. Naming Conventions
 
 - **Variables and Functions**: `camelCase` (e.g., `userName`, `getWeatherData`).
-- **Components**: `PascalCase` (e.g., `UserProfile`, `ScheduleCard`).
+- **Components**: `PascalCase` (e.g., `UserProfile`, `DeviceList`).
 - **Files**: `kebab-case` for components (e.g., `user-profile.tsx`), `camelCase` or `kebab-case` for others based on common conventions (e.g., `actions.ts`, `auth-context.tsx`).
 - **Types and Interfaces**: `PascalCase` (e.g., `User`, `AuthState`).
 
@@ -23,24 +23,23 @@ This document outlines the code standards and best practices for the `health_man
 - **Strict Mode**: Ensure TypeScript strict mode is enabled in `tsconfig.json`.
 - **Explicit Types**: Use explicit types for function arguments, return values, and complex variables. Avoid `any` whenever possible.
 - **Type Organization**: **ALL types live in `/src/types/`**. Services and components should IMPORT types, never define them inline.
-  - Example: `src/types/auth.ts`, `src/types/user.ts`, `src/types/api.ts`.
+  - Example: `src/types/auth.ts`, `src/types/user.ts`, `src/types/api.ts`, `src/types/device.ts`.
 - **Interfaces vs. Types**: Prefer `type` for aliases and unions, `interface` for object shapes.
 
 ## 4. Component Structure and Organization
 
-- **Folder-by-Feature**: Organize components into logical feature folders within `src/components/`.
-  - `src/components/chat/`, `src/components/predict/`, `src/components/profile/ScheduleSection/`.
-- **Shared Components**: Reusable, generic components should be placed in `src/components/shared/`.
-- **Form Components**: Dedicated components for forms in `src/components/form/`.
-- **Layout Components**: Components related to overall page layout in `src/components/layout/`.
+- **Folder-by-Feature**: Organize components into logical feature folders within `src/components/` (e.g., `src/components/chat/`, `src/components/predict/`, `src/components/profile/`).
+- **Shared Components**: Reusable, generic components should be placed in `src/components/shared/` (e.g., `Avatar`, `Logo`, `Card`).
+- **Form Components**: Dedicated components for forms in `src/components/form/` (e.g., `TextField`, `Dropdown`).
+- **Layout Components**: Components related to overall page layout in `src/components/layout/` (e.g., `Header`, `Footer`).
 - **UI Primitives**: `shadcn/ui` components should remain in `src/components/ui/` and not be modified directly.
 - **No Single-Component Root Folders**: Avoid creating individual folders at the `src/components/` root for single components.
 - **Barrel Exports**: Use `index.ts` files for barrel exports within multi-component folders to simplify imports.
-  - Example: `src/components/profile/ScheduleSection/index.ts` exports all components within `ScheduleSection`.
+  - Example: `src/components/profile/index.ts` should export all components within the `profile` directory.
 
 ## 5. Styling Conventions (Tailwind CSS v4)
 
-- **Exclusive Use of Tailwind**: Only Tailwind CSS v4 should be used for styling. **NO SCSS modules**.
+- **Exclusive Use of Tailwind**: Only Tailwind CSS v4 should be used for styling. **NO SCSS modules** are allowed.
 - **`cn()` Utility**: Use the `cn()` utility from `@/lib/utils` for conditional class joining.
 - **Custom CSS Variables**: Utilize custom CSS variables defined in `globals.css` for theming.
 - **Responsive Design**: Implement responsive design using Tailwind's utility classes.
@@ -71,7 +70,7 @@ This document outlines the code standards and best practices for the `health_man
 ## 9. Testing
 
 - **Unit Tests**: Write unit tests for individual components, hooks, and utility functions.
-  - Store tests in `__tests__` folders adjacent to the tested code (e.g., `src/components/profile/ScheduleSection/__tests__/ScheduleSection.test.tsx`).
+  - Store tests in `__tests__` folders adjacent to the tested code (e.g., `src/components/profile/__tests__/DeviceList.test.tsx`).
 - **Integration Tests**: Implement integration tests for critical flows.
 - **Testing Library**: Use Jest and React Testing Library.
 

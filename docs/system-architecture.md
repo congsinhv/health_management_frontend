@@ -54,7 +54,7 @@ graph TD
 - **Next.js App Router (`src/app/`)**: Handles routing, page rendering (SSR/SSG/ISR), and API routes.
 - **Components (`src/components/`)**:
   - **UI Primitives (`src/components/ui/`)**: Shadcn/ui components (e.g., Button, Input, Card). These are themeable and composable building blocks.
-  - **Feature-Specific Components**: Organized by domain (`src/components/chat/`, `src/components/predict/`, `src/components/profile/`). This includes the newly added `ScheduleSection` and its sub-components (`ScheduleCard`, `DayExerciseCard`, `EmptyState`, `ScheduleSkeleton`).
+  - **Feature-Specific Components**: Organized by domain (e.g., `src/components/chat/`, `src/components/predict/`, `src/components/profile/`). This includes components like `DeviceList`, `ProfileForm`, etc., relevant to the user profile.
   - **Shared Reusable Components (`src/components/shared/`)**: Generic UI elements used across different features (e.g., Avatar, Logo, Navigation).
   - **Form Components (`src/components/form/`)**: Abstractions for common form inputs.
   - **Layout Components (`src/components/layout/`)**: Structural components like Header, Footer, Sidebars.
@@ -68,7 +68,7 @@ graph TD
 
 ### 3.3. Data Access Layer (`src/services/`)
 
-- **API Service Functions**: Encapsulate all interactions with the backend API. Each service file (`src/services/userService.ts`, `src/services/authService.ts`) defines functions for specific API endpoints.
+- **API Service Functions**: Encapsulate all interactions with the backend API. Each service file (`src/services/userService.ts`, `src/services/authService.ts`, `src/services/deviceService.ts`) defines functions for specific API endpoints.
 - **Axios Instance**: A pre-configured Axios instance handles:
   - **Request Interceptors**: Injecting JWT access tokens into headers.
   - **Response Interceptors**: Automatically refreshing expired access tokens using the refresh token, and re-attempting failed requests.
@@ -79,7 +79,7 @@ graph TD
 
 - **Custom Hooks (`src/hooks/`)**: Reusable logic encapsulated in custom React hooks (e.g., `useAuth`, `useFormValidation`).
 - **Utilities (`src/lib/utils/`)**: Helper functions (e.g., `cn.ts`, `avatar.ts`, `transforms.ts`) used across the application. Also includes `constants.ts` for global configuration.
-- **Type Definitions (`src/types/`)**: Centralized TypeScript type definitions for all data structures (e.g., `auth.ts`, `user.ts`, `api.ts`, `conversation.ts`). This ensures type consistency and improves developer experience.
+- **Type Definitions (`src/types/`)**: Centralized TypeScript type definitions for all data structures (e.g., `auth.ts`, `user.ts`, `api.ts`, `device.ts`). This ensures type consistency and improves developer experience.
 
 ## 4. Authentication Flow
 
@@ -87,7 +87,7 @@ graph TD
 2.  **Token Storage**: Upon successful login, the backend returns access and refresh tokens. `AuthContext` stores these securely in `localStorage`.
 3.  **Protected Routes**: Router guards (implemented via HOCs) check the `AuthContext` for authentication status.
 4.  **Automatic Token Refresh**: If an access token expires, Axios interceptors detect the `401 Unauthorized` response, use the refresh token to get a new access token, update `AuthContext` and `localStorage`, and retry the original request transparently.
-5.  **Logout**: Clears tokens from `AuthContext` and `localStorage`.
+5.  **Logout**: Clears tokens from `AuthContext` and `localStorage` to ensure a clean session termination.
 
 ## 5. Deployment
 

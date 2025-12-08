@@ -58,6 +58,7 @@ describe('DeviceList', () => {
             battery: 80,
             platform: 'web',
             created_at: new Date().toISOString(),
+            last_used_at: new Date().toISOString(),
           },
           {
             id: '2',
@@ -68,6 +69,7 @@ describe('DeviceList', () => {
             battery: 50,
             platform: 'web',
             created_at: new Date().toISOString(),
+            last_used_at: new Date().toISOString(),
           },
         ],
       },

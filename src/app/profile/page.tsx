@@ -3,7 +3,7 @@
 
 import { AvatarFill } from '@/components/shared/AvatarFill';
 import Header from '@/components/layout/Header';
-import { DeviceList } from '@/components/profile';
+import { DeviceList, ScheduleSection } from '@/components/profile';
 import { ProtectedRoute } from '@/components/shared/ProtectedRoute';
 import { Button } from '@/components/ui/button';
 import { DatePicker } from '@/components/ui/date-picker';
@@ -603,6 +603,14 @@ function ProfileContent() {
                   </form>
                 </Form>
               )}
+            </div>
+
+            {/* Schedule Plans Section */}
+            <div className='rounded-lg bg-white p-6 dark:bg-gray-800'>
+              <h2 className='mb-6 text-base font-medium text-[#1e1e1e] dark:text-white'>
+                Kế hoạch tập luyện
+              </h2>
+              <ScheduleSection />
             </div>
 
             {/* Registered Devices Section */}
