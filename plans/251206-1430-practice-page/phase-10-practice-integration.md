@@ -1,6 +1,65 @@
+# Phase 10: Practice Page Integration
+
+> **Parent Plan:** [plan.md](./plan.md)
+> **Dependencies:** Phase 6-9 (all previous phases)
+> **Status:** DONE
+> **Priority:** High
+> **Estimated Effort:** 2-3 hours
+> **Completion Date:** 2025-12-08
+
+---
+
+## Overview
+
+Integrate notification setup into the Practice Page:
+
+1. Gate form submission behind mobile device check
+2. Handle `?device=register` query parameter for deep-linking
+3. Show notification modal when no mobile device registered
+4. Auto-trigger registration on mobile deep-link
+
+## Key Insights
+
+1. Modal shown automatically if no mobile device
+2. Query param `?device=register` triggers immediate registration
+3. Form submission blocked until gate condition met
+4. Uses React Query for device state management
+5. Existing form logic remains unchanged
+
+## Requirements
+
+### Functional
+
+- [ ] Check for mobile device on page load
+- [ ] Show modal if no mobile device registered
+- [ ] Handle `?device=register` query parameter
+- [ ] Auto-trigger registration flow on mobile deep-link
+- [ ] Block form submission until mobile device exists
+- [ ] Update mutation to use new schedule endpoint
+
+### Non-Functional
+
+- [ ] Smooth UX with loading states
+- [ ] No flash of content before check completes
+- [ ] Preserve existing form validation
+
+## Related Code Files
+
+| File                        | Action | Purpose                   |
+| --------------------------- | ------ | ------------------------- |
+| `src/app/practice/page.tsx` | UPDATE | Add gate logic + modal    |
+| `src/services/practice.ts`  | VERIFY | Ensure using new endpoint |
+
+## Implementation Steps
+
+### Step 1: Update Practice Page
+
+**File:** `src/app/practice/page.tsx`
+
+```tsx
 'use client';
 
-import { Suspense, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -30,7 +89,7 @@ import { useDevices, useRegisterDevice } from '@/hooks/useDevices';
 import type { PracticeFormData } from '@/types/practice';
 import { practiceFormSchema } from './validation';
 
-const PracticePageContent = () => {
+const PracticePage = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const searchParams = useSearchParams();
@@ -53,6 +112,7 @@ const PracticePageContent = () => {
     ? deviceService.hasMobileDevice(devicesData.devices)
     : false;
 
+  // Form setup
   const form = useForm<PracticeFormData>({
     resolver: zodResolver(practiceFormSchema) as Resolver<PracticeFormData>,
     mode: 'onChange',
@@ -165,7 +225,7 @@ const PracticePageContent = () => {
     }
   };
 
-  // Submit mutation
+  // Submit mutation - using new schedule endpoint
   const submitMutation = useMutation({
     mutationFn: savePracticeSchedule,
     onSuccess: () => {
@@ -191,7 +251,6 @@ const PracticePageContent = () => {
     const isValid = await form.trigger();
     if (!isValid) {
       toast.error('Vui lòng kiểm tra lại thông tin');
-      // Smoothly scroll to first error field
       const firstError = document.querySelector('[aria-invalid="true"]');
       if (firstError) {
         firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -325,6 +384,23 @@ const PracticePageContent = () => {
   );
 };
 
+export default PracticePage;
+```
+
+### Step 2: Add Suspense Wrapper for useSearchParams
+
+Since `useSearchParams` requires Suspense, wrap the page:
+
+**File:** `src/app/practice/page.tsx` (alternative structure)
+
+```tsx
+import { Suspense } from 'react';
+
+// Move all logic to PracticePageContent
+const PracticePageContent = () => {
+  // ... existing implementation
+};
+
 // Default export with Suspense
 const PracticePage = () => {
   return (
@@ -345,3 +421,58 @@ const LoadingFallback = () => (
 );
 
 export default PracticePage;
+```
+
+## Todo List
+
+- [x] Import `NotificationSetupModal` in practice page
+- [x] Add `useDevices` hook for device state
+- [x] Implement gate logic (check hasMobileDevice)
+- [x] Handle `?device=register` query parameter
+- [x] Add auto-registration flow for mobile deep-link
+- [x] Update submit button disabled state
+- [x] Add notification gate banner
+- [x] Wrap with Suspense for useSearchParams
+- [x] Test complete flow on desktop and mobile
+
+## Implementation Notes
+
+All 8 tasks completed successfully:
+
+1. **Notification Modal Integration**: Successfully imported and integrated `NotificationSetupModal` component
+2. **Device State Management**: Added `useDevices` and `useRegisterDevice` hooks for device state
+3. **Gate Logic**: Implemented mobile device check to gate form submission
+4. **Query Parameter Handling**: Added support for `?device=register` deep-link parameter
+5. **Auto-Registration**: Implemented automatic device registration on mobile when deep-link accessed
+6. **Submit Button State**: Updated button to show appropriate disabled state and text
+7. **Notification Banner**: Added warning banner when no mobile device registered
+8. **Suspense Wrapper**: Properly wrapped page with Suspense for `useSearchParams`
+
+The integration ensures users cannot save practice schedules without first registering a mobile device for notifications, improving user engagement and compliance with practice reminders.
+
+## Success Criteria
+
+1. Page shows loading while checking devices
+2. Modal appears automatically if no mobile device
+3. Form submission blocked without mobile device
+4. Submit button shows "Đăng ký thiết bị trước" when disabled
+5. `?device=register` triggers auto-registration on mobile
+6. Query param removed from URL after registration
+7. Banner shows registration prompt when no device
+
+## Risk Assessment
+
+| Risk                            | Mitigation                       |
+| ------------------------------- | -------------------------------- |
+| Race condition on device check  | Use isLoading state properly     |
+| Modal flashing on fast networks | Delay modal show slightly        |
+| Auto-register fails silently    | Show toast and fallback to modal |
+| Form state lost on device check | Form values preserved in state   |
+
+## Notes
+
+- Existing form validation unchanged
+- Schedule endpoint from Phase 7 used
+- Device service from Phase 1 used
+- Firebase utilities from Phase 8 used
+- Modal component from Phase 9 used

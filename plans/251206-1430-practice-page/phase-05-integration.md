@@ -1,7 +1,7 @@
 # Phase 5: API Integration
 
 > **Parent Plan:** [plan.md](./plan.md)
-> **Dependencies:** Phase 1-4
+> **Dependencies:** Phase 6-9
 > **Status:** ✅ Completed
 > **Priority:** Medium
 > **Completed:** 2025-12-06 23:59

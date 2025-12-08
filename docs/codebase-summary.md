@@ -428,7 +428,7 @@ Located in `ui/`:
 - **Character counter** - 500 character limit per field
 - **Visual indicators** - Amber border for health warnings
 
-#### Phase 5: API Integration (Current)
+#### Phase 5: API Integration (Completed)
 
 **PracticePage Integration:**
 
@@ -442,6 +442,7 @@ Located in `ui/`:
 
 - `getPracticeProfile()` - Fetches complete practice profile from backend
 - `savePracticePreferences()` - Posts form data to save preferences
+- `savePracticeSchedule()` - Updated endpoint for schedule saving (Phase 7)
 - `formatForAPI()` - Transforms frontend form structure to backend format
 
 **Key Features:**
@@ -452,6 +453,86 @@ Located in `ui/`:
 - Cache invalidation for related queries
 - Comprehensive error handling with user feedback
 - Full-page loading overlay during submission
+
+#### Phase 10: Notification Integration (Completed - December 2025)
+
+**Practice Page Notification Gating:**
+
+- **Mobile Device Check** - Uses `useDevices()` hook to check for registered mobile devices
+- **Notification Gate Banner** - Yellow warning banner when no mobile device registered
+- **Form Submission Gate** - Prevents saving practice schedule without mobile device
+- **Deep-Link Support** - Handles `?device=register` query parameter for mobile auto-registration
+- **Auto-Registration Flow** - Automatic device registration on mobile with query param
+- **Modal Integration** - Shows `NotificationSetupModal` when device registration needed
+
+**Key Components Added:**
+
+```typescript
+// Device state management
+const {
+  data: devicesData,
+  isLoading: isLoadingDevices,
+  refetch: refetchDevices,
+} = useDevices();
+
+const hasMobileDevice = devicesData?.devices
+  ? deviceService.hasMobileDevice(devicesData.devices)
+  : false;
+
+// Notification modal state
+const [showNotificationModal, setShowNotificationModal] = useState(false);
+const [isAutoRegistering, setIsAutoRegistering] = useState(false);
+```
+
+**Submit Button Logic Enhancement:**
+
+```typescript
+<Button
+  disabled={
+    submitMutation.isPending ||
+    form.formState.isSubmitting ||
+    !hasMobileDevice  // New gating condition
+  }
+>
+  {hasMobileDevice ? 'Lưu thiết lập' : 'Đăng ký thiết bị trước'}
+</Button>
+```
+
+**User Experience Flow:**
+
+1. Page loads and checks for registered mobile devices
+2. Shows warning banner if no mobile device found
+3. Blocks form submission until device registered
+4. Opens notification modal for device registration
+5. Supports deep-link auto-registration on mobile
+6. Updates UI state after successful registration
+
+**Deep-Link Auto-Registration:**
+
+```typescript
+// Handle ?device=register query param on mobile
+useEffect(() => {
+  const isRegisterFlow = searchParams.get('device') === 'register';
+
+  if (
+    isRegisterFlow &&
+    isMobileDevice() &&
+    !hasMobileDevice &&
+    !isLoadingDevices
+  ) {
+    handleAutoRegister();
+  }
+}, [searchParams, hasMobileDevice, isLoadingDevices]);
+```
+
+**Integration Points:**
+
+- `useDevices` and `useRegisterDevice` hooks (Phase 6)
+- `deviceService.hasMobileDevice()` utility (Phase 6)
+- `isMobileDevice()` platform detection (Phase 9)
+- `requestNotificationPermission()` from Firebase (Phase 8)
+- `NotificationSetupModal` component (Phase 9)
+- Suspense wrapper for `useSearchParams` compatibility
 
 ---
 

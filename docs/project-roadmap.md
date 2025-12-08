@@ -232,7 +232,19 @@ VHealth development is organized into three phases, with Phase 1 complete and Ph
   - [x] PWA installation instructions for iOS
   - [x] "Check Again" button to refetch devices
   - [x] Auto-close modal when mobile device registered
-- [ ] Phase 5: API Integration (Planned)
+- [x] Phase 5: API Integration (Completed - Dec 8, 2025)
+  - [x] Integration with practice schedule API endpoint
+  - [x] Form data transformation for backend compatibility
+  - [x] Loading states and error handling
+  - [x] Query cache invalidation on save
+- [x] Phase 10: Notification Integration (Completed - Dec 8, 2025)
+  - [x] Mobile device check on Practice page load
+  - [x] Notification gate banner when no device registered
+  - [x] Form submission gating until mobile device registered
+  - [x] Deep-link support with `?device=register` query parameter
+  - [x] Auto-registration flow for mobile devices
+  - [x] Suspense wrapper for useSearchParams compatibility
+  - [x] Enhanced submit button state management
 
 **Completed Features:**
 
@@ -476,6 +488,23 @@ Practice Page Phase 4: Sports & Notes Sections
 - Implemented dual textarea for personal notes and health warnings
 - Added character counters with 500 character limit
 - Enhanced security with input validation and sanitization
+
+Practice Page Phase 5: API Integration
+- Integrated practice schedule API endpoint with React Query
+- Implemented form data transformation for backend compatibility
+- Added comprehensive loading states and error handling
+- Set up query cache invalidation on successful save
+- Connected form submission with mutation hooks
+
+Practice Page Phase 10: Notification Integration
+- Integrated notification gating into Practice page
+- Implemented mobile device check on page load
+- Added notification gate banner for unregistered users
+- Blocked form submission until mobile device registered
+- Added deep-link support with `?device=register` query parameter
+- Implemented auto-registration flow for mobile devices
+- Wrapped page with Suspense for useSearchParams compatibility
+- Enhanced submit button state with contextual messaging
 ```
 
 ---
@@ -636,6 +665,7 @@ Q4 2024          Q1 2025          Q2 2025          Q3 2025          Q4 2025
 | 1.0     | Dec 2025 | Initial roadmap creation                    |
 | 1.1     | Dec 2025 | Phase 4 completion updates                  |
 | 1.2     | Dec 2025 | Phase 4 (Notification UI) completion update |
+| 1.3     | Dec 2025 | Phase 5 and 10 completion updates           |
 | 2.0     | -        | Pending Phase 3 execution                   |
 
 ---

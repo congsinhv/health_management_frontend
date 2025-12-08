@@ -1,7 +1,7 @@
 # Practice Page - Notification & API Integration Plan
 
 > **Feature:** FCM Notification Setup & API Schema Update
-> **Status:** In Progress (3 of 6 new phases completed - 50%)
+> **Status:** In Progress (4 of 6 new phases completed - 67%)
 > **Created:** 2025-12-08
 > **Last Updated:** 2025-12-08
 > **Branch:** feat/implement-practice-page
@@ -48,8 +48,8 @@ Extend the existing Practice Page with:
 | 6     | Device Types & Service    | Completed | High     | [phase-06-device-service.md](./phase-06-device-service.md)             |
 | 7     | API Schema Update         | Completed | High     | [phase-07-api-schema.md](./phase-07-api-schema.md)                     |
 | 8     | Firebase + PWA Setup      | Completed | High     | [phase-08-firebase-pwa.md](./phase-08-firebase-pwa.md)                 |
-| 9     | Notification UI Modal     | Pending   | High     | [phase-09-notification-ui.md](./phase-09-notification-ui.md)           |
-| 10    | Practice Page Integration | Pending   | High     | [phase-10-practice-integration.md](./phase-10-practice-integration.md) |
+| 9     | Notification UI Modal     | Completed | High     | [phase-09-notification-ui.md](./phase-09-notification-ui.md)           |
+| 10    | Practice Page Integration | Completed | High     | [phase-10-practice-integration.md](./phase-10-practice-integration.md) |
 | 11    | Profile Device List       | Pending   | Medium   | [phase-11-profile-devices.md](./phase-11-profile-devices.md)           |
 
 ## Architecture Changes
