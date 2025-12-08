@@ -46,8 +46,8 @@ export const ScheduleCard = ({
       className={cn(
         'space-y-4 rounded-lg border p-4 transition-all duration-300',
         isActive
-          ? 'border-primary/20 bg-primary/5 dark:bg-primary/5 dark:border-primary/20 shadow-sm'
-          : 'border-gray-200 bg-gray-50/50 opacity-80 dark:border-gray-800 dark:bg-gray-900/20'
+          ? 'border-primary/80 shadow-sm'
+          : 'border-gray-200 bg-gray-50/50 opacity-80'
       )}
     >
       {/* Header */}
@@ -55,7 +55,6 @@ export const ScheduleCard = ({
         <div className='space-y-1'>
           <div className='flex flex-wrap items-center gap-2'>
             <h3 className='flex items-center gap-2 font-semibold text-gray-900 dark:text-gray-100'>
-              <Dumbbell className='text-primary h-4 w-4' />
               Lịch tập{' '}
               {modeLabels[schedule.schedule_mode] || schedule.schedule_mode}
             </h3>
@@ -81,25 +80,14 @@ export const ScheduleCard = ({
 
         <div className='flex items-center justify-between gap-4 sm:justify-end'>
           <div className='flex items-center gap-2'>
-            <span className='hidden text-sm text-gray-500 sm:inline-block'>
-              Trạng thái
-            </span>
             <Switch
               checked={isActive}
               onCheckedChange={checked => onToggleStatus(schedule.id, checked)}
               disabled={isToggling}
+              className='hover:border-primary/20'
               aria-label='Chuyển trạng thái lịch tập'
             />
           </div>
-
-          <Button asChild variant='outline' size='sm' className='h-8 w-8 p-0'>
-            <Link
-              href={`/practice?edit=${schedule.id}`}
-              aria-label='Chỉnh sửa lịch tập'
-            >
-              <Edit2 className='h-4 w-4' />
-            </Link>
-          </Button>
         </div>
       </div>
 

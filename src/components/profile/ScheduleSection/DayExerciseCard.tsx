@@ -26,7 +26,7 @@ const statusConfig: Record<
   pending: {
     color: 'text-amber-600',
     icon: Clock,
-    bg: 'bg-amber-50 dark:bg-amber-900/20',
+    bg: 'bg-white',
   },
   completed: {
     color: 'text-emerald-600',
@@ -90,10 +90,10 @@ export const DayExerciseCard = ({
       className={cn(
         'relative flex h-[85px] flex-col overflow-hidden rounded-md border p-2 transition-all',
         isActiveSchedule
-          ? 'bg-white dark:bg-gray-900'
+          ? 'border-primary/30 cursor-pointer bg-white dark:bg-gray-900'
           : 'bg-gray-50 opacity-60',
         config.bg,
-        'border-transparent hover:border-gray-200 dark:hover:border-gray-700'
+        'hover:border-primary/80'
       )}
     >
       <div className='mb-1 flex items-start justify-between'>

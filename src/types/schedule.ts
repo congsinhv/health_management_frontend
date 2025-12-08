@@ -46,7 +46,7 @@ export interface ScheduleListResponse {
 }
 
 export interface UpdateScheduleStatusRequest {
-  status: 'active' | 'paused';
+  is_active: boolean;
 }
 
 export interface UpdateScheduleStatusResponse {

@@ -12,6 +12,7 @@ import type {
 export const getSchedules = async (): Promise<Schedule[]> => {
   const response = await apiClient.get<Schedule[]>('/api/v1/schedules/');
   // Filter out superseded schedules
+  console.log('response.data', response.data);
   return response.data.filter(s => s.status !== 'superseded');
 };
 
@@ -24,7 +25,7 @@ export const updateScheduleStatus = async (
 ): Promise<UpdateScheduleStatusResponse> => {
   const response = await apiClient.patch<UpdateScheduleStatusResponse>(
     `/api/v1/schedules/${scheduleId}/`,
-    { status } as UpdateScheduleStatusRequest
+    { is_active: status === 'active' } as UpdateScheduleStatusRequest
   );
   return response.data;
 };

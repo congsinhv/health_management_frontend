@@ -21,7 +21,7 @@ export const ScheduleSection = () => {
     return (
       <div className='flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-600 dark:border-red-800 dark:bg-red-900/10 dark:text-red-400'>
         <AlertCircle className='h-4 w-4' />
-        Không thể tải lịch tập luyện. Vui lòng thử lại sau.
+        Không thể tải lịch tập luyện. Vui lòng thử lại sau. {error.message}
       </div>
     );
   }
