@@ -197,7 +197,7 @@ VHealth development is organized into three phases, with Phase 1 complete and Ph
 
 #### Practice Page - Training Preferences ✅
 
-**Status:** 80% complete (Phase 4 of 5) - Sports & Notes Sections Complete
+**Status:** 90% complete (Phase 4 of 5) - Sports & Notes Sections, Notification UI Complete
 **Last Updated:** December 2025
 
 - [x] Phase 1: Foundation & Types (Completed)
@@ -224,6 +224,14 @@ VHealth development is organized into three phases, with Phase 1 complete and Ph
   - [x] Dual textarea for personal notes and health warnings
   - [x] Character counters (500 limit)
   - [x] Input sanitization and validation
+- [x] Phase 4: Platform Detection & Notification UI (Completed - Dec 8, 2025)
+  - [x] Platform detection utilities (desktop, android, ios)
+  - [x] NotificationSetupModal component with platform-specific content
+  - [x] QR code generation for desktop registration
+  - [x] FCM registration flow for Android
+  - [x] PWA installation instructions for iOS
+  - [x] "Check Again" button to refetch devices
+  - [x] Auto-close modal when mobile device registered
 - [ ] Phase 5: API Integration (Planned)
 
 **Completed Features:**
@@ -623,11 +631,12 @@ Q4 2024          Q1 2025          Q2 2025          Q3 2025          Q4 2025
 
 ## Document History
 
-| Version | Date     | Changes                    |
-| ------- | -------- | -------------------------- |
-| 1.0     | Dec 2025 | Initial roadmap creation   |
-| 1.1     | Dec 2025 | Phase 4 completion updates |
-| 2.0     | -        | Pending Phase 3 execution  |
+| Version | Date     | Changes                                     |
+| ------- | -------- | ------------------------------------------- |
+| 1.0     | Dec 2025 | Initial roadmap creation                    |
+| 1.1     | Dec 2025 | Phase 4 completion updates                  |
+| 1.2     | Dec 2025 | Phase 4 (Notification UI) completion update |
+| 2.0     | -        | Pending Phase 3 execution                   |
 
 ---
 

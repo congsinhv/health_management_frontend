@@ -149,6 +149,9 @@ src/app/
    - `index.ts` - Barrel export
    - Handles user profile pre-fill, dynamic validation, security lock icons
 
+10. **Phase 9: Notification Components**
+    - `NotificationSetupModal.tsx` - Modal for setting up push notifications.
+
 #### contexts/ - React Context State Management
 
 **Two Context Systems:**
@@ -206,7 +209,8 @@ src/lib/
 │   ├── cn.ts               # classnames utility (Tailwind)
 │   ├── avatar.ts           # Avatar color logic
 │   ├── transforms.ts       # Data transformation helpers
-│   └── prediction.ts       # Prediction utilities
+│   ├── prediction.ts       # Prediction utilities
+│   └── platform.ts         # Platform detection utilities (Phase 9)
 ├── constants.ts            # App-wide constants
 ├── storage.ts              # localStorage abstraction
 ├── logger.ts               # Custom logging utility
@@ -220,6 +224,7 @@ src/lib/
 - `formatDate()`, `parseDate()` - date transformations
 - `logger` - centralized logging system
 - `storage` - type-safe localStorage wrapper
+- `isIOS()`, `isAndroid()`, `isMobile()`, `isStandalonePWA()` - Platform detection utilities
 
 #### services/ - API Integration Layer (10 modules)
 
@@ -706,15 +711,16 @@ Examples:
 ## Notable Files & Their Purposes
 
 | File                                | Purpose                        | Lines |
-| ----------------------------------- | ------------------------------ | ----- |
-| `src/services/api.ts`               | Axios client with interceptors | 150+  |
-| `src/contexts/auth/AuthContext.tsx` | Auth state management          | 100+  |
-| `src/lib/react-query.tsx`           | React Query provider setup     | 50+   |
-| `src/app/layout.tsx`                | Root layout with providers     | 40+   |
-| `src/lib/logger.ts`                 | Centralized logging system     | 50+   |
-| `src/lib/storage.ts`                | localStorage abstraction       | 40+   |
-| `next.config.ts`                    | Next.js configuration          | 60+   |
-| `tailwind.config.js`                | Tailwind CSS setup             | 100+  |
+| ----------------------------------- | ------------------------------ | ----- | --- |
+| `src/services/api.ts`               | Axios client with interceptors | 150+  | \   |
+| `src/contexts/auth/AuthContext.tsx` | Auth state management          | 100+  | \   |
+| `src/lib/react-query.tsx`           | React Query provider setup     | 50+   | \   |
+| `src/app/layout.tsx`                | Root layout with providers     | 40+   | \   |
+| `src/lib/logger.ts`                 | Centralized logging system     | 50+   | \   |
+| `src/lib/storage.ts`                | localStorage abstraction       | 40+   | \   |
+| `next.config.ts`                    | Next.js configuration          | 60+   | \   |
+| `tailwind.config.js`                | Tailwind CSS setup             | 100+  | \   |
+| `src/lib/utils/platform.ts`         | Platform detection utilities   | New   |
 
 ---
 
@@ -798,9 +804,9 @@ Examples:
 
 - **main/master** - Production releases only
 - **develop** - Integration branch for features
-- **feature/\*** - Individual feature branches
-- **hotfix/\*** - Emergency production fixes
-- **release/\*** - Release preparation branches
+- \*_feature/_` - Individual feature branches
+- \*_hotfix/_` - Emergency production fixes
+- \*_release/_` - Release preparation branches
 
 ### Commit Convention
 
@@ -931,13 +937,13 @@ Container Registry (Google Artifact Registry)
 ## Known Limitations & Technical Debt
 
 | Item                   | Status          | Notes                              |
-| ---------------------- | --------------- | ---------------------------------- |
+| ---------------------- | --------------- | ---------------------------------- | --- |
 | Mobile responsiveness  | In Progress     | Phase 2 optimization               |
-| Offline support        | Not Implemented | Planned for Phase 3                |
-| Progressive Web App    | Not Implemented | Future enhancement                 |
-| Multi-language support | Not Implemented | Phase 3 feature                    |
-| Analytics integration  | Optional        | Can be enabled via env var         |
-| Real-time updates      | Partial         | SSE for chat, WebSocket for future |
+| Offline support        | Not Implemented | Planned for Phase 3                | \   |
+| Progressive Web App    | Not Implemented | Future enhancement                 | \   |
+| Multi-language support | Not Implemented | Phase 3 feature                    | \   |
+| Analytics integration  | Optional        | Can be enabled via env var         | \   |
+| Real-time updates      | Partial         | SSE for chat, WebSocket for future | \   |
 
 ---
 
@@ -948,3 +954,37 @@ Container Registry (Google Artifact Registry)
 - `docs/system-architecture.md` - Technical architecture deep dive
 - `docs/deployment-guide.md` - Deployment and operational procedures
 - `/plans/reports/scout-src-analysis-251206.md` - Detailed codebase audit
+
+---
+
+## Repomix Summary (Auto-generated 2025-12-08)
+
+### Top 5 Files by Token Count:
+
+1. `public/AI_logo.json` (19,950 tokens, 58,526 chars, 8.8%)
+2. `public/workbox-1bb06f5e.js` (7,227 tokens, 23,577 chars, 3.2%)
+3. `src/app/predict/validation.test.ts` (6,486 tokens, 23,494 chars, 2.9%)
+4. `public/Healthcare_logo.svg` (5,971 tokens, 10,592 chars, 2.6%)
+5. `public/sw.js` (5,485 tokens, 13,916 chars, 2.4%)
+
+### Security Check:
+
+✔ No suspicious files detected.
+
+### Binary Files Detected:
+
+24 files detected as binary by content inspection. These files have been excluded from the output.
+(List includes various `.otf` font files)
+
+### Pack Summary:
+
+- Total Files: 215 files
+- Total Tokens: 226,345 tokens
+- Total Chars: 872,008 chars
+- Security: ✔ No suspicious files detected
+
+## Changed Files for Phase 09 Documentation Update:
+
+- `src/lib/utils/platform.ts`
+- `src/components/practice/NotificationSetupModal.tsx`
+- `src/components/practice/index.ts`
