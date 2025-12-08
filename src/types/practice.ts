@@ -74,17 +74,31 @@ export interface PracticeProfileResponse {
 
 // Schedule API request schema (new /schedules/ endpoint)
 export interface ScheduleApiRequest {
-  height_cm?: number;
-  weight_kg?: number;
-  target_weight_kg: number;
-  goal?: 'gain' | 'lose' | 'maintain';
-  schedule_mode: 'flexible' | 'fixed';
-  schedule_days: string[];
-  time_periods: Record<string, Array<{ start_time: string; end_time: string }>>;
-  sports_predefined: string[];
-  sports_custom: string[];
-  notes_personal?: string | null;
-  notes_health?: string | null;
+  basic_info: {
+    height_cm?: number;
+    weight_kg?: number;
+    target_weight_kg: number;
+    goal?: 'gain' | 'lose' | 'maintain';
+  };
+  schedule: {
+    schedule_mode: 'flexible' | 'fixed';
+    selected_days: string[];
+    // For flexible mode: time periods per day
+    time_periods?: Record<
+      string,
+      Array<{ start_time: string; end_time: string }>
+    >;
+    // For fixed mode: single time period applied to all selected days
+    fixed_period?: { start_time: string; end_time: string };
+  };
+  sports: {
+    sports_predefined: string[];
+    sports_custom: string[];
+  };
+  notes?: {
+    notes_personal?: string | null;
+    notes_health?: string | null;
+  };
 }
 
 // Schedule API response

@@ -97,10 +97,10 @@ const PracticePageContent = () => {
     if (userProfile?.profile) {
       const profile = userProfile.profile;
       if (profile.height_cm) {
-        form.setValue('basicInfo.height', profile.height_cm);
+        form.setValue('basicInfo.height', Number(profile.height_cm));
       }
       if (profile.weight_kg) {
-        form.setValue('basicInfo.weight', profile.weight_kg);
+        form.setValue('basicInfo.weight', Number(profile.weight_kg));
       }
       if (profile.goal) {
         form.setValue(

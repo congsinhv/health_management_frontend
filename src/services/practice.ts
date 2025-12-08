@@ -39,43 +39,49 @@ export const savePracticeSchedule = async (
  * Format form data for new schedule API
  */
 const formatForScheduleAPI = (data: PracticeFormData): ScheduleApiRequest => {
-  // Build time periods with snake_case keys
-  const timePeriods: Record<
-    string,
-    Array<{ start_time: string; end_time: string }>
-  > = {};
+  // Build schedule object based on mode
+  const scheduleObj: ScheduleApiRequest['schedule'] = {
+    schedule_mode: data.schedule.mode,
+    selected_days: data.schedule.selectedDays,
+  };
 
   if (data.schedule.mode === 'flexible' && data.schedule.flexiblePeriods) {
+    // For flexible mode: time periods per day
+    const timePeriods: Record<
+      string,
+      Array<{ start_time: string; end_time: string }>
+    > = {};
     Object.entries(data.schedule.flexiblePeriods).forEach(([day, periods]) => {
       timePeriods[day] = periods.map(p => ({
         start_time: p.startTime,
         end_time: p.endTime,
       }));
     });
+    scheduleObj.time_periods = timePeriods;
   } else if (data.schedule.mode === 'fixed' && data.schedule.fixedPeriod) {
-    // Expand fixed period to all selected days
-    data.schedule.selectedDays.forEach(day => {
-      timePeriods[day] = [
-        {
-          start_time: data.schedule.fixedPeriod!.startTime,
-          end_time: data.schedule.fixedPeriod!.endTime,
-        },
-      ];
-    });
+    // For fixed mode: single fixed_period object
+    scheduleObj.fixed_period = {
+      start_time: data.schedule.fixedPeriod.startTime,
+      end_time: data.schedule.fixedPeriod.endTime,
+    };
   }
 
   return {
-    height_cm: data.basicInfo.height,
-    weight_kg: data.basicInfo.weight,
-    target_weight_kg: data.basicInfo.targetWeight,
-    goal: data.basicInfo.goal,
-    schedule_mode: data.schedule.mode,
-    schedule_days: data.schedule.selectedDays,
-    time_periods: timePeriods,
-    sports_predefined: data.sports.predefined,
-    sports_custom: data.sports.custom,
-    notes_personal: data.notes.personal || null,
-    notes_health: data.notes.healthWarnings || null,
+    basic_info: {
+      height_cm: data.basicInfo.height,
+      weight_kg: data.basicInfo.weight,
+      target_weight_kg: data.basicInfo.targetWeight,
+      goal: data.basicInfo.goal,
+    },
+    schedule: scheduleObj,
+    sports: {
+      sports_predefined: data.sports.predefined,
+      sports_custom: data.sports.custom,
+    },
+    notes: {
+      notes_personal: data.notes.personal || null,
+      notes_health: data.notes.healthWarnings || null,
+    },
   };
 };
 

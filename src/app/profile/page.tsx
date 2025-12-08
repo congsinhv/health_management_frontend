@@ -65,7 +65,7 @@ const profileFormSchema = z.object({
     message: 'Vui lòng chọn ngày sinh',
   }),
   underlyingConditions: z.string().optional(),
-  goal: z.enum(['lose-weight', 'gain-weight', 'maintain'], {
+  goal: z.enum(['gain', 'lose', 'maintain'], {
     message: 'Vui lòng chọn mục tiêu',
   }),
 });
@@ -123,19 +123,13 @@ function ProfileContent() {
 
     // Map goal from API to form enum values
     const goalValue = profile?.goal;
-    let goalEnum: 'lose-weight' | 'gain-weight' | 'maintain' | undefined;
-    if (goalValue) {
-      const goalLower = goalValue.toLowerCase();
-      if (goalLower.includes('giảm') || goalLower.includes('lose')) {
-        goalEnum = 'lose-weight';
-      } else if (goalLower.includes('tăng') || goalLower.includes('gain')) {
-        goalEnum = 'gain-weight';
-      } else if (
-        goalLower.includes('duy trì') ||
-        goalLower.includes('maintain')
-      ) {
-        goalEnum = 'maintain';
-      }
+    let goalEnum: 'gain' | 'lose' | 'maintain' | undefined;
+    if (
+      goalValue === 'gain' ||
+      goalValue === 'lose' ||
+      goalValue === 'maintain'
+    ) {
+      goalEnum = goalValue;
     }
     updateUserInContext({
       profilePicture: avatarUrl || '',
@@ -225,13 +219,8 @@ function ProfileContent() {
             .split('T')[0]
         : undefined;
 
-      // Map goal values
-      const goalMap: Record<string, string> = {
-        'lose-weight': 'Giảm cân',
-        'gain-weight': 'Tăng cân',
-        maintain: 'Duy trì',
-      };
-      const goalValue = data.goal ? goalMap[data.goal] || data.goal : undefined;
+      // Goal value is already in the correct enum format
+      const goalValue = data.goal;
 
       // Prepare update data
       const updateData: UpdateUserProfileData = {
@@ -588,12 +577,8 @@ function ProfileContent() {
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value='lose-weight'>
-                                Giảm cân
-                              </SelectItem>
-                              <SelectItem value='gain-weight'>
-                                Tăng cân
-                              </SelectItem>
+                              <SelectItem value='lose'>Giảm cân</SelectItem>
+                              <SelectItem value='gain'>Tăng cân</SelectItem>
                               <SelectItem value='maintain'>Duy trì</SelectItem>
                             </SelectContent>
                           </Select>
