@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useEffect, useState, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -25,10 +25,11 @@ import { savePracticeSchedule } from '@/services/practice';
 import { deviceService } from '@/services/device';
 import { userService } from '@/services/user';
 import { isMobileDevice } from '@/lib/utils/platform';
-import { requestNotificationPermission } from '@/lib/firebase';
+import { requestNotificationPermissionWithDetails } from '@/lib/firebase';
 import { useDevices, useRegisterDevice } from '@/hooks/useDevices';
 import type { PracticeFormData } from '@/types/practice';
 import { practiceFormSchema } from './validation';
+import { ProtectedRoute } from '@/components/shared/ProtectedRoute';
 
 const PracticePageContent = () => {
   const { user } = useAuth();
@@ -38,6 +39,9 @@ const PracticePageContent = () => {
   // Notification modal state
   const [showNotificationModal, setShowNotificationModal] = useState(false);
   const [isAutoRegistering, setIsAutoRegistering] = useState(false);
+
+  // Refs to prevent duplicate operations
+  const hasAttemptedAutoRegister = useRef(false);
 
   // Fetch user devices
   const {
@@ -115,10 +119,13 @@ const PracticePageContent = () => {
       isRegisterFlow &&
       isMobileDevice() &&
       !hasMobileDevice &&
-      !isLoadingDevices
+      !isLoadingDevices &&
+      !hasAttemptedAutoRegister.current
     ) {
+      hasAttemptedAutoRegister.current = true;
       handleAutoRegister();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams, hasMobileDevice, isLoadingDevices]);
 
   // Show modal if no mobile device (after loading)
@@ -133,9 +140,12 @@ const PracticePageContent = () => {
     setIsAutoRegistering(true);
 
     try {
-      const token = await requestNotificationPermission();
-      if (!token) {
-        toast.error('Vui lòng cho phép thông báo để tiếp tục');
+      const result = await requestNotificationPermissionWithDetails();
+      if (!result.token) {
+        console.error('Auto-register notification error:', result.error);
+        toast.error(
+          result.errorMessage || 'Vui lòng cho phép thông báo để tiếp tục'
+        );
         setShowNotificationModal(true);
         return;
       }
@@ -145,7 +155,7 @@ const PracticePageContent = () => {
         : 'android';
 
       await registerDevice.mutateAsync({
-        fcm_token: token,
+        fcm_token: result.token,
         platform,
         device_name: navigator.userAgent.substring(0, 50),
       });
@@ -328,7 +338,9 @@ const PracticePageContent = () => {
 const PracticePage = () => {
   return (
     <Suspense fallback={<LoadingFallback />}>
-      <PracticePageContent />
+      <ProtectedRoute>
+        <PracticePageContent />
+      </ProtectedRoute>
     </Suspense>
   );
 };

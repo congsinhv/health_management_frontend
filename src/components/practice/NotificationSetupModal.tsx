@@ -23,7 +23,7 @@ import {
   isInstalledPWA,
   type Platform,
 } from '@/lib/utils/platform';
-import { requestNotificationPermission } from '@/lib/firebase';
+import { requestNotificationPermissionWithDetails } from '@/lib/firebase';
 import { useRegisterDevice, useDevices } from '@/hooks/useDevices';
 import { deviceService } from '@/services/device';
 import type { Device } from '@/types/device';
@@ -82,16 +82,18 @@ export const NotificationSetupModal = ({
     setRegistrationError(null);
 
     try {
-      const token = await requestNotificationPermission();
-      if (!token) {
+      const result = await requestNotificationPermissionWithDetails();
+      if (!result.token) {
         setRegistrationError(
-          'Không thể lấy token thông báo. Vui lòng cho phép thông báo.'
+          result.errorMessage ||
+            'Không thể lấy token thông báo. Vui lòng cho phép thông báo.'
         );
+        console.error('Notification permission error:', result.error);
         return;
       }
 
       await registerDevice.mutateAsync({
-        fcm_token: token,
+        fcm_token: result.token,
         platform: 'android',
         device_name: navigator.userAgent.substring(0, 50),
       });
@@ -114,16 +116,18 @@ export const NotificationSetupModal = ({
     setRegistrationError(null);
 
     try {
-      const token = await requestNotificationPermission();
-      if (!token) {
+      const result = await requestNotificationPermissionWithDetails();
+      if (!result.token) {
         setRegistrationError(
-          'Vui lòng cho phép thông báo trong cài đặt Safari.'
+          result.errorMessage ||
+            'Vui lòng cho phép thông báo trong cài đặt Safari.'
         );
+        console.error('iOS notification permission error:', result.error);
         return;
       }
 
       await registerDevice.mutateAsync({
-        fcm_token: token,
+        fcm_token: result.token,
         platform: 'ios',
         device_name: 'iPhone/iPad',
       });

@@ -114,38 +114,103 @@ export const registerFcmServiceWorker =
   };
 
 /**
+ * Error types for notification permission request
+ */
+export type NotificationError =
+  | 'permission_denied'
+  | 'sw_registration_failed'
+  | 'fcm_not_supported'
+  | 'vapid_not_configured'
+  | 'token_error'
+  | 'unknown';
+
+export interface NotificationResult {
+  token: string | null;
+  error?: NotificationError;
+  errorMessage?: string;
+}
+
+/**
  * Request notification permission and get FCM token
- * @returns FCM token or null if permission denied
+ * @returns Object with FCM token or error details
  */
 export const requestNotificationPermission = async (): Promise<
   string | null
 > => {
-  try {
-    // Register service worker first
-    await registerFcmServiceWorker();
-
-    const permission = await Notification.requestPermission();
-    if (permission !== 'granted') {
-      console.warn('Notification permission denied');
-      return null;
-    }
-
-    const messagingInstance = await getFirebaseMessaging();
-    if (!messagingInstance) return null;
-
-    const vapidKey = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY;
-    if (!vapidKey) {
-      console.error('VAPID key not configured');
-      return null;
-    }
-
-    const token = await getToken(messagingInstance, { vapidKey });
-    return token;
-  } catch (error) {
-    console.error('Error getting FCM token:', error);
-    return null;
-  }
+  const result = await requestNotificationPermissionWithDetails();
+  return result.token;
 };
+
+/**
+ * Request notification permission with detailed error information
+ * @returns Object with FCM token or detailed error information
+ */
+export const requestNotificationPermissionWithDetails =
+  async (): Promise<NotificationResult> => {
+    try {
+      // Register service worker first
+      const swRegistration = await registerFcmServiceWorker();
+      if (!swRegistration) {
+        console.error('Service worker registration failed');
+        return {
+          token: null,
+          error: 'sw_registration_failed',
+          errorMessage: 'Không thể đăng ký service worker. Vui lòng thử lại.',
+        };
+      }
+
+      const permission = await Notification.requestPermission();
+      if (permission !== 'granted') {
+        console.warn('Notification permission denied:', permission);
+        return {
+          token: null,
+          error: 'permission_denied',
+          errorMessage:
+            'Vui lòng cho phép thông báo trong cài đặt trình duyệt.',
+        };
+      }
+
+      const messagingInstance = await getFirebaseMessaging();
+      if (!messagingInstance) {
+        console.error('FCM not supported or Firebase not initialized');
+        return {
+          token: null,
+          error: 'fcm_not_supported',
+          errorMessage:
+            'Trình duyệt không hỗ trợ thông báo đẩy. Vui lòng sử dụng Chrome hoặc Safari mới nhất.',
+        };
+      }
+
+      const vapidKey = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY;
+      if (!vapidKey) {
+        console.error('VAPID key not configured');
+        return {
+          token: null,
+          error: 'vapid_not_configured',
+          errorMessage:
+            'Cấu hình thông báo chưa hoàn tất. Vui lòng liên hệ hỗ trợ.',
+        };
+      }
+
+      const token = await getToken(messagingInstance, { vapidKey });
+      if (!token) {
+        return {
+          token: null,
+          error: 'token_error',
+          errorMessage: 'Không thể lấy token thông báo. Vui lòng thử lại.',
+        };
+      }
+
+      return { token };
+    } catch (error) {
+      console.error('Error getting FCM token:', error);
+      return {
+        token: null,
+        error: 'unknown',
+        errorMessage: `Lỗi không xác định: ${error instanceof Error ? error.message : 'Unknown'}`,
+      };
+    }
+  };
 
 /**
  * Check if notifications are supported and permission status
