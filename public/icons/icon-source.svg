@@ -1,0 +1,30 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="512" height="512" fill="#0a1628"/>
+  
+  <!-- VHealth logo centered - manually scaled paths (original 25x29 -> scaled 10x and centered) -->
+  <!-- Center point: (256, 256), logo size after scale: 250x290, offset: (131, 111) -->
+  <path d="M380.963 119.149L251.695 260.681L211.691 335.935C211.691 335.935 152.536 266.346 217.88 201.154C270.512 148.651 299.057 119.415 380.963 119.149Z" fill="url(#grad0)"/>
+  <path d="M380.963 119.149C380.963 119.149 382.611 171.037 364.938 211.542C347.272 252.04 306.985 314.377 275.023 340.324C243.061 366.272 211.683 335.935 211.683 335.935L251.687 260.681L380.963 119.149Z" fill="url(#grad1)"/>
+  <path d="M131 192.285C137.819 266.794 163.038 302.022 184.43 328.653C189.236 334.637 195.471 341.167 202.244 347.706L252.697 258.54C201.12 187.387 131 192.285 131 192.285Z" fill="url(#grad2)"/>
+  <path d="M256.008 263.225C254.915 261.623 253.813 260.074 252.705 258.54L202.52 347.706C225.641 370.267 255.514 392.85 255.514 392.85C255.514 392.85 307.843 339.278 256.008 263.218V263.225Z" fill="url(#grad3)"/>
+  
+  <defs>
+    <linearGradient id="grad0" x1="134.4" y1="347.07" x2="311.6" y2="116.01" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#A6FBD0"/>
+      <stop offset="1" stop-color="#16F5A2"/>
+    </linearGradient>
+    <linearGradient id="grad1" x1="174.5" y1="370.69" x2="329.1" y2="124.05" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#32F6B4"/>
+      <stop offset="1" stop-color="#04C98B"/>
+    </linearGradient>
+    <linearGradient id="grad2" x1="180.2" y1="183.44" x2="293.4" y2="316.14" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#32F6B4"/>
+      <stop offset="1" stop-color="#14B6E2"/>
+    </linearGradient>
+    <linearGradient id="grad3" x1="286.9" y1="300.56" x2="213.6" y2="356.68" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0099FF"/>
+      <stop offset="1" stop-color="#14B6E2"/>
+    </linearGradient>
+  </defs>
+</svg>
