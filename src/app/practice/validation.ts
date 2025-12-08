@@ -30,6 +30,12 @@ const optionalTimePeriodSchema = z.object({
   endTime: z.string(),
 });
 
+// Flexible time period schema - allows empty strings, validated conditionally
+const flexibleTimePeriodSchema = z.object({
+  startTime: z.string(),
+  endTime: z.string(),
+});
+
 export const practiceFormSchema = z.object({
   // Basic Info
   basicInfo: z.object({
@@ -47,10 +53,12 @@ export const practiceFormSchema = z.object({
     .object({
       mode: z.enum(['flexible', 'fixed']),
       selectedDays: z.array(z.string()).min(1, 'Chọn ít nhất 1 ngày'),
+      // Use flexible schema that allows empty strings - validated in superRefine
       flexiblePeriods: z
-        .record(z.string(), z.array(timePeriodSchema))
+        .record(z.string(), z.array(flexibleTimePeriodSchema))
         .optional(),
-      fixedPeriod: timePeriodSchema.optional(),
+      // Use flexible schema that allows empty strings - validated in superRefine
+      fixedPeriod: optionalTimePeriodSchema.optional(),
     })
     .superRefine((data, ctx) => {
       if (data.mode === 'fixed') {
@@ -66,14 +74,14 @@ export const practiceFormSchema = z.object({
         if (!timeRegex.test(data.fixedPeriod.startTime)) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
-            message: 'Invalid time format (HH:mm or HH:mm:ss)',
+            message: 'Định dạng thời gian không hợp lệ (HH:mm)',
             path: ['fixedPeriod', 'startTime'],
           });
         }
         if (!timeRegex.test(data.fixedPeriod.endTime)) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
-            message: 'Invalid time format (HH:mm or HH:mm:ss)',
+            message: 'Định dạng thời gian không hợp lệ (HH:mm)',
             path: ['fixedPeriod', 'endTime'],
           });
         }
@@ -89,6 +97,24 @@ export const practiceFormSchema = z.object({
               code: z.ZodIssueCode.custom,
               message: `Vui lòng thêm ít nhất 1 khung giờ cho ${day}`,
               path: ['flexiblePeriods', day],
+            });
+          } else {
+            // Validate each time period format
+            dayPeriods.forEach((period, index) => {
+              if (!timeRegex.test(period.startTime)) {
+                ctx.addIssue({
+                  code: z.ZodIssueCode.custom,
+                  message: 'Định dạng thời gian không hợp lệ (HH:mm)',
+                  path: ['flexiblePeriods', day, index, 'startTime'],
+                });
+              }
+              if (!timeRegex.test(period.endTime)) {
+                ctx.addIssue({
+                  code: z.ZodIssueCode.custom,
+                  message: 'Định dạng thời gian không hợp lệ (HH:mm)',
+                  path: ['flexiblePeriods', day, index, 'endTime'],
+                });
+              }
             });
           }
         }
