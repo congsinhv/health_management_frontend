@@ -6,8 +6,10 @@ import { initializeApp, getApps, FirebaseApp } from 'firebase/app';
 import {
   getMessaging,
   getToken,
+  onMessage,
   Messaging,
   isSupported,
+  MessagePayload,
 } from 'firebase/messaging';
 
 const firebaseConfig = {
@@ -231,4 +233,37 @@ export const getNotificationStatus = (): {
 export const checkFcmSupport = async (): Promise<boolean> => {
   if (typeof window === 'undefined') return false;
   return await isSupported();
+};
+
+/**
+ * Callback type for foreground message handler
+ */
+export type ForegroundMessageCallback = (payload: MessagePayload) => void;
+
+/**
+ * Setup foreground message handler
+ * This handles notifications when the PWA is OPEN (foreground)
+ * ONLY shows toast - no browser notification (user is already in app)
+ * @param callback Callback to handle the message (e.g., show toast)
+ * @returns Unsubscribe function or null if setup failed
+ */
+export const setupForegroundMessageHandler = async (
+  callback?: ForegroundMessageCallback
+): Promise<(() => void) | null> => {
+  const messagingInstance = await getFirebaseMessaging();
+  if (!messagingInstance) {
+    console.warn('FCM not available for foreground messages');
+    return null;
+  }
+
+  const unsubscribe = onMessage(messagingInstance, payload => {
+    // ONLY call callback (for toast) - NO browser notification
+    // User is already in the app, toast is sufficient
+    // Browser notification would be duplicate/annoying
+    if (callback) {
+      callback(payload);
+    }
+  });
+
+  return unsubscribe;
 };
