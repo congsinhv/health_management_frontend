@@ -46,7 +46,7 @@ export const metadata: Metadata = {
       { url: '/icons/icon-152x152.png', sizes: '152x152', type: 'image/png' },
     ],
   },
-  manifest: '/manifest.json',
+  // manifest is now handled by src/app/manifest.ts
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
