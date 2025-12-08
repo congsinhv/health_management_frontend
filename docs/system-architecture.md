@@ -61,7 +61,7 @@ Layer 1: Next.js Pages (App Router)
 Layer 2: React Components (100+)
   │
   ├─── UI Components (shadcn/ui)
-  ├─── Feature Components (Chat, Predict, etc.)
+  ├─── Feature Components (Chat, Predict, DeviceList, etc.)
   ├─── Layout Components (Header, Footer, etc.)
   └─── Shared Components (Avatar, Card, etc.)
          │
@@ -71,6 +71,7 @@ Layer 3: Hooks & Context
   ├─── useAuth() - Authentication state
   ├─── useChat() - Chat state
   ├─── useQuery() - Server state (React Query)
+  ├─── useDevices(), useDeleteDevice() - Device management
   └─── useState(), useEffect() - Local state
          │
          ▼
@@ -80,6 +81,7 @@ Layer 4: Services (API abstraction)
   ├─── userService
   ├─── chatService
   ├─── healthService
+  ├─── deviceService
   └─── [other services]
          │
          ▼
@@ -111,8 +113,8 @@ Layer 6: Backend API & External Services
 
 **Key Components:**
 
-- Page components (auth, dashboard, etc.)
-- Feature components (chat, health tracking)
+- Page components (auth, dashboard, profile, etc.)
+- Feature components (chat, health tracking, device management)
 - Layout components (header, footer)
 - Reusable UI components (button, input, card)
 
@@ -137,6 +139,7 @@ Page
 - Handle user authentication
 - Manage conversation state
 - Provide data to components via custom hooks
+- Manage device registration and unregistration
 
 **Key Patterns:**
 
@@ -165,6 +168,15 @@ React Query
       ├── Data caching
       ├── Background refetch
       └── Loading states
+
+Device Hooks (Phase 11)
+  └── useDevices() → Components
+      ├── Fetches list of registered devices
+      └── Handles loading, error, empty states
+
+  └── useDeleteDevice() → Components
+      ├── Handles device removal mutation
+      └── Triggers UI updates upon successful deletion
 ```
 
 ### 3. Service Layer (API Abstraction)
@@ -188,7 +200,8 @@ health.ts    → GET/POST health metrics, goals, etc.
 upload.ts    → POST file uploads, avatars, etc.
 qa.ts        → POST Q&A queries, GET suggestions
 practice.ts  → GET /practice/profile, POST /practice/preferences (Phase 5)
-device.ts    → GET /devices, POST /devices, DELETE /devices/{id} (Phase 6)
+device.ts    → GET /devices, POST /devices, DELETE /devices/{id} (Phase 6 & 11)
+notification.ts → POST /notifications, GET /notifications (Phase 11, if applicable)
 ```
 
 **Pattern:**
@@ -201,6 +214,13 @@ export const login = async (email: string, password: string) => {
   });
   return response.data as AuthResponse;
 };
+
+export const register = async (data: RegisterInput): Promise<void> => {
+  await api.post('/auth/register', data);
+};
+
+// Services are ONLY API calls + type conversions
+// No business logic, no state management
 ```
 
 ### 4. HTTP Client Layer (Axios)
@@ -290,6 +310,16 @@ chat.ts
 health.ts
   - HealthMetric
   - HealthGoal
+
+device.ts (Phase 6 & 11)
+  - DevicePlatform
+  - Device
+  - RegisterDeviceInput
+  - DeviceListResponse
+
+notification.ts (Phase 11, if applicable)
+  - Notification
+  - NotificationPreferences
 
 (and more domain-specific types)
 ```
@@ -404,18 +434,18 @@ USER LOGGED IN
 
 ### Security Measures
 
-| Layer                | Mechanism                   | Implementation                        |
-| -------------------- | --------------------------- | ------------------------------------- |
-| **Transport**        | HTTPS/TLS 1.3+              | Production only (localhost in dev)    |
-| **Authentication**   | JWT with access + refresh   | 15min access, 7-day refresh           |
-| **Token Refresh**    | Automatic + request queuing | Prevents race conditions              |
-| **Input Validation** | Zod schemas on client       | All form inputs validated before send |
-| **XSS Prevention**   | React built-in escaping     | No dangerouslySetInnerHTML usage      |
-| **CSRF Protection**  | State tokens in OAuth       | Session validation on sensitive ops   |
-| **Storage**          | localStorage (frontend)     | Plan to migrate to httpOnly cookies   |
-| **Secrets**          | Environment variables       | NEXT*PUBLIC*\* for client config only |
+| Layer                | Mechanism                   | Implementation                          |
+| -------------------- | --------------------------- | --------------------------------------- |
+| **Transport**        | HTTPS/TLS 1.3+              | Production only (localhost in dev)      |
+| **Authentication**   | JWT with access + refresh   | 15min access, 7-day refresh             |
+| **Token Refresh**    | Automatic + request queuing | Prevents race conditions                |
+| **Input Validation** | Zod schemas on client       | All form inputs validated before send   |
+| **XSS Prevention**   | React built-in escaping     | No dangerouslySetInnerHTML usage        |
+| **CSRF Protection**  | State tokens in OAuth       | Session validation on sensitive ops     |
+| **Storage**          | localStorage (frontend)     | Plan to migrate to httpOnly cookies     |
+| **Secrets**          | Environment variables       | NEXT*PUBLIC*\\\* for client config only |
 
-### Push Notification Architecture (FCM) (Phase 6-8)
+### Push Notification Architecture (FCM) (Phase 6-8 & 11)
 
 ```
 ┌──────────────────────────────────────────────────────┐
@@ -457,13 +487,20 @@ Device Registration Flow (Phase 6):
     ↓
   Device now eligible for push notifications
 
-Device Management:
-  Frontend useDevices() hook
-    ├─► Fetches list of registered devices
-    ├─► Caches with 5 minute stale time
-    └─► Updates via useRegisterDevice/useDeleteDevice
+Device Management (Phase 11 - User-facing in Profile):
+  User navigates to /profile
+    ↓
+  <DeviceList /> component mounts
+    ├─► Frontend useDevices() hook
+    │   ├─► Calls deviceService.getDevices()
+    │   └─► Fetches list of registered devices
+    ├─► Renders device details (platform, name, registered date)
+    └─► Allows user to delete device
+        ├─► Frontend useDeleteDevice() hook
+        ├─► Calls deviceService.deleteDevice(deviceId)
+        └─► Updates UI upon success
 
-  Available Operations:
+  Available Operations (via deviceService):
     ├─► getDevices() - Fetch all devices
     ├─► registerDevice(data) - Register new device
     └─► deleteDevice(deviceId) - Unregister device
@@ -675,6 +712,24 @@ useMutation({
   → Create new conversation
   → Invalidate conversations list
   → Triggers automatic refetch
+
+useQuery({ // Example for Device Management (Phase 11)
+  queryKey: ['devices'],
+  queryFn: () => deviceService.getDevices(),
+})
+  → Fetches and caches list of registered devices
+  → Automatic background updates
+
+useMutation({ // Example for Device Management (Phase 11)
+  mutationFn: (deviceId) => deviceService.deleteDevice(deviceId),
+  onSuccess: () => {
+    queryClient.invalidateQueries({
+      queryKey: ['devices']
+    });
+  },
+})
+  → Handles deletion of a device
+  → Invalidates device list to trigger refetch
 ```
 
 ### Local Component State
@@ -720,6 +775,19 @@ ChatPage Component
        ├─► messageInput (form field)
        ├─► isExpanded (UI state)
        └─► selectedMessageId (selection state)
+
+ProfilePage Component (with DeviceList - Phase 11)
+  │
+  ├─── Global Auth State (useAuth)
+  │    └─► user, isAuthenticated
+  │
+  ├─── Server State (useQuery)
+  │    ├─► userProfile (from React Query)
+  │    └─► devices (from useDevices hook via React Query)
+  │
+  └─► Local Component State (useState)
+       ├─► showDeleteConfirmation (for device removal)
+       └─► selectedDeviceId (for deletion)
 ```
 
 ---
@@ -881,7 +949,7 @@ export const login = async (
 ```
 app/
 ├── (auth)
-│   ├── login/page.tsx
+│   ├── login/page.tsx           → /login
 │   │   └── LoginPage
 │   │       ├── Header
 │   │       ├── LoginForm
@@ -912,7 +980,8 @@ app/
     │   └── ProfilePage
     │       ├── ProfileForm
     │       ├── AvatarUpload
-    │       └── PasswordChange
+    │       ├── PasswordChange
+    │       └── DeviceList (Phase 11)
     │
     ├── chatbox/page.tsx
     │   └── ChatPage
@@ -960,7 +1029,7 @@ Pages (in src/app/**/page.tsx)
   → Handle routing
   → Layout with providers
 
-Feature Components (src/components/chat/, predict/)
+Feature Components (src/components/chat/, predict/, profile/)
   → Business logic specific to feature
   → Can be complex multi-component modules
   → Use feature-specific hooks
@@ -1168,56 +1237,6 @@ UI Updates with user data
 [Background refetch updates cache]
 ```
 
-### Pattern 6: Practice Plan Form with Schedule Configuration (Phase 3)
-
-```
-[PracticePage mounts with ScheduleSection]
-    ↓
-[useForm() initialized with schedule defaults]
-    ├─► mode: 'flexible' (default)
-    ├─► selectedDays: [] (empty array)
-    ├─► flexiblePeriods: {} (empty object)
-    └─► fixedPeriod: { startTime: '', endTime: '' }
-    ↓
-[ScheduleSection renders with form.control]
-    ├─► Mode toggle tabs (flexible/fixed)
-    ├─► DayPicker with circular buttons
-    ├─► Conditional mode rendering
-    └─► Form validation integration
-    ↓
-[User selects days in DayPicker]
-    ├─► onChange updates form.selectedDays
-    ├─► Visual feedback (selected state)
-    ├─► ARIA labels for accessibility
-    └─► Triggers mode component re-render
-    ↓
-[FlexibleMode renders when mode='flexible']
-    ├─► Maps selectedDays to day sections
-    ├─► Each day shows TimePeriodInput components
-    ├─► "Add period" button per day
-    ├─► Dynamic add/remove periods
-    └─► Real-time duration calculation
-    ↓
-[FixedMode renders when mode='fixed']
-    ├─► Single TimePeriodInput for all days
-    ├─► Helper text about multi-day application
-    ├─► No add/remove functionality needed
-    └─► Same validation as flexible mode
-    ↓
-[TimePeriodInput handles time validation]
-    ├─► Ensures endTime > startTime
-    ├─► Auto-clears invalid end times
-    ├─► Calculates duration in real-time
-    ├─► Shows visual validation states
-    └─► Supports add/remove in flexible mode
-    ↓
-[Form submission with Zod validation]
-    ├─► Validates selectedDays.length > 0
-    ├─► Validates time periods format
-    ├─► Ensures no overlapping periods per day
-    └─► Returns structured schedule data
-```
-
 ### Pattern 5: Practice Plan Form with Pre-fill (Phase 2)
 
 ```
@@ -1255,6 +1274,80 @@ UI Updates with user data
     ├─► If valid: setIsSubmitting(true)
     ├─► TODO: API integration (Phase 5)
     └─► On error: show toast notification
+```
+
+### Pattern 6: Practice Plan Form with Schedule Configuration (Phase 3)
+
+```
+[PracticePage mounts with ScheduleSection]
+    ↓
+[useForm() initialized with schedule defaults]
+    ├─► mode: 'flexible' (default)
+    ├─► selectedDays: [] (empty array)
+    ├─► flexiblePeriods: {} (empty object)
+    └─► fixedPeriod: { startTime: '', endTime: '' }
+    ↓
+[ScheduleSection renders with form.control]
+    ├─► Mode toggle tabs (flexible/fixed)
+    ├─► DayPicker with circular buttons
+    ├─► Conditional mode rendering
+    └─► Form validation integration
+    ↓
+[User selects days in DayPicker]
+    ├─► onChange updates form.selectedDays
+    ├─► Visual feedback (selected state)
+    ├─► ARIA labels for accessibility
+    └─► Triggers mode component re-render
+    ↓
+[FlexibleMode renders when mode='flexible']
+    ├─► Maps selectedDays to day sections
+    ├─► Each day shows TimePeriodInput components
+    ├─► "Add period" button per day
+    ├─► Dynamic add/remove periods
+    └─► Real-time duration calculation
+    ↓
+[FixedMode renders when mode='fixed']
+    ├─► Single TimePeriodInput for all days
+    ├─► Helper text about multi-day application
+    ├─► No add/remove functionality needed
+    ├─► Same validation as flexible mode
+    └─► Allows for setting a default period for all days
+    ↓
+[TimePeriodInput handles time validation]
+    ├─► Ensures endTime > startTime
+    ├─► Auto-clears invalid end times
+    ├─► Calculates duration in real-time
+    ├─► Shows visual validation states
+    └─► Supports add/remove in flexible mode
+    ↓
+[Form submission with Zod validation]
+    ├─► Validates selectedDays.length > 0
+    ├─► Validates time periods format
+    ├─► Ensures no overlapping periods per day
+    └─► Returns structured schedule data
+```
+
+### Pattern 7: Device Management (Profile Page - Phase 11)
+
+```
+[ProfilePage mounts with DeviceList]
+    ↓
+[<DeviceList /> component renders]
+    ├─► Calls useDevices() hook
+    │   └─► Fetches current user's registered devices from deviceService
+    ├─► Displays loading skeletons while fetching
+    ├─► If no devices, displays an empty state message
+    ├─► If devices exist, maps through them to render DeviceItem components
+    │   └─► Each DeviceItem shows platform icon, name, registration date
+    ├─► For each DeviceItem, a delete button is available
+    │   └─► Clicking delete button opens a confirmation dialog
+    ├─► Confirmation dialog confirms user intent to delete
+    │   └─► If confirmed, calls useDeleteDevice() hook
+    │       └─► Calls deviceService.deleteDevice(deviceId)
+    │           └─► Sends DELETE request to backend API
+    ├─► Upon successful deletion, queryClient.invalidateQueries(['devices']) is called
+    │   └─► Triggers refetch of device list, updating the UI
+    └─► Handles errors from API calls by displaying toast notifications
 ```
 
 ---
@@ -1606,7 +1699,8 @@ Refresh Token (7 days)
   ├─► Long-lived for token renewal
   ├─► Stored in localStorage
   ├─► Only sent when refreshing access token
-  └─► Used only for getting new access token
+  ├─► Used only for getting new access token
+  └─► Can be revoked by backend
 
 Token Refresh Security
   ├─► Prevents token expiry UX issues

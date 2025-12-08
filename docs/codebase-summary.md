@@ -57,7 +57,8 @@ src/app/
 │   ├── health-tracking/      # Health metrics tracking
 │   ├── chatbox/              # AI chat interface
 │   ├── predict/              # Health prediction page
-│   └── practice/             # Practice plan configuration (Phases 2-4)
+│   ├── practice/             # Practice plan configuration (Phases 2-4)
+│   └── device/               # Device management (Phase 11)
 │
 ├── api/                       # API route handlers
 │   └── health/               # Health-related API endpoints
@@ -71,7 +72,7 @@ src/app/
 
 #### components/ - React Components (Atomic Design)
 
-**10 Component Categories:**
+**11 Component Categories:**
 
 1. **ui/** - shadcn/ui Components (20+ primitives)
    - button, input, form, card, dialog, tabs, select
@@ -149,7 +150,11 @@ src/app/
    - `index.ts` - Barrel export
    - Handles user profile pre-fill, dynamic validation, security lock icons
 
-10. **Phase 9: Notification Components**
+10. **profile/** - User Profile Components (Phase 11)
+    - `DeviceList.tsx` - Displays and manages registered user devices for notifications.
+    - `index.ts` - Barrel export for profile components.
+
+11. **Phase 9: Notification Components**
     - `NotificationSetupModal.tsx` - Modal for setting up push notifications.
 
 #### contexts/ - React Context State Management
@@ -185,7 +190,7 @@ src/app/
    - Handles conversation history
    - Provides conversation switching
 
-#### hooks/ - Custom React Hooks (11 total)
+#### hooks/ - Custom React Hooks (13 total)
 
 - `useAuth.ts` - Wrapper around AuthContext
 - `useChat.ts` - Chat session management
@@ -195,7 +200,7 @@ src/app/
 - `useForgotPassword.ts` - Password reset flow
 - `useCountdown.ts` - Countdown timer utility
 - `useQueryParams.ts` - URL query parameter parsing
-- `useDevices.ts` - FCM device registration and management (Phase 6)
+- `useDevices.ts` - FCM device registration and management (Phase 6 & 11)
   - `useDevices()` - Query hook for fetching registered devices
   - `useRegisterDevice()` - Mutation hook for registering new device
   - `useDeleteDevice()` - Mutation hook for removing device
@@ -226,7 +231,7 @@ src/lib/
 - `storage` - type-safe localStorage wrapper
 - `isIOS()`, `isAndroid()`, `isMobile()`, `isStandalonePWA()` - Platform detection utilities
 
-#### services/ - API Integration Layer (10 modules)
+#### services/ - API Integration Layer (11 modules)
 
 ```
 src/services/
@@ -239,7 +244,8 @@ src/services/
 ├── upload.ts               # File upload endpoints
 ├── health.ts               # Health metrics endpoints
 ├── practice.ts             # Practice profile and preferences endpoints (Phase 5)
-└── device.ts               # Device registration for FCM notifications (Phase 6)
+├── device.ts               # Device registration for FCM notifications (Phase 6 & 11)
+└── notification.ts         # Notification service (Phase 11, if applicable)
 ```
 
 **Axios Interceptor Chain:**
@@ -249,7 +255,7 @@ src/services/
 3. Error interceptor: Logs errors and shows toasts
 4. Request queuing: Prevents duplicate refresh token calls
 
-#### types/ - TypeScript Type Definitions (12 files)
+#### types/ - TypeScript Type Definitions (14 files)
 
 All types centralized in one location (NOT in service files):
 
@@ -266,7 +272,8 @@ src/types/
 ├── forms.ts         # Form validation types
 ├── error.ts         # Error handling types
 ├── practice.ts      # Practice plan types
-├── device.ts        # Device and FCM types (Phase 6)
+├── device.ts        # Device and FCM types (Phase 6 & 11)
+├── notification.ts  # Notification types (Phase 11, if applicable)
 └── index.ts         # Barrel export
 ```
 
@@ -274,16 +281,16 @@ src/types/
 
 ## File Statistics
 
-| Category                   | Count     | Notes                                                                                  |
-| -------------------------- | --------- | -------------------------------------------------------------------------------------- |
-| Components                 | 115+      | Including ui/, form/, chat/, predict/, layout/, shared/, marketing/, icons/, practice/ |
-| Pages                      | 13        | Auth (8) + Dashboard (5)                                                               |
-| Services                   | 10        | API service modules                                                                    |
-| Hooks                      | 11        | Custom React hooks                                                                     |
-| Contexts                   | 2         | Auth + Conversation                                                                    |
-| Type Definition Files      | 12        | Comprehensive type coverage                                                            |
-| Config Files               | 8         | TS, ESLint, Prettier, Tailwind, etc.                                                   |
-| **Total TypeScript Files** | **~235+** | Well-organized and modular                                                             |
+| Category                   | Count     | Notes                                                                                            |
+| -------------------------- | --------- | ------------------------------------------------------------------------------------------------ |
+| Components                 | 116+      | Including ui/, form/, chat/, predict/, layout/, shared/, marketing/, icons/, practice/, profile/ |
+| Pages                      | 13        | Auth (8) + Dashboard (5)                                                                         |
+| Services                   | 11        | API service modules                                                                              |
+| Hooks                      | 13        | Custom React hooks                                                                               |
+| Contexts                   | 2         | Auth + Conversation                                                                              |
+| Type Definition Files      | 14        | Comprehensive type coverage                                                                      |
+| Config Files               | 8         | TS, ESLint, Prettier, Tailwind, etc.                                                             |
+| **Total TypeScript Files** | **~238+** | Well-organized and modular                                                                       |
 
 ---
 
@@ -338,7 +345,7 @@ Backend API
 
 ### Feature-Specific Components
 
-Located in feature folders (`chat/`, `predict/`, etc.):
+Located in feature folders (`chat/`, `predict/`, `profile/` etc.):
 
 - Tightly coupled to feature logic
 - Can import from shared/ and ui/
@@ -534,6 +541,38 @@ useEffect(() => {
 - `NotificationSetupModal` component (Phase 9)
 - Suspense wrapper for `useSearchParams` compatibility
 
+#### Phase 11: Device Management (Profile Page)
+
+**Introduction:** This phase introduces a dedicated section on the user profile page (`/profile`) for managing registered devices. Users can view a list of their devices (e.g., mobile phones, web browsers used for notifications) and remove them. This enhances user control over notification delivery and privacy.
+
+**Key Components Added:**
+
+- **`src/components/profile/DeviceList.tsx`**: The main component for displaying and managing devices.
+  - Fetches device data using `useDevices` hook.
+  - Renders `DeviceItem` for each device, showing platform icon, name, and registration date.
+  - Allows deletion of devices via `useDeleteDevice` hook, with a confirmation dialog.
+  - Includes loading skeletons and empty states for a better user experience.
+- **`src/components/profile/index.ts`**: Exports `DeviceList` for easy import.
+
+**Integration into Profile Page (`src/app/profile/page.tsx`):**
+
+- The `<DeviceList />` component is integrated into the user profile page under a new "Thiết bị đã đăng ký" (Registered Devices) section.
+
+**New/Updated Hooks and Services:**
+
+- **`useDevices` (updated/expanded)**: Used in `DeviceList.tsx` to fetch the list of registered devices.
+- **`useDeleteDevice` (new/updated)**: Used in `DeviceList.tsx` to handle the mutation for deleting a device.
+- **`deviceService` (potentially updated)**: The backend service responsible for `getDevices()`, `registerDevice()`, and `deleteDevice()`.
+
+**User Experience Flow:**
+
+1.  User navigates to the profile page.
+2.  A new section "Thiết bị đã đăng ký" displays.
+3.  If devices are present, they are listed with their platform and registration date.
+4.  Each device has a delete button; clicking it opens a confirmation dialog.
+5.  Upon confirmation, the device is removed, and the UI updates.
+6.  Loading, error, and empty states are gracefully handled.
+
 ---
 
 ## State Management Approach
@@ -643,12 +682,17 @@ Examples:
 - `UserPracticeProfile` - Pre-fill profile data (basic fields only)
 - `PracticeProfileResponse` - Full API response with all practice profile data (Phase 5)
 
-**device.ts** - Device & FCM Types (Phase 6)
+**device.ts** - Device & FCM Types (Phase 6 & 11)
 
 - `DevicePlatform` - Platform type: 'ios' | 'android' | 'web'
 - `Device` - Complete device record with FCM token and metadata
 - `RegisterDeviceInput` - Device registration form data
 - `DeviceListResponse` - API response for device list with pagination
+
+**notification.ts** - Notification Types (Phase 11, if applicable)
+
+- `Notification` - Type definition for a notification object.
+- `NotificationPreferences` - Type definition for user notification preferences.
 
 **health.ts** - Health Metrics Types
 
@@ -718,7 +762,7 @@ Examples:
 - Includes error handling with toast notifications
 - Integrates with React Query for cache invalidation
 
-### Device Service (`device.ts` - Phase 6)
+### Device Service (`device.ts` - Phase 6 & 11)
 
 **Endpoints:**
 
@@ -732,7 +776,7 @@ Examples:
 
 **Integration Points:**
 
-- Used with useDevices, useRegisterDevice, useDeleteDevice hooks
+- Used with `useDevices`, `useRegisterDevice`, `useDeleteDevice` hooks
 - Handles FCM token management for push notifications
 - Supports multi-platform device registration (iOS, Android, Web)
 - Integrates with React Query for device list caching
@@ -791,17 +835,23 @@ Examples:
 
 ## Notable Files & Their Purposes
 
-| File                                | Purpose                        | Lines |
-| ----------------------------------- | ------------------------------ | ----- | --- |
-| `src/services/api.ts`               | Axios client with interceptors | 150+  | \   |
-| `src/contexts/auth/AuthContext.tsx` | Auth state management          | 100+  | \   |
-| `src/lib/react-query.tsx`           | React Query provider setup     | 50+   | \   |
-| `src/app/layout.tsx`                | Root layout with providers     | 40+   | \   |
-| `src/lib/logger.ts`                 | Centralized logging system     | 50+   | \   |
-| `src/lib/storage.ts`                | localStorage abstraction       | 40+   | \   |
-| `next.config.ts`                    | Next.js configuration          | 60+   | \   |
-| `tailwind.config.js`                | Tailwind CSS setup             | 100+  | \   |
-| `src/lib/utils/platform.ts`         | Platform detection utilities   | New   |
+| File                                    | Purpose                                 | Lines |
+| --------------------------------------- | --------------------------------------- | ----- | --- |
+| `src/services/api.ts`                   | Axios client with interceptors          | 150+  | \   |
+| `src/contexts/auth/AuthContext.tsx`     | Auth state management                   | 100+  | \   |
+| `src/lib/react-query.tsx`               | React Query provider setup              | 50+   | \   |
+| `src/app/layout.tsx`                    | Root layout with providers              | 40+   | \   |
+| `src/lib/logger.ts`                     | Centralized logging system              | 50+   | \   |
+| `src/lib/storage.ts`                    | localStorage abstraction                | 40+   | \   |
+| `next.config.ts`                        | Next.js configuration                   | 60+   | \   |
+| `tailwind.config.js`                    | Tailwind CSS setup                      | 100+  | \   |
+| `src/lib/utils/platform.ts`             | Platform detection utilities            | New   |
+| `src/components/profile/DeviceList.tsx` | Displays and manages registered devices | 200+  |
+| `src/hooks/useDevices.ts`               | Hook for fetching and managing devices  | New   |
+| `src/hooks/useDeleteDevice.ts`          | Hook for deleting a device              | New   |
+| `src/services/device.ts`                | API service for device operations       | New   |
+| `src/types/device.ts`                   | Types for device objects                | New   |
+| `src/types/notification.ts`             | Types for notifications and preferences | New   |
 
 ---
 
@@ -885,9 +935,9 @@ Examples:
 
 - **main/master** - Production releases only
 - **develop** - Integration branch for features
-- \*_feature/_` - Individual feature branches
-- \*_hotfix/_` - Emergency production fixes
-- \*_release/_` - Release preparation branches
+- `feature/*` - Individual feature branches
+- `hotfix/*` - Emergency production fixes
+- `release/*` - Release preparation branches
 
 ### Commit Convention
 
@@ -939,7 +989,7 @@ description: what was changed and why
 - **Phase 4 Enhancements:**
   - HTML/script tag removal in SportTagInput
   - Character whitelist for Vietnamese text
-  - Length validation with strict limits
+  - Length validation (2-30 characters)
   - Duplicate prevention logic
 
 ### Token Management
@@ -1018,13 +1068,13 @@ Container Registry (Google Artifact Registry)
 ## Known Limitations & Technical Debt
 
 | Item                   | Status          | Notes                              |
-| ---------------------- | --------------- | ---------------------------------- | --- |
+| ---------------------- | --------------- | ---------------------------------- |
 | Mobile responsiveness  | In Progress     | Phase 2 optimization               |
-| Offline support        | Not Implemented | Planned for Phase 3                | \   |
-| Progressive Web App    | Not Implemented | Future enhancement                 | \   |
-| Multi-language support | Not Implemented | Phase 3 feature                    | \   |
-| Analytics integration  | Optional        | Can be enabled via env var         | \   |
-| Real-time updates      | Partial         | SSE for chat, WebSocket for future | \   |
+| Offline support        | Not Implemented | Planned for Phase 3                |
+| Progressive Web App    | Not Implemented | Future enhancement                 |
+| Multi-language support | Not Implemented | Phase 3 feature                    |
+| Analytics integration  | Optional        | Can be enabled via env var         |
+| Real-time updates      | Partial         | SSE for chat, WebSocket for future |
 
 ---
 

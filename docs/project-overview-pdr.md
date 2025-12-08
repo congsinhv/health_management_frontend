@@ -3,7 +3,7 @@
 **Project Name:** VHealth (Health Management Platform)
 **Version:** 0.1.0
 **Last Updated:** December 2025
-**Status:** Active Development (Phase 2)
+**Status:** Active Development (Phase 11)
 
 ---
 
@@ -133,6 +133,17 @@ Provide accessible, user-friendly health management tools that leverage AI to de
 
 ---
 
+### 5. Device Management
+
+**Status:** Implemented (Phase 11)
+
+- Users can view a list of their registered devices (e.g., mobile phones, web browsers).
+- Users can delete registered devices from their profile.
+- Integration with notification systems (e.g., FCM) for device registration.
+- Clear indication of device platform (iOS, Android, Web).
+
+---
+
 ## Target Users & Use Cases
 
 ### Primary Users
@@ -193,6 +204,7 @@ Provide accessible, user-friendly health management tools that leverage AI to de
 4. Users can view their account activity and login history
 5. Users can manage privacy and notification settings
 6. Users can export their health data
+7. Users can manage their registered devices (Phase 11)
 
 #### Health Tracking Module
 
@@ -299,6 +311,13 @@ Provide accessible, user-friendly health management tools that leverage AI to de
 - [ ] Multi-language support
 - [ ] 95%+ unit test coverage
 
+### Phase 11 (Completed)
+
+- [x] Device management feature implemented and integrated into user profile.
+- [x] Users can view registered devices.
+- [x] Users can delete registered devices.
+- [x] Robust error handling and UI feedback for device operations.
+
 ---
 
 ## Technical Requirements
@@ -387,7 +406,7 @@ Browser/User Interface
 ### Technical Constraints
 
 - Single-page application (SPA) architecture
-- Browser-based client (no native mobile apps in Phase 1)
+- Browser-based client (no native mobile apps in current phase)
 - Dependent on backend API availability
 - Limited offline functionality in current version
 - Client-side token storage limitations
@@ -420,6 +439,7 @@ Browser/User Interface
 - **Backend API:** Django REST service (separate repository)
 - **Analytics (Optional):** User behavior tracking
 - **Email Service:** Password reset, verification emails
+- **Firebase Cloud Messaging (FCM):** Push notifications, device registration (Phase 11)
 
 ### Package Dependencies
 
@@ -506,6 +526,12 @@ Browser/User Interface
 - Premium subscription features
 - Multi-language support
 
+### Phase 11: Device Management (Completed)
+
+- User-facing device list on profile page.
+- Functionality to remove registered devices.
+- Backend integration for device management operations.
+
 ---
 
 ## Stakeholders & Contacts
@@ -522,10 +548,11 @@ Browser/User Interface
 
 ## Document Control
 
-| Version | Date     | Author       | Changes                 |
-| ------- | -------- | ------------ | ----------------------- |
-| 1.0     | Dec 2025 | Docs Manager | Initial PDR creation    |
-| 1.1     | -        | -            | Pending Phase 2 updates |
+| Version | Date     | Author       | Changes                             |
+| ------- | -------- | ------------ | ----------------------------------- |
+| 1.0     | Dec 2025 | Docs Manager | Initial PDR creation                |
+| 1.1     | Dec 2025 | Docs Manager | Phase 11: Device Management updates |
+| 1.2     | -        | -            | Pending Phase 2 updates             |
 
 ---
 

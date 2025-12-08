@@ -1,7 +1,7 @@
 # VHealth - Project Roadmap
 
 **Project:** health_management_frontend
-**Last Updated:** December 2025
+**Last Updated:** 2025-12-08
 **Version:** 0.1.0
 
 ---
@@ -197,8 +197,8 @@ VHealth development is organized into three phases, with Phase 1 complete and Ph
 
 #### Practice Page - Training Preferences ✅
 
-**Status:** 90% complete (Phase 4 of 5) - Sports & Notes Sections, Notification UI Complete
-**Last Updated:** December 2025
+**Status:** Phase 6: Profile Page Device List (Completed - Dec 8, 2025)
+**Last Updated:** 2025-12-08
 
 - [x] Phase 1: Foundation & Types (Completed)
 - [x] Phase 2: Basic Information Section (Completed - Dec 6, 2025)
@@ -660,13 +660,13 @@ Q4 2024          Q1 2025          Q2 2025          Q3 2025          Q4 2025
 
 ## Document History
 
-| Version | Date     | Changes                                     |
-| ------- | -------- | ------------------------------------------- |
-| 1.0     | Dec 2025 | Initial roadmap creation                    |
-| 1.1     | Dec 2025 | Phase 4 completion updates                  |
-| 1.2     | Dec 2025 | Phase 4 (Notification UI) completion update |
-| 1.3     | Dec 2025 | Phase 5 and 10 completion updates           |
-| 2.0     | -        | Pending Phase 3 execution                   |
+| Version | Date     | Changes                                             |
+| ------- | -------- | --------------------------------------------------- |
+| 1.0     | Dec 2025 | Initial roadmap creation                            |
+| 1.1     | Dec 2025 | Phase 4 completion updates                          |
+| 1.2     | Dec 2025 | Phase 4 (Notification UI) completion update         |
+| 1.3     | Dec 2025 | Phase 5 and 10 completion updates                   |
+| 1.4     | 251208   | Phase 6: Profile Page Device List completion update |
 
 ---
 
