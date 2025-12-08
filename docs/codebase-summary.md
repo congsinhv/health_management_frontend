@@ -182,7 +182,7 @@ src/app/
    - Handles conversation history
    - Provides conversation switching
 
-#### hooks/ - Custom React Hooks (8 total)
+#### hooks/ - Custom React Hooks (11 total)
 
 - `useAuth.ts` - Wrapper around AuthContext
 - `useChat.ts` - Chat session management
@@ -192,6 +192,10 @@ src/app/
 - `useForgotPassword.ts` - Password reset flow
 - `useCountdown.ts` - Countdown timer utility
 - `useQueryParams.ts` - URL query parameter parsing
+- `useDevices.ts` - FCM device registration and management (Phase 6)
+  - `useDevices()` - Query hook for fetching registered devices
+  - `useRegisterDevice()` - Mutation hook for registering new device
+  - `useDeleteDevice()` - Mutation hook for removing device
 
 #### lib/ - Utilities & Configuration
 
@@ -217,7 +221,7 @@ src/lib/
 - `logger` - centralized logging system
 - `storage` - type-safe localStorage wrapper
 
-#### services/ - API Integration Layer (9 modules)
+#### services/ - API Integration Layer (10 modules)
 
 ```
 src/services/
@@ -229,7 +233,8 @@ src/services/
 ├── qa.ts                   # Q&A assistant endpoints
 ├── upload.ts               # File upload endpoints
 ├── health.ts               # Health metrics endpoints
-└── practice.ts             # Practice profile and preferences endpoints (Phase 5)
+├── practice.ts             # Practice profile and preferences endpoints (Phase 5)
+└── device.ts               # Device registration for FCM notifications (Phase 6)
 ```
 
 **Axios Interceptor Chain:**
@@ -239,7 +244,7 @@ src/services/
 3. Error interceptor: Logs errors and shows toasts
 4. Request queuing: Prevents duplicate refresh token calls
 
-#### types/ - TypeScript Type Definitions (11 files)
+#### types/ - TypeScript Type Definitions (12 files)
 
 All types centralized in one location (NOT in service files):
 
@@ -256,6 +261,7 @@ src/types/
 ├── forms.ts         # Form validation types
 ├── error.ts         # Error handling types
 ├── practice.ts      # Practice plan types
+├── device.ts        # Device and FCM types (Phase 6)
 └── index.ts         # Barrel export
 ```
 
@@ -267,12 +273,12 @@ src/types/
 | -------------------------- | --------- | -------------------------------------------------------------------------------------- |
 | Components                 | 115+      | Including ui/, form/, chat/, predict/, layout/, shared/, marketing/, icons/, practice/ |
 | Pages                      | 13        | Auth (8) + Dashboard (5)                                                               |
-| Services                   | 8         | API service modules                                                                    |
-| Hooks                      | 8         | Custom React hooks                                                                     |
+| Services                   | 10        | API service modules                                                                    |
+| Hooks                      | 11        | Custom React hooks                                                                     |
 | Contexts                   | 2         | Auth + Conversation                                                                    |
-| Type Definition Files      | 11        | Comprehensive type coverage                                                            |
+| Type Definition Files      | 12        | Comprehensive type coverage                                                            |
 | Config Files               | 8         | TS, ESLint, Prettier, Tailwind, etc.                                                   |
-| **Total TypeScript Files** | **~230+** | Well-organized and modular                                                             |
+| **Total TypeScript Files** | **~235+** | Well-organized and modular                                                             |
 
 ---
 
@@ -551,6 +557,13 @@ Examples:
 - `UserPracticeProfile` - Pre-fill profile data (basic fields only)
 - `PracticeProfileResponse` - Full API response with all practice profile data (Phase 5)
 
+**device.ts** - Device & FCM Types (Phase 6)
+
+- `DevicePlatform` - Platform type: 'ios' | 'android' | 'web'
+- `Device` - Complete device record with FCM token and metadata
+- `RegisterDeviceInput` - Device registration form data
+- `DeviceListResponse` - API response for device list with pagination
+
 **health.ts** - Health Metrics Types
 
 - `HealthMetric` - Individual metric (weight, BP, etc.)
@@ -618,6 +631,25 @@ Examples:
 - Paired with useQuery for pre-fill data loading
 - Includes error handling with toast notifications
 - Integrates with React Query for cache invalidation
+
+### Device Service (`device.ts` - Phase 6)
+
+**Endpoints:**
+
+- `getDevices()` - Fetches all registered devices for current user
+- `registerDevice(data)` - Registers a new device with FCM token
+- `deleteDevice(deviceId)` - Removes a registered device
+
+**Utility Functions:**
+
+- `hasMobileDevice(devices)` - Checks if user has iOS or Android device registered
+
+**Integration Points:**
+
+- Used with useDevices, useRegisterDevice, useDeleteDevice hooks
+- Handles FCM token management for push notifications
+- Supports multi-platform device registration (iOS, Android, Web)
+- Integrates with React Query for device list caching
 
 ---
 

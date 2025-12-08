@@ -1,106 +1,132 @@
-# Practice Page Implementation Plan
+# Practice Page - Notification & API Integration Plan
 
-> **Feature:** Training Preferences & Fitness Goals Setup Page
-> **Status:** ✅ 100% Complete (5 of 5 phases)
-> **Created:** 2025-12-06
-> **Last Updated:** 2025-12-06 23:59 (Phase 5 Completed)
+> **Feature:** FCM Notification Setup & API Schema Update
+> **Status:** In Progress (1 of 6 new phases completed - 16.7%)
+> **Created:** 2025-12-08
+> **Last Updated:** 2025-12-08
 > **Branch:** feat/implement-practice-page
+> **Parent Plan:** Practice Page Implementation (Phases 1-5 completed)
 
 ---
 
 ## Overview
 
-Implement Practice Page for VHealth allowing users to configure training preferences, fitness goals, weekly schedules, and favorite sports. Follows existing predict page patterns with card-based sections.
+Extend the existing Practice Page with:
 
-## Implementation Phases
-
-| Phase | Name                      | Status       | Progress | File                                                   |
-| ----- | ------------------------- | ------------ | -------- | ------------------------------------------------------ |
-| 1     | Foundation & Types        | Pending      | 0%       | [phase-01-foundation.md](./phase-01-foundation.md)     |
-| 2     | Basic Information Section | Completed ✅ | 100%     | [phase-02-basic-info.md](./phase-02-basic-info.md)     |
-| 3     | Schedule Components       | Completed ✅ | 100%     | [phase-03-schedule.md](./phase-03-schedule.md)         |
-| 4     | Sports & Notes Sections   | Completed ✅ | 100%     | [phase-04-sports-notes.md](./phase-04-sports-notes.md) |
-| 5     | API Integration           | Completed ✅ | 100%     | [phase-05-integration.md](./phase-05-integration.md)   |
-
----
+1. **New API endpoints** - Switch from `/practice-preferences` to `/schedules/` and `/devices/`
+2. **FCM notification setup** - Require mobile device registration before form submission
+3. **Platform-specific flows** - Desktop (QR), Android (button), iOS (PWA)
+4. **Profile device list** - Display registered devices in profile page
 
 ## Key Decisions
 
-1. **Design Pattern:** Card-based sections (matches predict/profile pages)
-2. **Form Library:** React Hook Form + Zod validation (existing pattern)
-3. **State:** Local form state + React Query for API data
-4. **Components:** Feature-specific in `src/components/practice/`
-5. **Page Structure:** Following predict page organization
+| Decision               | Choice                      | Rationale                           |
+| ---------------------- | --------------------------- | ----------------------------------- |
+| Notification mandatory | Yes                         | Core feature requirement            |
+| QR code URL            | `/practice?device=register` | Deep-link to registration flow      |
+| Mobile device required | At least 1 iOS/Android      | Push notifications target mobile    |
+| PWA library            | `next-pwa`                  | Well-maintained, Next.js compatible |
+| Firebase config        | Secret manager              | Security best practice              |
+| Modal behavior         | "Check Again" refetch       | UX for async device registration    |
 
-## File Structure
+## Implementation Phases
+
+### Previous Phases (Completed)
+
+| Phase | Name                | Status    | File                                                   |
+| ----- | ------------------- | --------- | ------------------------------------------------------ |
+| 1     | Foundation & Types  | Completed | [phase-01-foundation.md](./phase-01-foundation.md)     |
+| 2     | Basic Info Section  | Completed | [phase-02-basic-info.md](./phase-02-basic-info.md)     |
+| 3     | Schedule Components | Completed | [phase-03-schedule.md](./phase-03-schedule.md)         |
+| 4     | Sports & Notes      | Completed | [phase-04-sports-notes.md](./phase-04-sports-notes.md) |
+| 5     | API Integration     | Completed | [phase-05-integration.md](./phase-05-integration.md)   |
+
+### New Phases (Notification & API Update)
+
+| Phase | Name                      | Status    | Priority | File                                                                   |
+| ----- | ------------------------- | --------- | -------- | ---------------------------------------------------------------------- |
+| 6     | Device Types & Service    | Completed | High     | [phase-06-device-service.md](./phase-06-device-service.md)             |
+| 7     | API Schema Update         | Pending   | High     | [phase-07-api-schema.md](./phase-07-api-schema.md)                     |
+| 8     | Firebase + PWA Setup      | Pending   | High     | [phase-08-firebase-pwa.md](./phase-08-firebase-pwa.md)                 |
+| 9     | Notification UI Modal     | Pending   | High     | [phase-09-notification-ui.md](./phase-09-notification-ui.md)           |
+| 10    | Practice Page Integration | Pending   | High     | [phase-10-practice-integration.md](./phase-10-practice-integration.md) |
+| 11    | Profile Device List       | Pending   | Medium   | [phase-11-profile-devices.md](./phase-11-profile-devices.md)           |
+
+## Architecture Changes
 
 ```
 src/
-├── app/practice/
-│   ├── page.tsx           # Main page
-│   ├── validation.ts      # Zod schemas
-│   └── formHelper.ts      # Options, constants
-├── components/practice/
-│   ├── index.ts           # Barrel export
-│   ├── HeroSection.tsx
-│   ├── BasicInfoSection.tsx
-│   ├── ScheduleSection/
-│   │   ├── index.tsx
-│   │   ├── DayPicker.tsx
-│   │   ├── TimePeriodInput.tsx
-│   │   ├── FlexibleMode.tsx
-│   │   └── FixedMode.tsx
-│   ├── SportsSection/
-│   │   ├── index.tsx
-│   │   ├── SportBadge.tsx
-│   │   └── SportTagInput.tsx
-│   └── NotesSection.tsx
 ├── types/
-│   └── practice.ts        # Type definitions
-└── services/
-    └── practice.ts        # API service (if needed)
+│   └── device.ts              # NEW: Device types
+├── services/
+│   ├── device.ts              # NEW: Device CRUD service
+│   └── practice.ts            # UPDATE: New endpoint + formatForAPI
+├── lib/
+│   └── firebase.ts            # NEW: Firebase initialization
+├── components/
+│   ├── practice/
+│   │   └── NotificationSetupModal.tsx  # NEW: Platform-specific modal
+│   └── profile/
+│       └── DeviceList.tsx     # NEW: Registered devices display
+├── app/
+│   ├── practice/page.tsx      # UPDATE: Gate + ?device=register handling
+│   └── profile/page.tsx       # UPDATE: Add DeviceList section
+└── public/
+    ├── firebase-messaging-sw.js  # NEW: Service worker
+    └── manifest.json             # UPDATE: PWA manifest
 ```
 
 ## Dependencies
 
-- Existing: shadcn/ui, React Hook Form, Zod, Tailwind
-- New: None required
+**New packages:**
 
-## Risks
+- `firebase` - FCM client SDK
+- `next-pwa` - Service worker & PWA support
+- `qrcode.react` - QR code generation
 
-| Risk                        | Mitigation                           |
-| --------------------------- | ------------------------------------ |
-| Complex schedule validation | Start with simple mode, iterate      |
-| Mobile touch targets        | Use 48px min-height for day buttons  |
-| Pre-fill data not available | Graceful fallback to editable fields |
+**Existing (no changes):**
 
----
+- shadcn/ui Dialog component (need to add if missing)
+- React Query for device fetching
+- Tailwind CSS for styling
+
+## API Endpoints
+
+| Method | Endpoint               | Purpose                         |
+| ------ | ---------------------- | ------------------------------- |
+| GET    | `/api/v1/devices/`     | List user's registered devices  |
+| POST   | `/api/v1/devices/`     | Register new device (FCM token) |
+| DELETE | `/api/v1/devices/{id}` | Remove device                   |
+| POST   | `/api/v1/schedules/`   | Create practice schedule (new)  |
+
+## Risk Assessment
+
+| Risk                               | Impact | Probability | Mitigation                    |
+| ---------------------------------- | ------ | ----------- | ----------------------------- |
+| Firebase config exposure           | High   | Low         | Use env vars, gitignore       |
+| PWA service worker caching issues  | Medium | Medium      | Clear cache on version update |
+| Cross-platform browser differences | Medium | High        | Test Safari, Chrome, Firefox  |
+| User blocks notifications          | Medium | High        | Clear messaging, retry flow   |
+
+## Success Criteria
+
+1. Desktop users see QR code modal on practice page
+2. Android users can register device with one-tap button
+3. iOS users see PWA installation instructions
+4. Form submission blocked until mobile device registered
+5. Profile page shows list of registered devices with delete option
+6. FCM tokens properly stored and associated with user
 
 ## Related Documents
 
-- [Design Document](./reports/design-251206-practice-page.md)
-- [Phase 4 Code Review](./reports/code-reviewer-251206-phase4-practice-page.md)
-- [Phase 5 Code Review](./reports/code-reviewer-251206-practice-phase5-api.md)
-- [Predict Page Reference](../src/app/predict/page.tsx)
-- [Code Standards](../docs/code-standards.md)
+- [Code Standards](../../docs/code-standards.md)
+- [Design Guidelines](../../docs/design-guidelines.md)
+- [Original Practice Page Plan](./phase-05-integration.md)
 
 ---
 
-## Implementation Complete ✅
+## Notes
 
-**All 5 phases completed successfully!**
-
-- ✅ Phase 1: Foundation & Types (skipped - reused existing)
-- ✅ Phase 2: Basic Information Section
-- ✅ Phase 3: Schedule Components
-- ✅ Phase 4: Sports & Notes Sections
-- ✅ Phase 5: API Integration
-
-**Ready for merge to `develop` branch.**
-
-**Recommended next steps:**
-
-1. Add unit tests for `formatForAPI()` transformation
-2. Add E2E test for complete practice flow
-3. Fix existing ESLint warnings in ScheduleSection
-4. Backend API endpoint implementation (if not done)
+- Existing practice form validation remains unchanged
+- Schedule endpoint replaces practice-preferences endpoint
+- Device registration is per-user, not per-browser

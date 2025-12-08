@@ -187,6 +187,8 @@ conversation.ts → GET /conversations, POST /conversations, etc.
 health.ts    → GET/POST health metrics, goals, etc.
 upload.ts    → POST file uploads, avatars, etc.
 qa.ts        → POST Q&A queries, GET suggestions
+practice.ts  → GET /practice/profile, POST /practice/preferences (Phase 5)
+device.ts    → GET /devices, POST /devices, DELETE /devices/{id} (Phase 6)
 ```
 
 **Pattern:**
@@ -412,6 +414,57 @@ USER LOGGED IN
 | **CSRF Protection**  | State tokens in OAuth       | Session validation on sensitive ops   |
 | **Storage**          | localStorage (frontend)     | Plan to migrate to httpOnly cookies   |
 | **Secrets**          | Environment variables       | NEXT*PUBLIC*\* for client config only |
+
+### Push Notification Architecture (FCM) (Phase 6)
+
+```
+┌──────────────────────────────────────────────────────┐
+│         Firebase Cloud Messaging (FCM)               │
+└──────────────────────────────────────────────────────┘
+
+Device Registration Flow:
+  User Install App (iOS/Android/Web)
+    ↓
+  FCM generates unique token
+    ↓
+  Frontend calls deviceService.registerDevice(token, platform)
+    ↓
+  POST /api/v1/devices/
+    ├─► fcm_token: string
+    ├─► platform: 'ios' | 'android' | 'web'
+    └─► device_name?: string (e.g., "iPhone 15")
+    ↓
+  Backend stores Device record with user_id
+    ↓
+  Device registered for push notifications
+
+Device Management:
+  Frontend useDevices() hook
+    ├─► Fetches list of registered devices
+    ├─► Caches with 5 minute stale time
+    └─► Updates via useRegisterDevice/useDeleteDevice
+
+  Available Operations:
+    ├─► getDevices() - Fetch all devices
+    ├─► registerDevice(data) - Register new device
+    └─► deleteDevice(deviceId) - Unregister device
+
+Notification Flow (Backend-initiated):
+  Backend event triggered (practice reminder, health alert, etc.)
+    ↓
+  Query user's registered devices
+    ↓
+  Send FCM message to device tokens
+    ├─► Title, body, custom data
+    ├─► Device-specific handling
+    └─► Multi-platform support
+    ↓
+  Device receives push notification
+    ↓
+  User opens notification or app
+    ↓
+  Frontend displays notification/alert
+```
 
 ---
 
