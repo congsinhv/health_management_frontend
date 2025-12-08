@@ -19,7 +19,7 @@ Add a new section to the Profile page displaying user's scheduled workout plans 
 | Phase | Name                  | Status                     | Description                                  |
 | ----- | --------------------- | -------------------------- | -------------------------------------------- |
 | 1     | Types & Service Layer | completed (25-12-08 15:38) | Create schedule types and API service        |
-| 2     | UI Components         | pending                    | Build ScheduleSection components             |
+| 2     | UI Components         | completed (25-12-08 15:45) | Build ScheduleSection components             |
 | 3     | Integration & Testing | pending                    | Integrate into profile page, test all states |
 
 ---

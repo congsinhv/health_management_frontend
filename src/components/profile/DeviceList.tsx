@@ -84,7 +84,7 @@ const DeviceItem = ({
         size='sm'
         onClick={() => onDelete(device.id)}
         disabled={isDeleting}
-        className='hover:text-destructive text-gray-400'
+        className='hover:text-destructive hover:bg-destructive/5 text-gray-400'
         aria-label={`Xóa thiết bị ${displayName}`}
       >
         {isDeleting ? (
