@@ -2,17 +2,40 @@
 
 /**
  * Firebase Notification Provider
- * Sets up foreground message handler globally when app loads
- * Handles notifications when PWA is OPEN (foreground)
+ * Shows system notification when app is in foreground
+ * Service Worker handles notifications when app is closed
  */
 
 import { useEffect, useRef } from 'react';
-import { toast } from 'sonner';
 import { setupForegroundMessageHandler } from '@/lib/firebase';
 import { useAuth } from '@/contexts/auth';
 
 interface FirebaseNotificationProviderProps {
   children: React.ReactNode;
+}
+
+// Track handled message IDs to prevent duplicates
+const handledMessageIds = new Set<string>();
+const MESSAGE_DEDUP_WINDOW_MS = 5000;
+
+function getMessageId(payload: {
+  notification?: { title?: string; body?: string };
+  data?: {
+    message_id?: string;
+    title?: string;
+    body?: string;
+    tag?: string;
+    type?: string;
+  };
+}): string {
+  const notification = payload.notification || {};
+  const data = payload.data || {};
+
+  if (data.message_id) {
+    return data.message_id;
+  }
+
+  return `${notification.title || data.title || ''}-${notification.body || data.body || ''}-${data.tag || data.type || ''}`;
 }
 
 export const FirebaseNotificationProvider = ({
@@ -35,28 +58,71 @@ export const FirebaseNotificationProvider = ({
         isSetupRef.current = true;
 
         const unsubscribe = await setupForegroundMessageHandler(payload => {
-          // Show toast notification in addition to browser notification
-          const title =
-            payload.notification?.title ||
-            payload.data?.title ||
-            'Thông báo mới';
-          const body =
-            payload.notification?.body ||
-            payload.data?.body ||
-            'Bạn có thông báo mới từ VHealth';
+          // Foreground message received
 
-          toast(title, {
-            description: body,
-            duration: 5000,
-            action: payload.data?.url
-              ? {
-                  label: 'Xem',
-                  onClick: () => {
-                    window.location.href = payload.data?.url || '/practice';
-                  },
+          // Create message ID for deduplication
+          const messageId = getMessageId(payload);
+
+          // Skip if already handled
+          if (handledMessageIds.has(messageId)) {
+            return;
+          }
+
+          handledMessageIds.add(messageId);
+          setTimeout(
+            () => handledMessageIds.delete(messageId),
+            MESSAGE_DEDUP_WINDOW_MS
+          );
+
+          // Extract notification content
+          const notification = payload.notification || {};
+          const data = payload.data || {};
+
+          const title = notification.title || data.title || 'VHealth';
+          const body =
+            notification.body || data.body || 'Bạn có thông báo mới từ VHealth';
+
+          const tag =
+            data.tag || data.message_id || `vhealth-foreground-${Date.now()}`;
+
+          // Show system notification when app is in foreground
+          if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.ready
+              .then(registration => {
+                return registration.showNotification(title, {
+                  body: body,
+                  icon: '/icons/icon-192x192.png',
+                  badge: '/icons/badge-72x72.png',
+                  tag: tag,
+                  data: { ...data, url: data.url || '/practice' },
+                  requireInteraction: true,
+                  silent: false,
+                });
+              })
+              .catch(() => {
+                // Fallback to native Notification API
+                try {
+                  new Notification(title, {
+                    body: body,
+                    icon: '/icons/icon-192x192.png',
+                    tag: tag,
+                  });
+                } catch {
+                  // Notification failed
                 }
-              : undefined,
-          });
+              });
+          } else {
+            // Fallback for browsers without service worker
+            try {
+              new Notification(title, {
+                body: body,
+                icon: '/icons/icon-192x192.png',
+                tag: tag,
+              });
+            } catch {
+              // Notification failed
+            }
+          }
         });
 
         if (unsubscribe) {
@@ -80,7 +146,7 @@ export const FirebaseNotificationProvider = ({
     };
   }, [user]);
 
-  // Re-setup when permission changes (e.g., user grants permission)
+  // Re-setup when permission changes
   useEffect(() => {
     if (!user) return;
 
@@ -94,7 +160,6 @@ export const FirebaseNotificationProvider = ({
       }
     };
 
-    // Check permission on visibility change (user might have changed it in settings)
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
         handlePermissionChange();
