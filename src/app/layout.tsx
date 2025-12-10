@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import localFont from 'next/font/local';
 import './globals.css';
 import { AuthProvider } from '@/contexts/auth';
@@ -6,6 +6,7 @@ import { ConversationProvider } from '@/contexts/conversation';
 import { ReactQueryProvider } from '@/lib/react-query';
 import { Toaster } from '@/components/ui/sonner';
 import ChatFloatingButton from '@/components/chat/ChatFloatingButton';
+import { FirebaseNotificationProvider } from '@/components/providers/FirebaseNotificationProvider';
 
 // Gilroy font family configuration
 const gilroy = localFont({
@@ -41,7 +42,21 @@ export const metadata: Metadata = {
     'A comprehensive health management platform for tracking and monitoring your health journey',
   icons: {
     icon: '/favicon.svg',
+    apple: [
+      { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+      { url: '/icons/icon-152x152.png', sizes: '152x152', type: 'image/png' },
+    ],
   },
+  // manifest is now handled by src/app/manifest.ts
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'VHealth',
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: '#00bc7d',
 };
 
 export default function RootLayout({
@@ -63,7 +78,9 @@ export default function RootLayout({
         */}
         <ReactQueryProvider>
           <AuthProvider>
-            <ConversationProvider>{children}</ConversationProvider>
+            <FirebaseNotificationProvider>
+              <ConversationProvider>{children}</ConversationProvider>
+            </FirebaseNotificationProvider>
           </AuthProvider>
           <Toaster />
           <ChatFloatingButton />

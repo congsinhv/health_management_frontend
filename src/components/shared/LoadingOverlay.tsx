@@ -2,9 +2,13 @@ import { Logo } from './Logo';
 
 interface LoadingOverlayProps {
   isVisible: boolean;
+  message?: string;
 }
 
-export function LoadingOverlay({ isVisible }: LoadingOverlayProps) {
+export function LoadingOverlay({
+  isVisible,
+  message = 'Đang xử lý...',
+}: LoadingOverlayProps) {
   if (!isVisible) return null;
 
   return (
@@ -16,7 +20,7 @@ export function LoadingOverlay({ isVisible }: LoadingOverlayProps) {
           <div className='h-2 w-2 animate-bounce rounded-full bg-white [animation-delay:-0.15s]'></div>
           <div className='h-2 w-2 animate-bounce rounded-full bg-white'></div>
         </div>
-        <p className='text-lg font-medium text-white'>Đang xử lý dự đoán...</p>
+        <p className='text-lg font-medium text-white'>{message}</p>
       </div>
     </div>
   );

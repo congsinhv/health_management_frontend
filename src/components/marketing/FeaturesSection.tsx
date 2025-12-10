@@ -22,9 +22,9 @@ const features: FeatureCard[] = [
     title: 'Đề xuất chế độ ăn uống & tập luyện',
     description:
       'Kế hoạch, thực đơn theo mục tiêu cùng lịch tập theo tuần, thời lượng, cường độ phù hợp.',
-    linkText: 'Xem kế hoạch mẫu',
-    href: './practice',
-    // isHighlight: true,
+    linkText: 'Tạo kế hoạch mẫu',
+    isHighlight: true,
+    href: '/practice',
   },
   {
     title: 'Chatbot hỗ trợ sức khoẻ',
