@@ -1,0 +1,707 @@
+if (!self.define) {
+  let e,
+    s = {};
+  const a = (a, c) => (
+    (a = new URL(a + '.js', c).href),
+    s[a] ||
+      new Promise(s => {
+        if ('document' in self) {
+          const e = document.createElement('script');
+          ((e.src = a), (e.onload = s), document.head.appendChild(e));
+        } else ((e = a), importScripts(a), s());
+      }).then(() => {
+        let e = s[a];
+        if (!e) throw new Error(`Module ${a} didn’t register its module`);
+        return e;
+      })
+  );
+  self.define = (c, i) => {
+    const n =
+      e ||
+      ('document' in self ? document.currentScript.src : '') ||
+      location.href;
+    if (s[n]) return;
+    let t = {};
+    const r = e => a(e, n),
+      f = { module: { uri: n }, exports: t, require: r };
+    s[n] = Promise.all(c.map(e => f[e] || r(e))).then(e => (i(...e), t));
+  };
+}
+define(['./workbox-1bb06f5e'], function (e) {
+  'use strict';
+  (importScripts(),
+    self.skipWaiting(),
+    e.clientsClaim(),
+    e.precacheAndRoute(
+      [
+        { url: '/AI_logo.json', revision: 'aa5a318fae9bab945d1d48981628ebfb' },
+        { url: '/Avatar1.png', revision: '7513eda3ab8cedfb89b43801919e72dc' },
+        { url: '/Avatar2.png', revision: '2143e0ed816a27e8d0cccc7afaab2542' },
+        {
+          url: '/Healthcare_logo.svg',
+          revision: 'e4ce46e8894a7a9e874ee63b25337714',
+        },
+        {
+          url: '/_next/app-build-manifest.json',
+          revision: '311ad3b5891d61cc20a0d16df98e254d',
+        },
+        {
+          url: '/_next/static/chunks/1157-459b4ed43addbd40.js',
+          revision: '459b4ed43addbd40',
+        },
+        {
+          url: '/_next/static/chunks/1255-5e80850ee659f6b0.js',
+          revision: '5e80850ee659f6b0',
+        },
+        {
+          url: '/_next/static/chunks/1947-3d44f0f4ea684ac1.js',
+          revision: '3d44f0f4ea684ac1',
+        },
+        {
+          url: '/_next/static/chunks/3815-41115a05be201744.js',
+          revision: '41115a05be201744',
+        },
+        {
+          url: '/_next/static/chunks/4141-045ff8a253903bb2.js',
+          revision: '045ff8a253903bb2',
+        },
+        {
+          url: '/_next/static/chunks/4193-a6ee8a8bd3560102.js',
+          revision: 'a6ee8a8bd3560102',
+        },
+        {
+          url: '/_next/static/chunks/4909-5b84ef3be4b6f0dd.js',
+          revision: '5b84ef3be4b6f0dd',
+        },
+        {
+          url: '/_next/static/chunks/4bd1b696-100b9d70ed4e49c1.js',
+          revision: '100b9d70ed4e49c1',
+        },
+        {
+          url: '/_next/static/chunks/5125-a51407a3721216f6.js',
+          revision: 'a51407a3721216f6',
+        },
+        {
+          url: '/_next/static/chunks/522-e5782353758ac7b2.js',
+          revision: 'e5782353758ac7b2',
+        },
+        {
+          url: '/_next/static/chunks/6394-f31e032e7e4e0728.js',
+          revision: 'f31e032e7e4e0728',
+        },
+        {
+          url: '/_next/static/chunks/6612-b40ec465e8d70190.js',
+          revision: 'b40ec465e8d70190',
+        },
+        {
+          url: '/_next/static/chunks/6943-1ef2f4f08737302a.js',
+          revision: '1ef2f4f08737302a',
+        },
+        {
+          url: '/_next/static/chunks/7240-661d46660f1eda46.js',
+          revision: '661d46660f1eda46',
+        },
+        {
+          url: '/_next/static/chunks/742-e836459f02334056.js',
+          revision: 'e836459f02334056',
+        },
+        {
+          url: '/_next/static/chunks/784-7252de9f700fdfa0.js',
+          revision: '7252de9f700fdfa0',
+        },
+        {
+          url: '/_next/static/chunks/7853.8c7d74c102f16d7c.js',
+          revision: '8c7d74c102f16d7c',
+        },
+        {
+          url: '/_next/static/chunks/7873.67e9f54089a61826.js',
+          revision: '67e9f54089a61826',
+        },
+        {
+          url: '/_next/static/chunks/7908-ff427a8956101e1f.js',
+          revision: 'ff427a8956101e1f',
+        },
+        {
+          url: '/_next/static/chunks/8223-f77410372a2837b5.js',
+          revision: 'f77410372a2837b5',
+        },
+        {
+          url: '/_next/static/chunks/839-6a5d1ce49683e97f.js',
+          revision: '6a5d1ce49683e97f',
+        },
+        {
+          url: '/_next/static/chunks/8720-c9ee040177c11cae.js',
+          revision: 'c9ee040177c11cae',
+        },
+        {
+          url: '/_next/static/chunks/9308-93587f01cdb95664.js',
+          revision: '93587f01cdb95664',
+        },
+        {
+          url: '/_next/static/chunks/932-8884aabf1cc7de23.js',
+          revision: '8884aabf1cc7de23',
+        },
+        {
+          url: '/_next/static/chunks/9645-c6d938aebc24f7f8.js',
+          revision: 'c6d938aebc24f7f8',
+        },
+        {
+          url: '/_next/static/chunks/app/_not-found/page-be2769edb5c4e69f.js',
+          revision: 'be2769edb5c4e69f',
+        },
+        {
+          url: '/_next/static/chunks/app/api/health/route-ee8b9e768f2ca099.js',
+          revision: 'ee8b9e768f2ca099',
+        },
+        {
+          url: '/_next/static/chunks/app/auth/callback/page-5e03c5b96d788b96.js',
+          revision: '5e03c5b96d788b96',
+        },
+        {
+          url: '/_next/static/chunks/app/auth/forgot-password/page-1245f7ee0fd9d4d3.js',
+          revision: '1245f7ee0fd9d4d3',
+        },
+        {
+          url: '/_next/static/chunks/app/auth/google/callback/page-99fe8cabbe177bf1.js',
+          revision: '99fe8cabbe177bf1',
+        },
+        {
+          url: '/_next/static/chunks/app/auth/login/page-9096a07062bf6cf6.js',
+          revision: '9096a07062bf6cf6',
+        },
+        {
+          url: '/_next/static/chunks/app/auth/register/page-8e00d737fdf9666b.js',
+          revision: '8e00d737fdf9666b',
+        },
+        {
+          url: '/_next/static/chunks/app/auth/resend-verification/page-c761aa84fec58390.js',
+          revision: 'c761aa84fec58390',
+        },
+        {
+          url: '/_next/static/chunks/app/auth/reset-password/page-572eb1ea0020c5c8.js',
+          revision: '572eb1ea0020c5c8',
+        },
+        {
+          url: '/_next/static/chunks/app/auth/verify-email/page-69e7d0cbc4b0dcdb.js',
+          revision: '69e7d0cbc4b0dcdb',
+        },
+        {
+          url: '/_next/static/chunks/app/chatbox/page-01e1bcd2f93efc1b.js',
+          revision: '01e1bcd2f93efc1b',
+        },
+        {
+          url: '/_next/static/chunks/app/dashboard/page-aa85e2ec9356c9b3.js',
+          revision: 'aa85e2ec9356c9b3',
+        },
+        {
+          url: '/_next/static/chunks/app/firebase-messaging-sw.js/route-ee8b9e768f2ca099.js',
+          revision: 'ee8b9e768f2ca099',
+        },
+        {
+          url: '/_next/static/chunks/app/health-tracking/page-cfbfc7e79577404a.js',
+          revision: 'cfbfc7e79577404a',
+        },
+        {
+          url: '/_next/static/chunks/app/layout-379ba2b44587c4ed.js',
+          revision: '379ba2b44587c4ed',
+        },
+        {
+          url: '/_next/static/chunks/app/manifest.webmanifest/route-ee8b9e768f2ca099.js',
+          revision: 'ee8b9e768f2ca099',
+        },
+        {
+          url: '/_next/static/chunks/app/page-ca352b08c144eb39.js',
+          revision: 'ca352b08c144eb39',
+        },
+        {
+          url: '/_next/static/chunks/app/practice/page-0f7057b58eaff8a2.js',
+          revision: '0f7057b58eaff8a2',
+        },
+        {
+          url: '/_next/static/chunks/app/predict/page-8a50d66c600a8ee0.js',
+          revision: '8a50d66c600a8ee0',
+        },
+        {
+          url: '/_next/static/chunks/app/predict/result/page-cf1b514a187f65e0.js',
+          revision: 'cf1b514a187f65e0',
+        },
+        {
+          url: '/_next/static/chunks/app/profile/page-2a9c98526b012daa.js',
+          revision: '2a9c98526b012daa',
+        },
+        {
+          url: '/_next/static/chunks/app/settings/page-895ae4541f776af2.js',
+          revision: '895ae4541f776af2',
+        },
+        {
+          url: '/_next/static/chunks/app/sw.js/route-ee8b9e768f2ca099.js',
+          revision: 'ee8b9e768f2ca099',
+        },
+        {
+          url: '/_next/static/chunks/app/workbox-1bb06f5e.js/route-ee8b9e768f2ca099.js',
+          revision: 'ee8b9e768f2ca099',
+        },
+        {
+          url: '/_next/static/chunks/dc112a36.7ce38783546e7e33.js',
+          revision: '7ce38783546e7e33',
+        },
+        {
+          url: '/_next/static/chunks/framework-32492dd9c4fc5870.js',
+          revision: '32492dd9c4fc5870',
+        },
+        {
+          url: '/_next/static/chunks/main-67e92bca11146fbe.js',
+          revision: '67e92bca11146fbe',
+        },
+        {
+          url: '/_next/static/chunks/main-app-83b618f6c9be0c60.js',
+          revision: '83b618f6c9be0c60',
+        },
+        {
+          url: '/_next/static/chunks/pages/_app-4b3fb5e477a0267f.js',
+          revision: '4b3fb5e477a0267f',
+        },
+        {
+          url: '/_next/static/chunks/pages/_error-c970d8b55ace1b48.js',
+          revision: 'c970d8b55ace1b48',
+        },
+        {
+          url: '/_next/static/chunks/polyfills-42372ed130431b0a.js',
+          revision: '846118c33b2c0e922d7b3a7676f81f6f',
+        },
+        {
+          url: '/_next/static/chunks/webpack-95bc42b67f649c00.js',
+          revision: '95bc42b67f649c00',
+        },
+        {
+          url: '/_next/static/css/7f1e66002121e0a0.css',
+          revision: '7f1e66002121e0a0',
+        },
+        {
+          url: '/_next/static/css/f1a38a5961790194.css',
+          revision: 'f1a38a5961790194',
+        },
+        {
+          url: '/_next/static/kDEGbau7nGK634fhkhefa/_buildManifest.js',
+          revision: '3d30f4c7203a8c68297a723e9e0fe7a3',
+        },
+        {
+          url: '/_next/static/kDEGbau7nGK634fhkhefa/_ssgManifest.js',
+          revision: 'b6652df95db52feb4daf4eca35380933',
+        },
+        {
+          url: '/_next/static/media/4af3d503733b6e0d-s.p.otf',
+          revision: '1ae06bc5340fe8ecc9689f7435f4d57e',
+        },
+        {
+          url: '/_next/static/media/748dea0022e08f0b-s.p.otf',
+          revision: '82e5334b9753f83c1a97ac8419ee3c71',
+        },
+        {
+          url: '/_next/static/media/8baa9efa29f15961-s.p.otf',
+          revision: '6655e711b71fad445f2fc2e071ea6f5b',
+        },
+        {
+          url: '/_next/static/media/a233bcf5589f9052-s.p.otf',
+          revision: '83a4e50a248e2b9da6b2e6802834646d',
+        },
+        {
+          url: '/apple-touch-icon.png',
+          revision: '8300b88265b1b62f5f3a76c0c9c8d6e9',
+        },
+        { url: '/favicon.svg', revision: 'a6082f3461f851f7f5a07d506b6b3474' },
+        { url: '/file.svg', revision: 'd09f95206c3fa0bb9bd9fefabfd0ea71' },
+        {
+          url: '/firebase-messaging-sw.js',
+          revision: '6c70eef2f7f915fb18bc43a03eb27955',
+        },
+        {
+          url: '/fonts/SVN-Gilroy-Black-Italic.otf',
+          revision: '59f76af44fc0b60bc5ca1ac226d92462',
+        },
+        {
+          url: '/fonts/SVN-Gilroy-Black.otf',
+          revision: '91508b3f0beef57e1e54b407b0343020',
+        },
+        {
+          url: '/fonts/SVN-Gilroy-Bold-Italic.otf',
+          revision: '3f40c274ef9c091c68e34d74e4f104e5',
+        },
+        {
+          url: '/fonts/SVN-Gilroy-Bold.otf',
+          revision: '83a4e50a248e2b9da6b2e6802834646d',
+        },
+        {
+          url: '/fonts/SVN-Gilroy-Heavy-Italic.otf',
+          revision: '4caa8cff4d726243fd092637ef5a1ba9',
+        },
+        {
+          url: '/fonts/SVN-Gilroy-Heavy.otf',
+          revision: 'dcd00d1d23471afc73a55e78bf59fca3',
+        },
+        {
+          url: '/fonts/SVN-Gilroy-Italic.otf',
+          revision: 'c3768e33f44d61c676a0247eeb2e5b70',
+        },
+        {
+          url: '/fonts/SVN-Gilroy-Light-Italic.otf',
+          revision: 'c5e9ddb27b3a84f9a2a8aa1879794a50',
+        },
+        {
+          url: '/fonts/SVN-Gilroy-Light.otf',
+          revision: '500ee3f8d1beb34b515976e9b27e3706',
+        },
+        {
+          url: '/fonts/SVN-Gilroy-Medium-Italic.otf',
+          revision: 'ebefcaca02270f061c6a55d57e0e31a7',
+        },
+        {
+          url: '/fonts/SVN-Gilroy-Medium.otf',
+          revision: '1ae06bc5340fe8ecc9689f7435f4d57e',
+        },
+        {
+          url: '/fonts/SVN-Gilroy-Regular.otf',
+          revision: '6655e711b71fad445f2fc2e071ea6f5b',
+        },
+        {
+          url: '/fonts/SVN-Gilroy-SemiBold-Italic.otf',
+          revision: '7bc3fa7432dbbe53aca7f864d9352845',
+        },
+        {
+          url: '/fonts/SVN-Gilroy-SemiBold.otf',
+          revision: '82e5334b9753f83c1a97ac8419ee3c71',
+        },
+        {
+          url: '/fonts/SVN-Gilroy-Thin-Italic.otf',
+          revision: 'cfcf7956ff37267687c865cf4c6b0326',
+        },
+        {
+          url: '/fonts/SVN-Gilroy-Thin.otf',
+          revision: 'd77450bfee1e54ea478b559bc390d078',
+        },
+        {
+          url: '/fonts/SVN-Gilroy-XBold-Italic.otf',
+          revision: 'ce2a7b77ebd0d680953e8e1f8963a8e7',
+        },
+        {
+          url: '/fonts/SVN-Gilroy-XBold.otf',
+          revision: 'c37c61167ee0b1b418f983f2f9a180b5',
+        },
+        {
+          url: '/fonts/SVN-Gilroy-Xlight-Italic.otf',
+          revision: '4f186c7835190684e3d489ccb59bc220',
+        },
+        {
+          url: '/fonts/SVN-Gilroy-Xlight.otf',
+          revision: '8bd3fe58633f8bc4b21e081ce4f8cddd',
+        },
+        { url: '/globe.svg', revision: '2aaafa6a49b6563925fe440891e32717' },
+        { url: '/google.svg', revision: 'fdb3f7bba9fb5542787dfd116449ee05' },
+        {
+          url: '/healthcare-image1.png',
+          revision: 'f39d2edfdfe3b6fb8a254855b29db76b',
+        },
+        {
+          url: '/healthcare_image2.png',
+          revision: '633f9ac19300349450c6139e1cb96d23',
+        },
+        {
+          url: '/healthcare_image3.png',
+          revision: '593ca2fd12f0f4b99e0cf414edbfccfb',
+        },
+        {
+          url: '/icons/Decorate1.svg',
+          revision: 'bacddc66f8a834a5d23fc0e56d048ab0',
+        },
+        {
+          url: '/icons/Decorate2.svg',
+          revision: '36a73dc20611b1f53afa1b2c2c9a7aa0',
+        },
+        {
+          url: '/icons/Decorate3.svg',
+          revision: '9004b6a29c08048dd5f7658d65bd167c',
+        },
+        {
+          url: '/icons/Feedback.svg',
+          revision: 'acbfb0b37e4152ac38b67ff2ae688f5f',
+        },
+        {
+          url: '/icons/activity.svg',
+          revision: '97735789ea976cd9f94e4fb34482b4d9',
+        },
+        {
+          url: '/icons/attachment.svg',
+          revision: 'db6c32e6d8c894d0db377d5dd0683eb3',
+        },
+        {
+          url: '/icons/badge-72x72.png',
+          revision: '520b892ac0e990637754fdec59425c41',
+        },
+        {
+          url: '/icons/check.svg',
+          revision: '36660aed112b28b0ba44a350edae8c49',
+        },
+        {
+          url: '/icons/close.svg',
+          revision: 'dae1bb3d663718d1c1041ec412b5c541',
+        },
+        {
+          url: '/icons/copy.svg',
+          revision: 'd51aca6fbaed9bc32ab11c897b74d48f',
+        },
+        {
+          url: '/icons/edit.svg',
+          revision: '3e51cd52601808e7ba703d13fc66abca',
+        },
+        {
+          url: '/icons/google.svg',
+          revision: '1e7030e2cc47c4bff63a0490e710d8d4',
+        },
+        {
+          url: '/icons/heart.svg',
+          revision: '3730e98ce413558359aceadb5910c0c7',
+        },
+        {
+          url: '/icons/icon-128x128.png',
+          revision: '08ac926fedd7051e58f4c4e077c33e56',
+        },
+        {
+          url: '/icons/icon-144x144.png',
+          revision: '556266228bf0776bdb216f99b2d9a45b',
+        },
+        {
+          url: '/icons/icon-152x152.png',
+          revision: 'dbe6bcaf9cb573e5e7dea2b9f1582240',
+        },
+        {
+          url: '/icons/icon-180x180.png',
+          revision: '8300b88265b1b62f5f3a76c0c9c8d6e9',
+        },
+        {
+          url: '/icons/icon-192x192.png',
+          revision: '444f2c1ab1a2838ca506cea5b154df4c',
+        },
+        {
+          url: '/icons/icon-384x384.png',
+          revision: 'c89ce1e479b5143f1f4d22b628dba811',
+        },
+        {
+          url: '/icons/icon-512x512.png',
+          revision: 'ad828f3c66759461f2e0a91aeb1935de',
+        },
+        {
+          url: '/icons/icon-72x72.png',
+          revision: '13e968b72fe281d29b09dcc59490ced4',
+        },
+        {
+          url: '/icons/icon-96x96.png',
+          revision: '9212a814af3ac9fc69ac23e391da7f83',
+        },
+        {
+          url: '/icons/icon-source.svg',
+          revision: '353da95fd2c2cf965439a517f7e80ae3',
+        },
+        {
+          url: '/icons/regenerate.svg',
+          revision: 'a74a35394db927e05dec52603f091091',
+        },
+        {
+          url: '/icons/send.svg',
+          revision: 'ba7963f65fc1bef4a1015d0d7049236c',
+        },
+        {
+          url: '/icons/shield-check.svg',
+          revision: '593c5aa9b1cddc56bebe33b0f4020266',
+        },
+        {
+          url: '/images/account_icon.png',
+          revision: 'aaadc49854de42146e68bde7f4e1da16',
+        },
+        {
+          url: '/images/medical-physician-doctor-man.png',
+          revision: 'ec6ddcdfa2d4696e1f0da263e7a6f7c1',
+        },
+        { url: '/next.svg', revision: '8e061864f388b47f33a1c3780831193e' },
+        { url: '/vercel.svg', revision: 'c0af2f507b369b085b35ef4bbe3bcf1e' },
+        { url: '/window.svg', revision: 'a2760511c65806022ad20adf74370ff3' },
+      ],
+      { ignoreURLParametersMatching: [] }
+    ),
+    e.cleanupOutdatedCaches(),
+    e.registerRoute(
+      '/',
+      new e.NetworkFirst({
+        cacheName: 'start-url',
+        plugins: [
+          {
+            cacheWillUpdate: async ({
+              request: e,
+              response: s,
+              event: a,
+              state: c,
+            }) =>
+              s && 'opaqueredirect' === s.type
+                ? new Response(s.body, {
+                    status: 200,
+                    statusText: 'OK',
+                    headers: s.headers,
+                  })
+                : s,
+          },
+        ],
+      }),
+      'GET'
+    ),
+    e.registerRoute(
+      /^https:\/\/fonts\.(?:gstatic)\.com\/.*/i,
+      new e.CacheFirst({
+        cacheName: 'google-fonts-webfonts',
+        plugins: [
+          new e.ExpirationPlugin({ maxEntries: 4, maxAgeSeconds: 31536e3 }),
+        ],
+      }),
+      'GET'
+    ),
+    e.registerRoute(
+      /^https:\/\/fonts\.(?:googleapis)\.com\/.*/i,
+      new e.StaleWhileRevalidate({
+        cacheName: 'google-fonts-stylesheets',
+        plugins: [
+          new e.ExpirationPlugin({ maxEntries: 4, maxAgeSeconds: 604800 }),
+        ],
+      }),
+      'GET'
+    ),
+    e.registerRoute(
+      /\.(?:eot|otf|ttc|ttf|woff|woff2|font.css)$/i,
+      new e.StaleWhileRevalidate({
+        cacheName: 'static-font-assets',
+        plugins: [
+          new e.ExpirationPlugin({ maxEntries: 4, maxAgeSeconds: 604800 }),
+        ],
+      }),
+      'GET'
+    ),
+    e.registerRoute(
+      /\.(?:jpg|jpeg|gif|png|svg|ico|webp)$/i,
+      new e.StaleWhileRevalidate({
+        cacheName: 'static-image-assets',
+        plugins: [
+          new e.ExpirationPlugin({ maxEntries: 64, maxAgeSeconds: 86400 }),
+        ],
+      }),
+      'GET'
+    ),
+    e.registerRoute(
+      /\/_next\/image\?url=.+$/i,
+      new e.StaleWhileRevalidate({
+        cacheName: 'next-image',
+        plugins: [
+          new e.ExpirationPlugin({ maxEntries: 64, maxAgeSeconds: 86400 }),
+        ],
+      }),
+      'GET'
+    ),
+    e.registerRoute(
+      /\.(?:mp3|wav|ogg)$/i,
+      new e.CacheFirst({
+        cacheName: 'static-audio-assets',
+        plugins: [
+          new e.RangeRequestsPlugin(),
+          new e.ExpirationPlugin({ maxEntries: 32, maxAgeSeconds: 86400 }),
+        ],
+      }),
+      'GET'
+    ),
+    e.registerRoute(
+      /\.(?:mp4)$/i,
+      new e.CacheFirst({
+        cacheName: 'static-video-assets',
+        plugins: [
+          new e.RangeRequestsPlugin(),
+          new e.ExpirationPlugin({ maxEntries: 32, maxAgeSeconds: 86400 }),
+        ],
+      }),
+      'GET'
+    ),
+    e.registerRoute(
+      /\.(?:js)$/i,
+      new e.StaleWhileRevalidate({
+        cacheName: 'static-js-assets',
+        plugins: [
+          new e.ExpirationPlugin({ maxEntries: 32, maxAgeSeconds: 86400 }),
+        ],
+      }),
+      'GET'
+    ),
+    e.registerRoute(
+      /\.(?:css|less)$/i,
+      new e.StaleWhileRevalidate({
+        cacheName: 'static-style-assets',
+        plugins: [
+          new e.ExpirationPlugin({ maxEntries: 32, maxAgeSeconds: 86400 }),
+        ],
+      }),
+      'GET'
+    ),
+    e.registerRoute(
+      /\/_next\/data\/.+\/.+\.json$/i,
+      new e.StaleWhileRevalidate({
+        cacheName: 'next-data',
+        plugins: [
+          new e.ExpirationPlugin({ maxEntries: 32, maxAgeSeconds: 86400 }),
+        ],
+      }),
+      'GET'
+    ),
+    e.registerRoute(
+      /\.(?:json|xml|csv)$/i,
+      new e.NetworkFirst({
+        cacheName: 'static-data-assets',
+        plugins: [
+          new e.ExpirationPlugin({ maxEntries: 32, maxAgeSeconds: 86400 }),
+        ],
+      }),
+      'GET'
+    ),
+    e.registerRoute(
+      ({ url: e }) => {
+        if (!(self.origin === e.origin)) return !1;
+        const s = e.pathname;
+        return !s.startsWith('/api/auth/') && !!s.startsWith('/api/');
+      },
+      new e.NetworkFirst({
+        cacheName: 'apis',
+        networkTimeoutSeconds: 10,
+        plugins: [
+          new e.ExpirationPlugin({ maxEntries: 16, maxAgeSeconds: 86400 }),
+        ],
+      }),
+      'GET'
+    ),
+    e.registerRoute(
+      ({ url: e }) => {
+        if (!(self.origin === e.origin)) return !1;
+        return !e.pathname.startsWith('/api/');
+      },
+      new e.NetworkFirst({
+        cacheName: 'others',
+        networkTimeoutSeconds: 10,
+        plugins: [
+          new e.ExpirationPlugin({ maxEntries: 32, maxAgeSeconds: 86400 }),
+        ],
+      }),
+      'GET'
+    ),
+    e.registerRoute(
+      ({ url: e }) => !(self.origin === e.origin),
+      new e.NetworkFirst({
+        cacheName: 'cross-origin',
+        networkTimeoutSeconds: 10,
+        plugins: [
+          new e.ExpirationPlugin({ maxEntries: 32, maxAgeSeconds: 3600 }),
+        ],
+      }),
+      'GET'
+    ));
+});

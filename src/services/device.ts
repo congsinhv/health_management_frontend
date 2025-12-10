@@ -1,0 +1,57 @@
+/**
+ * Device service
+ * Handles device registration for FCM notifications
+ */
+
+import apiClient from './api';
+import type {
+  Device,
+  DeviceListResponse,
+  RegisterDeviceInput,
+} from '@/types/device';
+
+/**
+ * Get all registered devices for current user
+ */
+export const getDevices = async (): Promise<DeviceListResponse> => {
+  const response = await apiClient.get<Device[]>('/api/v1/devices/');
+  // API returns array directly, wrap it in expected format
+  const devices = response.data;
+  return {
+    devices,
+    total: devices.length,
+  };
+};
+
+/**
+ * Register a new device with FCM token
+ */
+export const registerDevice = async (
+  data: RegisterDeviceInput
+): Promise<Device> => {
+  const response = await apiClient.post<Device>('/api/v1/devices/', data);
+  return response.data;
+};
+
+/**
+ * Remove a registered device
+ */
+export const deleteDevice = async (deviceId: string): Promise<void> => {
+  await apiClient.delete(`/api/v1/devices/${deviceId}`);
+};
+
+/**
+ * Check if user has any mobile devices registered
+ */
+export const hasMobileDevice = (devices: Device[]): boolean => {
+  return devices.some(
+    d => d.device_type === 'ios' || d.device_type === 'android'
+  );
+};
+
+export const deviceService = {
+  getDevices,
+  registerDevice,
+  deleteDevice,
+  hasMobileDevice,
+};
