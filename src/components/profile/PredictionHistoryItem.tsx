@@ -2,11 +2,13 @@
 
 import { Activity, MessageSquare } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import type { PredictionHistoryItem as PredictionHistoryItemType } from '@/types/profile';
 import { PREDICTION_STATUS_LABELS } from '@/types/profile';
+import { TrackingItem } from '@/types/tracking';
+import { PredictionLevel } from '@/types/prediction';
+import { useRouter } from 'next/navigation';
 
 interface PredictionHistoryItemProps {
-  item: PredictionHistoryItemType;
+  item: TrackingItem;
   onClick?: () => void;
   className?: string;
 }
@@ -30,18 +32,28 @@ export const PredictionHistoryItem = ({
   onClick,
   className,
 }: PredictionHistoryItemProps) => {
+  const router = useRouter();
   const Icon = item.type === 'prediction' ? Activity : MessageSquare;
-  const statusLabel = PREDICTION_STATUS_LABELS[item.level];
-  const relativeTime = formatRelativeTime(item.timestamp);
-
-  // Determine indicator color
-  const getIndicatorColor = () => {
-    if (item.level === 'Normal_Weight') return 'bg-green-500';
-    if (item.level.includes('Overweight')) return 'bg-orange-500';
-    if (item.level === 'Insufficient_Weight') return 'bg-yellow-500';
-    return 'bg-red-500';
+  const statusLabel =
+    PREDICTION_STATUS_LABELS[
+      item.description.replace(/"/g, '') as PredictionLevel
+    ];
+  const relativeTime = formatRelativeTime(item.created_at);
+  console.log(statusLabel);
+  const description =
+    item.type === 'prediction'
+      ? `Bạn đã thực hiện 1 bài dự đoán với kết quả ${statusLabel}`
+      : `Bạn đã thực hiện 1 cuộc hội thoại`;
+  const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
+    e.preventDefault();
+    if (item.type === 'prediction') {
+      router.push(`/predict/result?predictionId=${item.id}`);
+    }
+    if (item.type === 'chatbox') {
+      router.push(`/chatbox?conversationId=${item.id}`);
+    }
   };
-
   return (
     <div
       className={cn(
@@ -62,17 +74,14 @@ export const PredictionHistoryItem = ({
       <div className='min-w-0 flex-1'>
         <div className='mb-1 flex items-center gap-2'>
           <h4 className='text-sm font-medium text-gray-900 dark:text-white'>
-            Bạn đã thực hiện 1 bài dự đoán với kết quả {statusLabel}
+            {description}
           </h4>
         </div>
         <p className='mb-2 text-xs text-gray-500 dark:text-gray-400'>
-          {item.description}.{' '}
+          {item.type === 'chatbox' ? item.description + '. ' : ''}
           <button
-            className='text-primary text-xs font-medium hover:underline'
-            onClick={e => {
-              e.stopPropagation();
-              onClick?.();
-            }}
+            className='text-primary cursor-pointer text-xs font-medium hover:underline'
+            onClick={handleClick}
           >
             Xem chi tiết
           </button>

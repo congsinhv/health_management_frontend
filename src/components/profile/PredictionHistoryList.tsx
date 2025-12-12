@@ -3,13 +3,13 @@
 import { cn } from '@/lib/utils';
 import { PredictionHistoryItem } from './PredictionHistoryItem';
 import { Skeleton } from '@/components/ui/skeleton';
-import type { PredictionHistoryItem as PredictionHistoryItemType } from '@/types/profile';
+import { TrackingItem } from '@/types/tracking';
 
 interface PredictionHistoryListProps {
-  items: PredictionHistoryItemType[];
+  items: TrackingItem[];
   total: number;
   isLoading?: boolean;
-  onItemClick?: (item: PredictionHistoryItemType) => void;
+  onItemClick?: (item: TrackingItem) => void;
   className?: string;
 }
 

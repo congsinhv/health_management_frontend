@@ -5,10 +5,11 @@ import { useAuth } from '@/contexts/auth';
 import { useConversation } from '@/contexts/conversation';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import AddIcon from '../icons/add';
 import LogoIcon from '../icons/logo';
 import TabIcon from '../icons/tab';
+import { useQueryParams } from '@/hooks/useQueryParams';
 
 interface HeaderVerticalProps {
   isOpen?: boolean;
@@ -26,12 +27,20 @@ const HeaderVertical = ({
   const [isLogoHovered, setIsLogoHovered] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
+  const { get: getQueryParam } = useQueryParams();
+  const conversationId = getQueryParam('conversationId');
 
   const toggleHeader = () => {
     setIsExpanded(!isExpanded);
     setIsOpen?.(!isExpanded);
   };
   const { switchConversation } = useConversation();
+
+  useEffect(() => {
+    if (conversationId) {
+      switchConversation(Number(conversationId));
+    }
+  }, [conversationId]);
 
   const handleComeHome = () => {
     router.push('/');

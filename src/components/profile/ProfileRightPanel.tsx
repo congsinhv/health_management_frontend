@@ -3,19 +3,19 @@
 import { cn } from '@/lib/utils';
 import { PredictionHistoryList } from './PredictionHistoryList';
 import { NotificationSection } from './NotificationSection';
-import type { PredictionHistoryItem, TrainingReminder } from '@/types/profile';
 import type { Device } from '@/types/device';
 import { Schedule } from '@/types/schedule';
+import { TrackingItem } from '@/types/tracking';
 
 interface ProfileRightPanelProps {
-  historyItems: PredictionHistoryItem[];
+  historyItems: TrackingItem[];
   historyTotal: number;
   isLoadingHistory?: boolean;
   reminders: Schedule | null;
   devices: Device[] | null;
   isLoadingReminders?: boolean;
   isLoadingDevices?: boolean;
-  onHistoryItemClick?: (item: PredictionHistoryItem) => void;
+  onHistoryItemClick?: (item: TrackingItem) => void;
   className?: string;
 }
 

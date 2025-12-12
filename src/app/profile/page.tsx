@@ -1,13 +1,9 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 'use client';
 
-import { AvatarFill } from '@/components/shared/AvatarFill';
 import Header from '@/components/layout/Header';
-import {
-  LatestPredictionCard,
-  ProfileLeftPanel,
-  ProfileRightPanel,
-} from '@/components/profile';
+import { LatestPredictionCard, ProfileRightPanel } from '@/components/profile';
+import { AvatarFill } from '@/components/shared/AvatarFill';
 import { ProtectedRoute } from '@/components/shared/ProtectedRoute';
 import { Button } from '@/components/ui/button';
 import { DatePicker } from '@/components/ui/date-picker';
@@ -28,31 +24,29 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/contexts/auth';
+import { useDevices } from '@/hooks/useDevices';
+import { useSchedules } from '@/hooks/useSchedules';
+import { useTracking } from '@/hooks/useTracking';
 import { AVATAR_IMAGE_ACCEPT } from '@/lib/constants';
 import { logger } from '@/lib/logger';
-import { validateAvatarImage } from '@/lib/utils/avatar';
 import {
   mockLatestPrediction,
   mockPredictionHistory,
-  mockTrainingReminders,
-  mockDevices,
 } from '@/lib/mock/profile-mock-data';
+import { validateAvatarImage } from '@/lib/utils/avatar';
 import { uploadService } from '@/services/upload';
 import { userService } from '@/services/user';
+import { TrackingItem } from '@/types/tracking';
 import { UpdateUserProfileData } from '@/types/user';
-import type { PredictionHistoryItem } from '@/types/profile';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuery } from '@tanstack/react-query';
+import { Upload } from 'lucide-react';
 import * as React from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import * as z from 'zod';
-import { Upload } from 'lucide-react';
-import { useSchedules } from '@/hooks/useSchedules';
-import { useDevices } from '@/hooks/useDevices';
 
 const profileFormSchema = z.object({
   fullName: z.string().min(2, 'Họ tên phải có ít nhất 2 ký tự'),
@@ -99,8 +93,8 @@ function ProfileContent() {
   // Mock data state (replace with API calls later)
   const [latestPrediction] = useState(mockLatestPrediction);
   const { data: schedules } = useSchedules();
-  const [historyItems] = useState(mockPredictionHistory);
   const { data: devices } = useDevices();
+  const { data: trackings } = useTracking();
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
@@ -200,10 +194,9 @@ function ProfileContent() {
   }, [avatarPreview]);
 
   // History item click handler
-  const handleHistoryItemClick = (item: PredictionHistoryItem) => {
+  const handleHistoryItemClick = (item: TrackingItem) => {
     // TODO: Navigate to prediction detail page when API is ready
     // For now, this is a placeholder - will implement navigation later
-    void item.id; // Acknowledge item is used
   };
 
   async function onSubmit(data: ProfileFormValues) {
@@ -626,8 +619,8 @@ function ProfileContent() {
             {/* RIGHT PANEL (2/5 width) */}
             <div className='lg:col-span-9'>
               <ProfileRightPanel
-                historyItems={historyItems}
-                historyTotal={historyItems.length}
+                historyItems={trackings || []}
+                historyTotal={trackings?.length || 0}
                 isLoadingHistory={false}
                 reminders={schedules || null}
                 devices={devices?.devices || null}

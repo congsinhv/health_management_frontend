@@ -4,6 +4,7 @@ import {
   UserInputData,
 } from '@/types/prediction';
 import { PredictFormData } from '@/app/predict/formHelper';
+import apiClient from './api';
 
 /**
  * API Service for Health Prediction
@@ -176,20 +177,16 @@ export async function submitPrediction(
 ): Promise<PredictionResultData> {
   try {
     const apiRequest = transformFormDataToAPIRequest(formData);
+    const response = await apiClient.post<PredictionResultData>(
+      '/api/v1/predict/',
+      apiRequest
+    );
 
-    const response = await fetch(`${API_BASE_URL}/api/v1/predict/`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(apiRequest),
-    });
-
-    if (!response.ok) {
+    if (response.status !== 200) {
       throw new Error(`API request failed: ${response.statusText}`);
     }
 
-    const apiResponse = await response.json();
+    const apiResponse = response.data;
 
     // The API now returns the full result data, so we can return it directly
     const result = apiResponse as PredictionResultData;
@@ -209,6 +206,24 @@ export async function submitPrediction(
     return result;
   } catch (error) {
     console.error('Error submitting prediction:', error);
+    throw error;
+  }
+}
+
+export async function getPredictionResult(
+  predictionId: string
+): Promise<PredictionResultData> {
+  try {
+    const response = await apiClient.get<PredictionResultData>(
+      `/api/v1/predict/${predictionId}`
+    );
+    if (response.status !== 200) {
+      throw new Error(`API request failed: ${response.statusText}`);
+    }
+    const apiResponse = response.data;
+    return apiResponse as PredictionResultData;
+  } catch (error) {
+    console.error('Error getting prediction result:', error);
     throw error;
   }
 }

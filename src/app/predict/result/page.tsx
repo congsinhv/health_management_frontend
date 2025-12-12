@@ -1,14 +1,17 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, Suspense } from 'react';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { PredictionResultData } from '@/types/prediction';
 import { Button } from '@/components/ui/button';
-import { Download, Loader2, Calendar } from 'lucide-react';
+import { Download, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { exportPredictionPDF } from '@/services/prediction';
+import {
+  exportPredictionPDF,
+  getPredictionResult,
+} from '@/services/prediction';
 import UserInfoSection from '@/components/predict/UserInfoSection';
 import PredictionResultCard from '@/components/predict/PredictionResultCard';
 import HealthMetricsCard from '@/components/predict/HealthMetricsCard';
@@ -16,8 +19,9 @@ import HealthAnalysisSection from '@/components/predict/HealthAnalysisSection';
 import DietPlanSection from '@/components/predict/DietPlanSection';
 import WorkoutPlanSection from '@/components/predict/WorkoutPlanSection';
 import AppointmentModal from '@/components/profile/AppointmentModal';
+import { useQueryParams } from '@/hooks/useQueryParams';
 
-const PredictionResultPage = () => {
+const PredictionResultContent = () => {
   const router = useRouter();
   const [resultData, setResultData] = useState<PredictionResultData | null>(
     null
@@ -25,6 +29,9 @@ const PredictionResultPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isDownloading, setIsDownloading] = useState(false);
   const [showAppointmentModal, setShowAppointmentModal] = useState(false);
+  const { get: getQueryParam } = useQueryParams();
+  const predictionId = getQueryParam('predictionId');
+  const isInitialMount = useRef(false);
 
   useEffect(() => {
     // Retrieve prediction result from sessionStorage
@@ -41,6 +48,20 @@ const PredictionResultPage = () => {
 
     setIsLoading(false);
   }, []);
+
+  const getPredictionResultData = async (predictionId: string) => {
+    setIsLoading(true);
+    const result = await getPredictionResult(predictionId);
+    sessionStorage.setItem('predictionResult', JSON.stringify(result));
+    isInitialMount.current = true;
+    setIsLoading(false);
+  };
+
+  useEffect(() => {
+    if (predictionId) {
+      getPredictionResultData(predictionId);
+    }
+  }, [predictionId]);
 
   if (isLoading) {
     return (
@@ -108,10 +129,16 @@ const PredictionResultPage = () => {
     }
   };
 
-  const handleSaveAppointment = (schedules: any[]) => {
-    console.log('Lịch hẹn đã tạo:', schedules);
-    toast.success('Đã tạo lịch hẹn thành công!');
+  const handleSaveAppointment = (
+    _schedules: Array<{
+      day: string;
+      dayValue: string;
+      timeSlots: Array<{ id: number; startTime: string }>;
+    }>,
+    _type: 'flexible' | 'fixed'
+  ) => {
     // TODO: Call API to save appointment schedules
+    // Schedules are already saved by AppointmentModal, this is just a callback
   };
 
   return (
@@ -238,6 +265,27 @@ const PredictionResultPage = () => {
 
       <Footer />
     </>
+  );
+};
+
+const PredictionResultPage = () => {
+  return (
+    <Suspense
+      fallback={
+        <>
+          <Header className='sticky top-0 left-0 z-50 w-full' />
+          <div className='flex min-h-screen items-center justify-center pt-24'>
+            <div className='text-center'>
+              <div className='mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-b-2 border-[#4FD1C5]'></div>
+              <p className='text-gray-600'>Đang tải...</p>
+            </div>
+          </div>
+          <Footer />
+        </>
+      }
+    >
+      <PredictionResultContent />
+    </Suspense>
   );
 };
 

@@ -748,7 +748,6 @@ const PredictPage = () => {
       </div>
       <Footer />
       <LoadingOverlay isVisible={isSubmitting} />
-      <LoadingFallback />
     </>
   );
 };
