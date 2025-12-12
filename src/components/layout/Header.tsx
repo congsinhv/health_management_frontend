@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { User, LogOut } from 'lucide-react';
 import { useAuth } from '@/contexts/auth';
 import { Avatar } from '@/components/shared/Avatar';
@@ -14,6 +14,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { AVATAR_CONFIG } from '@/lib/constants';
+import { cn } from '@/lib/utils';
 
 interface HeaderProps {
   className?: string;
@@ -43,11 +44,15 @@ const Header = ({ className }: HeaderProps) => {
     }
   };
 
+  const currentPath = usePathname();
+
+  const isActive = (path: string) => currentPath === path;
+
   return (
     <div
-      className={`flex h-[73px] w-full items-center justify-center bg-white ${className}`}
+      className={`flex h-[4.5625rem] w-full items-center justify-center border-b-2 border-[#EFEFEF] bg-white ${className}`}
     >
-      <div className='mx-auto flex w-full max-w-[1340px] items-center justify-between px-12 py-1 md:px-6'>
+      <div className='mx-auto flex w-full max-w-full items-center justify-between px-8 py-1 md:px-8'>
         <Link href='/'>
           <div className='flex items-center justify-center no-underline'>
             <Image
@@ -60,15 +65,30 @@ const Header = ({ className }: HeaderProps) => {
           </div>
         </Link>
         <div className='flex items-center gap-10 md:gap-5'>
-          <div className='text-sm leading-5 font-[var(--font-gilroy)] font-medium text-gray-900 no-underline transition-colors duration-200 hover:text-gray-900/80 md:text-xs'>
-            <Link href='/'>Về chúng tôi</Link>
+          <div
+            className={cn(
+              'text-sm leading-5 font-[var(--font-gilroy)] font-medium text-gray-900 no-underline transition-colors duration-200 hover:text-gray-900/80',
+              isActive('/') && 'font-semibold'
+            )}
+          >
+            <Link href='/'>Trang chủ</Link>
           </div>
 
-          <div className='text-sm leading-5 font-[var(--font-gilroy)] font-medium text-gray-900 no-underline transition-colors duration-200 hover:text-gray-900/80 md:text-xs'>
-            <Link href='/chatbox'>Dự đoán sức khỏe</Link>
+          <div
+            className={cn(
+              'text-sm leading-5 font-[var(--font-gilroy)] font-medium text-gray-900 no-underline transition-colors duration-200 hover:text-gray-900/80',
+              isActive('/predict') && 'font-semibold'
+            )}
+          >
+            <Link href='/predict'>Dự đoán sức khỏe</Link>
           </div>
-          <div className='text-sm leading-5 font-[var(--font-gilroy)] font-medium text-gray-900 no-underline transition-colors duration-200 hover:text-gray-900/80 md:text-xs'>
-            <Link href='/'>Liên hệ</Link>
+          <div
+            className={cn(
+              'text-sm leading-5 font-[var(--font-gilroy)] font-medium text-gray-900 no-underline transition-colors duration-200 hover:text-gray-900/80',
+              isActive('/chatbox') && 'font-semibold'
+            )}
+          >
+            <Link href='/chatbox'>Trợ lý sức khỏe</Link>
           </div>
           {isAuthenticated && user ? (
             <div className='flex items-center justify-center'>
@@ -102,7 +122,7 @@ const Header = ({ className }: HeaderProps) => {
                         size={16}
                         className='flex-shrink-0 text-gray-500 md:h-3.5 md:w-3.5'
                       />
-                      <span className='flex-1'>Profile</span>
+                      <span className='flex-1'>Hồ sơ</span>
                     </button>
                     <button
                       onClick={handleLogout}
@@ -113,7 +133,7 @@ const Header = ({ className }: HeaderProps) => {
                         size={16}
                         className='flex-shrink-0 text-gray-500 md:h-3.5 md:w-3.5'
                       />
-                      <span className='flex-1'>Log out</span>
+                      <span className='flex-1'>Đăng xuất</span>
                     </button>
                   </div>
                 </PopoverContent>
@@ -125,7 +145,7 @@ const Header = ({ className }: HeaderProps) => {
                 onClick={handleLogin}
                 variant='outline'
                 size='sm'
-                className='h-9 cursor-pointer rounded-md border border-gray-300 bg-white px-4 text-sm font-[var(--font-gilroy)] font-medium text-gray-900 transition-all duration-200 hover:border-gray-400 hover:bg-gray-50 active:scale-95 md:h-8 md:px-3 md:text-xs'
+                className='h-9 cursor-pointer rounded-full border-2 border-[#B3B8C3] bg-white px-4 text-sm font-[var(--font-gilroy)] font-medium text-gray-900 transition-all duration-200 hover:border-gray-400 hover:bg-gray-50 active:scale-95'
               >
                 Đăng nhập
               </Button>

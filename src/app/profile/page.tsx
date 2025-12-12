@@ -3,7 +3,11 @@
 
 import { AvatarFill } from '@/components/shared/AvatarFill';
 import Header from '@/components/layout/Header';
-import { DeviceList, ScheduleSection } from '@/components/profile';
+import {
+  LatestPredictionCard,
+  ProfileLeftPanel,
+  ProfileRightPanel,
+} from '@/components/profile';
 import { ProtectedRoute } from '@/components/shared/ProtectedRoute';
 import { Button } from '@/components/ui/button';
 import { DatePicker } from '@/components/ui/date-picker';
@@ -29,9 +33,16 @@ import { useAuth } from '@/contexts/auth';
 import { AVATAR_IMAGE_ACCEPT } from '@/lib/constants';
 import { logger } from '@/lib/logger';
 import { validateAvatarImage } from '@/lib/utils/avatar';
+import {
+  mockLatestPrediction,
+  mockPredictionHistory,
+  mockTrainingReminders,
+  mockDevices,
+} from '@/lib/mock/profile-mock-data';
 import { uploadService } from '@/services/upload';
 import { userService } from '@/services/user';
 import { UpdateUserProfileData } from '@/types/user';
+import type { PredictionHistoryItem } from '@/types/profile';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuery } from '@tanstack/react-query';
 import * as React from 'react';
@@ -39,6 +50,9 @@ import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import * as z from 'zod';
+import { Upload } from 'lucide-react';
+import { useSchedules } from '@/hooks/useSchedules';
+import { useDevices } from '@/hooks/useDevices';
 
 const profileFormSchema = z.object({
   fullName: z.string().min(2, 'Họ tên phải có ít nhất 2 ký tự'),
@@ -81,6 +95,12 @@ function ProfileContent() {
   const [selectedAvatarFile, setSelectedAvatarFile] = useState<File | null>(
     null
   );
+
+  // Mock data state (replace with API calls later)
+  const [latestPrediction] = useState(mockLatestPrediction);
+  const { data: schedules } = useSchedules();
+  const [historyItems] = useState(mockPredictionHistory);
+  const { data: devices } = useDevices();
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
@@ -178,6 +198,13 @@ function ProfileContent() {
       }
     };
   }, [avatarPreview]);
+
+  // History item click handler
+  const handleHistoryItemClick = (item: PredictionHistoryItem) => {
+    // TODO: Navigate to prediction detail page when API is ready
+    // For now, this is a placeholder - will implement navigation later
+    void item.id; // Acknowledge item is used
+  };
 
   async function onSubmit(data: ProfileFormValues) {
     if (user?.id === null) {
@@ -317,308 +344,297 @@ function ProfileContent() {
     fileInputRef.current?.click();
   }
 
+  // Get user display name
+  const userDisplayName = userData?.profile
+    ? `${userData.profile.first_name || ''} ${userData.profile.last_name || ''}`.trim() ||
+      user?.email
+    : user?.email;
+
   return (
     <div className='min-h-screen bg-white dark:bg-gray-900'>
       {/* Header */}
       <Header />
-
-      {/* Section 1: Heading and Description */}
-      <section className='container mx-auto px-4 py-12'>
-        <div className='mx-auto max-w-4xl text-center'>
-          <h1 className='mb-4 text-5xl font-semibold text-[#1e1e1e] dark:text-white'>
-            Thông tin cá nhân
-          </h1>
-          <p className='mx-auto max-w-2xl text-sm leading-relaxed text-[#1e1e1e] dark:text-gray-300'>
-            Cập nhật thông tin cá nhân và sức khỏe của bạn để nhận được các gợi
-            ý chế độ ăn cá nhân hóa và dự đoán nguy cơ sức khỏe phù hợp nhất.
-          </p>
-        </div>
-      </section>
-
-      {/* Section 2: Form with F5F4FA background */}
-      <section className='bg-[#f5f4fa] py-12 dark:bg-gray-950'>
-        <div className='container mx-auto max-w-7xl px-4'>
-          <div className='mx-auto max-w-5xl space-y-12'>
-            {/* Profile Photo Section */}
-            <div className='rounded-lg bg-white p-6 dark:bg-gray-800'>
-              <h2 className='mb-4 text-base font-medium text-[#1e1e1e] dark:text-white'>
-                Ảnh đại diện
-              </h2>
-              <div className='flex flex-col items-center gap-4'>
-                <div className='relative h-32 w-32'>
-                  <AvatarFill
-                    src={avatarPreview || user?.profilePicture}
-                    alt='Avatar Preview'
-                    className='shadow-lg'
-                    userId={user?.id?.toString()}
-                    loading={isLoading}
-                  />
+      {/* Section 2: Two-Column Layout */}
+      <section className='py-4 dark:bg-gray-950'>
+        <div className='container mx-auto max-w-full px-8'>
+          {/* Two-column grid: Left 60%, Right 40% on desktop */}
+          <div className='grid grid-cols-12 gap-8'>
+            {/* LEFT PANEL (3/5 width) */}
+            <div className='lg:col-span-3'>
+              {/* Avatar Section */}
+              <div className='mb-3 rounded-2xl border-2 border-[#EFEFEF] bg-white p-6 dark:bg-gray-800'>
+                <div className='flex items-center gap-4'>
+                  <div className='relative h-24 w-24'>
+                    <AvatarFill
+                      src={avatarPreview || user?.profilePicture}
+                      alt='Avatar Preview'
+                      className='shadow-lg'
+                      userId={user?.id?.toString()}
+                      loading={isLoading}
+                    />
+                  </div>
+                  <div className=''>
+                    <h2 className='text-lg font-semibold text-gray-900 dark:text-white'>
+                      {userDisplayName}
+                    </h2>
+                    <input
+                      ref={fileInputRef}
+                      type='file'
+                      accept={AVATAR_IMAGE_ACCEPT}
+                      onChange={handleAvatarFileSelect}
+                      className='hidden'
+                    />
+                    <Button
+                      variant='outline'
+                      size='sm'
+                      className='mt-2 rounded-full border-[#B3B8C3] text-[#364153]'
+                      disabled={isLoading || isSubmitting}
+                      onClick={handleAvatarClick}
+                    >
+                      <Upload className='h-4 w-4' />
+                      {selectedAvatarFile ? 'Đã chọn ảnh' : 'Tải ảnh lên'}
+                    </Button>
+                    <p className='mt-1 text-xs text-gray-400'>
+                      Kích thước ảnh nhỏ hơn 2MB
+                    </p>
+                  </div>
                 </div>
-                <input
-                  ref={fileInputRef}
-                  type='file'
-                  accept={AVATAR_IMAGE_ACCEPT}
-                  onChange={handleAvatarFileSelect}
-                  className='hidden'
-                />
-                <Button
-                  variant='outline'
-                  size='sm'
-                  className='border-[#d9d9d9]'
-                  disabled={isLoading || isSubmitting}
-                  onClick={handleAvatarClick}
-                >
-                  {selectedAvatarFile ? 'Đã chọn ảnh' : 'Đổi ảnh'}
-                </Button>
-                {selectedAvatarFile && (
-                  <p className='text-xs text-gray-500'>
-                    Ảnh sẽ được cập nhật khi bạn nhấn nút &quot;Cập nhật&quot;
-                  </p>
-                )}
               </div>
-            </div>
-
-            {/* Personal Information Form */}
-            <div className='rounded-lg bg-white p-6 dark:bg-gray-800'>
-              <h2 className='mb-6 text-base font-medium text-[#1e1e1e] dark:text-white'>
-                Thông tin cá nhân
-              </h2>
-              {isLoading ? (
-                <div className='space-y-6'>
-                  {/* Loading skeleton */}
-                  <div className='grid grid-cols-1 gap-6 sm:grid-cols-2'>
-                    <div className='space-y-2'>
-                      <Skeleton className='h-4 w-20' />
-                      <Skeleton className='h-10 w-full' />
-                    </div>
-                    <div className='space-y-2'>
-                      <Skeleton className='h-4 w-20' />
-                      <Skeleton className='h-10 w-full' />
-                    </div>
-                  </div>
-                  <div className='grid grid-cols-1 gap-6 sm:grid-cols-2'>
-                    <div className='space-y-2'>
-                      <Skeleton className='h-4 w-20' />
-                      <Skeleton className='h-10 w-full' />
-                    </div>
-                    <div className='space-y-2'>
-                      <Skeleton className='h-4 w-20' />
-                      <Skeleton className='h-10 w-full' />
-                    </div>
-                  </div>
-                  <div className='space-y-2'>
-                    <Skeleton className='h-4 w-24' />
-                    <Skeleton className='h-10 w-full' />
-                  </div>
-                  <div className='space-y-2'>
-                    <Skeleton className='h-4 w-48' />
-                    <Skeleton className='h-24 w-full' />
-                  </div>
-                  <div className='space-y-2'>
-                    <Skeleton className='h-4 w-20' />
-                    <Skeleton className='h-10 w-full' />
-                  </div>
-                  <div className='flex justify-end pt-4'>
-                    <Skeleton className='h-10 w-[182px]' />
-                  </div>
-                </div>
-              ) : (
-                <Form {...form}>
-                  <form
-                    onSubmit={form.handleSubmit(onSubmit)}
-                    className='space-y-6'
-                  >
-                    {/* Full Name & Gender */}
+              <LatestPredictionCard
+                prediction={latestPrediction}
+                isLoading={isLoading}
+              />
+              {/* Account Info Section */}
+              <div className='mt-3 rounded-2xl border-2 border-[#EFEFEF] bg-white p-6'>
+                <h2 className='mb-6 text-base font-semibold text-[#364153]'>
+                  Thông tin tài khoản
+                </h2>
+                {isLoading ? (
+                  <div className='space-y-6'>
+                    {/* Loading skeleton */}
                     <div className='grid grid-cols-1 gap-6 sm:grid-cols-2'>
+                      <div className='space-y-2'>
+                        <Skeleton className='h-4 w-20' />
+                        <Skeleton className='h-10 w-full' />
+                      </div>
+                      <div className='space-y-2'>
+                        <Skeleton className='h-4 w-20' />
+                        <Skeleton className='h-10 w-full' />
+                      </div>
+                    </div>
+                    <div className='grid grid-cols-1 gap-6 sm:grid-cols-2'>
+                      <div className='space-y-2'>
+                        <Skeleton className='h-4 w-20' />
+                        <Skeleton className='h-10 w-full' />
+                      </div>
+                      <div className='space-y-2'>
+                        <Skeleton className='h-4 w-20' />
+                        <Skeleton className='h-10 w-full' />
+                      </div>
+                    </div>
+                    <div className='space-y-2'>
+                      <Skeleton className='h-4 w-24' />
+                      <Skeleton className='h-10 w-full' />
+                    </div>
+                    <div className='space-y-2'>
+                      <Skeleton className='h-4 w-48' />
+                      <Skeleton className='h-24 w-full' />
+                    </div>
+                    <div className='space-y-2'>
+                      <Skeleton className='h-4 w-20' />
+                      <Skeleton className='h-10 w-full' />
+                    </div>
+                    <div className='flex justify-end pt-4'>
+                      <Skeleton className='h-10 w-[182px]' />
+                    </div>
+                  </div>
+                ) : (
+                  <Form {...form}>
+                    <form
+                      onSubmit={form.handleSubmit(onSubmit)}
+                      className='space-y-6'
+                    >
+                      {/* Full Name & Gender */}
+                      <div className='grid grid-cols-1 gap-6'>
+                        <FormField
+                          control={form.control}
+                          name='fullName'
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Họ tên</FormLabel>
+                              <FormControl>
+                                <Input
+                                  placeholder='Nhập họ và tên'
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name='gender'
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Giới tính</FormLabel>
+                              <Select
+                                onValueChange={field.onChange}
+                                value={field.value}
+                              >
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder='Chọn giới tính' />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value='male'>Nam</SelectItem>
+                                  <SelectItem value='female'>Nữ</SelectItem>
+                                  <SelectItem value='other'>Khác</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      {/* Height & Weight */}
+                      <div className='grid grid-cols-1 gap-6'>
+                        <FormField
+                          control={form.control}
+                          name='height'
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Chiều cao</FormLabel>
+                              <FormControl>
+                                <div className='relative'>
+                                  <Input
+                                    type='number'
+                                    placeholder='Nhập chiều cao'
+                                    value={field.value ?? ''}
+                                    onChange={e =>
+                                      field.onChange(e.target.value)
+                                    }
+                                    className='[appearance:textfield] pr-10 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none'
+                                  />
+                                  <span className='absolute top-1/2 right-3 -translate-y-1/2 text-sm text-gray-500 dark:text-gray-400'>
+                                    cm
+                                  </span>
+                                </div>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name='currentWeight'
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Cân nặng</FormLabel>
+                              <FormControl>
+                                <div className='relative'>
+                                  <Input
+                                    type='number'
+                                    step='0.1'
+                                    placeholder='Nhập cân nặng'
+                                    value={field.value ?? ''}
+                                    onChange={e =>
+                                      field.onChange(e.target.value)
+                                    }
+                                    className='[appearance:textfield] pr-10 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none'
+                                  />
+                                  <span className='absolute top-1/2 right-3 -translate-y-1/2 text-sm text-gray-500 dark:text-gray-400'>
+                                    kg
+                                  </span>
+                                </div>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      {/* Date of Birth */}
                       <FormField
                         control={form.control}
-                        name='fullName'
+                        name='dateOfBirth'
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Họ tên</FormLabel>
+                            <FormLabel>Ngày sinh</FormLabel>
                             <FormControl>
-                              <Input placeholder='Nhập họ và tên' {...field} />
+                              <DatePicker
+                                placeholder='Chọn ngày sinh'
+                                value={field.value}
+                                onChange={field.onChange}
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
+
+                      {/* Goal */}
                       <FormField
                         control={form.control}
-                        name='gender'
+                        name='goal'
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Giới tính</FormLabel>
+                            <FormLabel>Mục tiêu</FormLabel>
                             <Select
                               onValueChange={field.onChange}
                               value={field.value}
                             >
                               <FormControl>
                                 <SelectTrigger>
-                                  <SelectValue placeholder='Chọn giới tính' />
+                                  <SelectValue placeholder='Chọn mục tiêu' />
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                <SelectItem value='male'>Nam</SelectItem>
-                                <SelectItem value='female'>Nữ</SelectItem>
-                                <SelectItem value='other'>Khác</SelectItem>
+                                <SelectItem value='lose'>Giảm cân</SelectItem>
+                                <SelectItem value='gain'>Tăng cân</SelectItem>
+                                <SelectItem value='maintain'>
+                                  Duy trì
+                                </SelectItem>
                               </SelectContent>
                             </Select>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
-                    </div>
 
-                    {/* Height & Weight */}
-                    <div className='grid grid-cols-1 gap-6 sm:grid-cols-2'>
-                      <FormField
-                        control={form.control}
-                        name='height'
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Chiều cao</FormLabel>
-                            <FormControl>
-                              <div className='relative'>
-                                <Input
-                                  type='number'
-                                  placeholder='175'
-                                  value={field.value ?? ''}
-                                  onChange={e => field.onChange(e.target.value)}
-                                  className='[appearance:textfield] pr-10 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none'
-                                />
-                                <span className='absolute top-1/2 right-3 -translate-y-1/2 text-sm text-gray-500 dark:text-gray-400'>
-                                  cm
-                                </span>
-                              </div>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name='currentWeight'
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Cân nặng</FormLabel>
-                            <FormControl>
-                              <div className='relative'>
-                                <Input
-                                  type='number'
-                                  step='0.1'
-                                  placeholder='70.5'
-                                  value={field.value ?? ''}
-                                  onChange={e => field.onChange(e.target.value)}
-                                  className='[appearance:textfield] pr-10 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none'
-                                />
-                                <span className='absolute top-1/2 right-3 -translate-y-1/2 text-sm text-gray-500 dark:text-gray-400'>
-                                  kg
-                                </span>
-                              </div>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-
-                    {/* Date of Birth */}
-                    <FormField
-                      control={form.control}
-                      name='dateOfBirth'
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Ngày sinh</FormLabel>
-                          <FormControl>
-                            <DatePicker
-                              placeholder='Chọn ngày sinh'
-                              value={field.value}
-                              onChange={field.onChange}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    {/* Underlying Conditions */}
-                    <FormField
-                      control={form.control}
-                      name='underlyingConditions'
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Tiền sử bệnh của gia đình</FormLabel>
-                          <FormControl>
-                            <Textarea
-                              placeholder='Nhập các bệnh nền nếu có (ví dụ: tiểu đường, tim mạch...)'
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    {/* Goal */}
-                    <FormField
-                      control={form.control}
-                      name='goal'
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Mục tiêu</FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
-                            value={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder='Chọn mục tiêu' />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value='lose'>Giảm cân</SelectItem>
-                              <SelectItem value='gain'>Tăng cân</SelectItem>
-                              <SelectItem value='maintain'>Duy trì</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    {/* Submit Button */}
-                    <div className='flex justify-end pt-4'>
-                      <Button
-                        type='submit'
-                        size='lg'
-                        className='h-10 min-w-[182px] rounded bg-gradient-to-r from-[#32f6b4] to-[#14b6e2] text-sm font-semibold text-white hover:opacity-90'
-                        disabled={isSubmitting || form.formState.isSubmitting}
-                      >
-                        {isSubmitting || form.formState.isSubmitting
-                          ? 'Đang lưu...'
-                          : 'Lưu thay đổi'}
-                      </Button>
-                    </div>
-                  </form>
-                </Form>
-              )}
+                      {/* Submit Button */}
+                      <div className='flex justify-end pt-4'>
+                        <Button
+                          type='submit'
+                          size='lg'
+                          className='h-10 min-w-[182px] rounded bg-linear-to-r from-[#32f6b4] to-[#14b6e2] text-sm font-semibold text-white hover:opacity-90'
+                          disabled={isSubmitting || form.formState.isSubmitting}
+                        >
+                          {isSubmitting || form.formState.isSubmitting
+                            ? 'Đang lưu...'
+                            : 'Lưu thay đổi'}
+                        </Button>
+                      </div>
+                    </form>
+                  </Form>
+                )}
+              </div>
             </div>
 
-            {/* Schedule Plans Section */}
-            <div className='rounded-lg bg-white p-6 dark:bg-gray-800'>
-              <h2 className='mb-6 text-base font-medium text-[#1e1e1e] dark:text-white'>
-                Kế hoạch tập luyện
-              </h2>
-              <ScheduleSection />
-            </div>
-
-            {/* Registered Devices Section */}
-            <div className='rounded-lg bg-white p-6 dark:bg-gray-800'>
-              <h2 className='mb-6 text-base font-medium text-[#1e1e1e] dark:text-white'>
-                Thiết bị đã đăng ký
-              </h2>
-              <DeviceList />
+            {/* RIGHT PANEL (2/5 width) */}
+            <div className='lg:col-span-9'>
+              <ProfileRightPanel
+                historyItems={historyItems}
+                historyTotal={historyItems.length}
+                isLoadingHistory={false}
+                reminders={schedules || null}
+                devices={devices?.devices || null}
+                isLoadingReminders={false}
+                isLoadingDevices={false}
+                onHistoryItemClick={handleHistoryItemClick}
+              />
             </div>
           </div>
         </div>

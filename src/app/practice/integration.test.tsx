@@ -1,13 +1,12 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from '@/contexts/auth';
-import PracticePage from './page';
+import { requestNotificationPermission } from '@/lib/firebase';
+import { isMobileDevice } from '@/lib/utils/platform';
 import { deviceService } from '@/services/device';
 import { userService } from '@/services/user';
-import { isMobileDevice } from '@/lib/utils/platform';
-import { requestNotificationPermission } from '@/lib/firebase';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import PracticePage from './page';
 
 // Mock the essential dependencies
 vi.mock('@/services/device', () => ({

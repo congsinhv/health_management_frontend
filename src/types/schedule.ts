@@ -25,6 +25,7 @@ export interface WeeklyExercise {
   description: string;
   workout_start_time: string;
   workout_end_time: string;
+  workout_date: string;
   status: ExerciseStatus;
   error_message: string | null;
 }

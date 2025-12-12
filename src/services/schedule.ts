@@ -9,11 +9,11 @@ import type {
  * Get all schedules for current user
  * Filters out superseded schedules on frontend
  */
-export const getSchedules = async (): Promise<Schedule[]> => {
-  const response = await apiClient.get<Schedule[]>('/api/v1/schedules/');
+export const getSchedules = async (): Promise<Schedule> => {
+  const response = await apiClient.get<Schedule>('/api/v1/schedules/');
   // Filter out superseded schedules
   console.log('response.data', response.data);
-  return response.data.filter(s => s.status !== 'superseded');
+  return response.data;
 };
 
 /**

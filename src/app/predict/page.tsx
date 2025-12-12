@@ -3,6 +3,7 @@
 import Footer from '@/components/layout/Footer';
 import Header from '@/components/layout/Header';
 import { LoadingOverlay } from '@/components/shared/LoadingOverlay';
+import { ProtectedRoute } from '@/components/shared/ProtectedRoute';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -22,11 +23,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { useAuth } from '@/contexts/auth';
 import { submitPrediction } from '@/services/prediction';
 import { zodResolver } from '@hookform/resolvers/zod';
+import dayjs from 'dayjs';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { Suspense, useCallback, useEffect, useState } from 'react';
 import { useForm, UseFormReturn } from 'react-hook-form';
+import { toast } from 'sonner';
 import {
   alcoholOptions,
   genderOptions,
@@ -40,10 +44,10 @@ import {
   yesNoOptions,
 } from './formHelper';
 import { predictFormSchema } from './validation';
-import { toast } from 'sonner';
 
 const PredictPage = () => {
   const router = useRouter();
+  const { user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const validateAllFields = async (form: UseFormReturn<PredictFormData>) => {
@@ -56,6 +60,20 @@ const PredictPage = () => {
     resolver: zodResolver(predictFormSchema) as any,
     mode: 'onChange',
   });
+
+  useEffect(() => {
+    if (user) {
+      form.setValue('name', `${user.firstName} ${user.lastName}`);
+      form.setValue('gender', user.gender === 'male' ? 1 : 0);
+      form.setValue(
+        'age',
+        dayjs(dayjs().format('YYYY-MM-DD')).diff(
+          dayjs(user.dateOfBirth),
+          'year'
+        )
+      );
+    }
+  }, [user, form]);
 
   /**
    * Handle form submission
@@ -72,6 +90,10 @@ const PredictPage = () => {
 
       // Submit prediction and get result
       const result = await submitPrediction(data);
+      // Store prediction_id in localStorage for appointment scheduling
+      if (result.id) {
+        localStorage.setItem('prediction_id', result.id);
+      }
 
       // Store result in sessionStorage for the results page
       sessionStorage.setItem('predictionResult', JSON.stringify(result));
@@ -79,11 +101,43 @@ const PredictPage = () => {
       // Navigate to results page
       router.push('/predict/result');
     } catch (error) {
-      console.error('Error submitting form:', error);
       toast.error('Có lỗi xảy ra khi xử lý dự đoán. Vui lòng thử lại.');
       setIsSubmitting(false);
     }
   };
+
+  const renderGenderSelect = useCallback(
+    (field: { value: number; onChange: (value: number) => void }) => {
+      if (!field.value) return <></>;
+      return (
+        <FormItem className='min-h-[88px]'>
+          <FormLabel className='text-xs font-medium text-[#6A7282]'>
+            Giới tính
+          </FormLabel>
+          <Select
+            onValueChange={value => field.onChange(parseInt(value))}
+            defaultValue={field.value?.toString()}
+            disabled={user?.gender !== null}
+          >
+            <FormControl>
+              <SelectTrigger className='rounded-[4px] bg-white'>
+                <SelectValue placeholder='Chọn giới tính' />
+              </SelectTrigger>
+            </FormControl>
+            <SelectContent>
+              {genderOptions.map(option => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <FormMessage />
+        </FormItem>
+      );
+    },
+    []
+  );
 
   return (
     <>
@@ -127,6 +181,9 @@ const PredictPage = () => {
                     <FormField
                       control={form.control}
                       name='name'
+                      disabled={
+                        user?.firstName !== null && user?.lastName !== null
+                      }
                       render={({ field }) => (
                         <FormItem className='min-h-[88px]'>
                           <FormLabel className='text-xs font-medium text-[#6A7282]'>
@@ -147,41 +204,21 @@ const PredictPage = () => {
                     <FormField
                       control={form.control}
                       name='gender'
-                      render={({ field }) => (
-                        <FormItem className='min-h-[88px]'>
-                          <FormLabel className='text-xs font-medium text-[#6A7282]'>
-                            Giới tính
-                          </FormLabel>
-                          <Select
-                            onValueChange={value =>
-                              field.onChange(parseInt(value))
-                            }
-                            defaultValue={field.value?.toString()}
-                          >
-                            <FormControl>
-                              <SelectTrigger className='rounded-[4px] bg-white'>
-                                <SelectValue placeholder='Chọn giới tính' />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {genderOptions.map(option => (
-                                <SelectItem
-                                  key={option.value}
-                                  value={option.value}
-                                >
-                                  {option.label}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
+                      disabled={
+                        user?.firstName !== null && user?.lastName !== null
+                      }
+                      render={({ field }) =>
+                        renderGenderSelect({
+                          value: field.value,
+                          onChange: field.onChange,
+                        })
+                      }
                     />
 
                     <FormField
                       control={form.control}
                       name='age'
+                      disabled={user?.dateOfBirth !== null}
                       render={({ field }) => (
                         <FormItem className='min-h-[88px]'>
                           <FormLabel className='text-xs font-medium text-[#6A7282]'>
@@ -711,8 +748,29 @@ const PredictPage = () => {
       </div>
       <Footer />
       <LoadingOverlay isVisible={isSubmitting} />
+      <LoadingFallback />
     </>
   );
 };
 
-export default PredictPage;
+const LoadingFallback = () => (
+  <>
+    <Header className='sticky top-0 left-0 z-50 w-full' />
+    <div className='flex min-h-screen items-center justify-center pt-24'>
+      <div className='animate-pulse text-gray-500'>Đang tải...</div>
+    </div>
+    <Footer />
+  </>
+);
+
+const PredictPageContent = () => {
+  return (
+    <Suspense fallback={<LoadingFallback />}>
+      <ProtectedRoute>
+        <PredictPage />
+      </ProtectedRoute>
+    </Suspense>
+  );
+};
+
+export default PredictPageContent;

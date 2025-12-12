@@ -5,7 +5,7 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { PredictionResultData } from '@/types/prediction';
 import { Button } from '@/components/ui/button';
-import { Download, Loader2 } from 'lucide-react';
+import { Download, Loader2, Calendar } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { exportPredictionPDF } from '@/services/prediction';
@@ -15,6 +15,7 @@ import HealthMetricsCard from '@/components/predict/HealthMetricsCard';
 import HealthAnalysisSection from '@/components/predict/HealthAnalysisSection';
 import DietPlanSection from '@/components/predict/DietPlanSection';
 import WorkoutPlanSection from '@/components/predict/WorkoutPlanSection';
+import AppointmentModal from '@/components/profile/AppointmentModal';
 
 const PredictionResultPage = () => {
   const router = useRouter();
@@ -23,6 +24,7 @@ const PredictionResultPage = () => {
   );
   const [isLoading, setIsLoading] = useState(true);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [showAppointmentModal, setShowAppointmentModal] = useState(false);
 
   useEffect(() => {
     // Retrieve prediction result from sessionStorage
@@ -104,6 +106,12 @@ const PredictionResultPage = () => {
     } finally {
       setIsDownloading(false);
     }
+  };
+
+  const handleSaveAppointment = (schedules: any[]) => {
+    console.log('Lịch hẹn đã tạo:', schedules);
+    toast.success('Đã tạo lịch hẹn thành công!');
+    // TODO: Call API to save appointment schedules
   };
 
   return (
@@ -206,10 +214,28 @@ const PredictionResultPage = () => {
               <div className='rounded-3xl border-2 border-[#EFEFEF] bg-white px-4 py-6'>
                 <WorkoutPlanSection workoutPlan={resultData.workoutPlan} />
               </div>
+              {/* Create Appointment Button */}
+              <div className='mt-4'>
+                <Button
+                  onClick={() => setShowAppointmentModal(true)}
+                  className='w-full rounded-full bg-[#1E1E1E] text-white hover:bg-[#1E1E1E]/80'
+                  variant='default'
+                >
+                  Tạo lịch nhắc tập luyện ngay
+                </Button>
+              </div>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Appointment Modal */}
+      <AppointmentModal
+        open={showAppointmentModal}
+        onOpenChange={setShowAppointmentModal}
+        onSave={handleSaveAppointment}
+      />
+
       <Footer />
     </>
   );

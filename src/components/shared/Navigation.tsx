@@ -61,6 +61,18 @@ export function Navigation() {
           >
             Profile
           </Link>
+
+          <Link
+            href='/practice'
+            className={
+              isActive('/practice')
+                ? 'text-health-600 hover:text-health-700 dark:text-health-400 font-medium'
+                : 'text-gray-600 hover:text-gray-800 dark:text-gray-300 dark:hover:text-gray-100'
+            }
+          >
+            Tập luyện
+          </Link>
+
           <Link
             href='/settings'
             className={

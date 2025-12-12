@@ -61,6 +61,12 @@ function SettingsContent() {
               Profile
             </Link>
             <Link
+              href='/practice'
+              className='text-gray-600 hover:text-gray-800 dark:text-gray-300 dark:hover:text-gray-100'
+            >
+              Tập luyện
+            </Link>
+            <Link
               href='/settings'
               className='text-blue-600 hover:text-blue-800 dark:text-blue-400'
             >
