@@ -35,13 +35,22 @@ interface RegenerateWeeklyPlanResponse {
 
 // Map từ tiếng Việt sang tiếng Anh
 const DAY_MAP: Record<string, string> = {
-  'Thứ 2': 'monday',
-  'Thứ 3': 'tuesday',
-  'Thứ 4': 'wednesday',
-  'Thứ 5': 'thursday',
-  'Thứ 6': 'friday',
-  'Thứ 7': 'saturday',
+  'T 2': 'monday',
+  'T 3': 'tuesday',
+  'T 4': 'wednesday',
+  'T 5': 'thursday',
+  'T 6': 'friday',
+  'T 7': 'saturday',
   CN: 'sunday',
+};
+
+// Helper function: Thêm 5 phút vào thời gian
+const addMinutes = (timeStr: string, minutes: number): string => {
+  const [hours, mins] = timeStr.split(':').map(Number);
+  const totalMinutes = hours * 60 + mins + minutes;
+  const newHours = Math.floor(totalMinutes / 60) % 24;
+  const newMins = totalMinutes % 60;
+  return `${String(newHours).padStart(2, '0')}:${String(newMins).padStart(2, '0')}`;
 };
 
 export const appointmentService = {
@@ -59,25 +68,29 @@ export const appointmentService = {
       let schedulePayload: SchedulePayload;
 
       if (scheduleType === 'fixed') {
-        // Lịch cố định - thời gian bắt đầu = thời gian kết thúc (notification)
+        // Lịch cố định - thời gian workout 5 phút
+        const endTime = addMinutes(fixedTime || '08:00', 5);
         schedulePayload = {
           schedule_mode: 'fixed',
           selected_days: selectedDays,
           fixed_period: {
             start_time: `${fixedTime}:00`,
-            end_time: `${fixedTime}:00`, // Bằng nhau để thông báo
+            end_time: `${endTime}:00`, // +5 phút
           },
         };
       } else {
-        // Lịch linh hoạt - có khoảng thời gian
+        // Lịch linh hoạt - mỗi slot có thời gian workout 5 phút
         const timePeriods: Record<string, TimePeriod[]> = {};
 
         schedules.forEach(daySchedule => {
           const dayKey = DAY_MAP[daySchedule.day];
-          timePeriods[dayKey] = daySchedule.timeSlots.map((slot: any) => ({
-            start_time: `${slot.startTime}:00`,
-            end_time: `${slot.endTime}:00`,
-          }));
+          timePeriods[dayKey] = daySchedule.timeSlots.map((slot: any) => {
+            const endTime = addMinutes(slot.startTime, 5);
+            return {
+              start_time: `${slot.startTime}:00`,
+              end_time: `${endTime}:00`, // +5 phút
+            };
+          });
         });
 
         schedulePayload = {
@@ -94,25 +107,30 @@ export const appointmentService = {
         timezone: 'Asia/Ho_Chi_Minh',
       };
 
-      console.log('🚀 Sending request:', JSON.stringify(requestData, null, 2));
+      const fullUrl = `${API_BASE_URL}/api/v1/predict/regenerate_weekly_plan`;
+
+      // Lấy token từ localStorage
+      const token = localStorage.getItem('access_token');
 
       const response = await axios.post<RegenerateWeeklyPlanResponse>(
-        `${API_BASE_URL}/predict/regenerate_weekly_plan`,
+        fullUrl,
         requestData,
         {
           headers: {
             'Content-Type': 'application/json',
+            ...(token && { Authorization: `Bearer ${token}` }),
           },
         }
       );
 
       return response.data;
     } catch (error: any) {
-      console.error('❌ Error regenerating weekly plan:', error);
-      throw new Error(
+      const errorMessage =
+        error.response?.data?.detail ||
         error.response?.data?.message ||
-          'Không thể tạo lịch hẹn. Vui lòng thử lại.'
-      );
+        'Không thể tạo lịch hẹn. Vui lòng thử lại.';
+
+      throw new Error(errorMessage);
     }
   },
 };

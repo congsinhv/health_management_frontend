@@ -72,6 +72,10 @@ const PredictPage = () => {
 
       // Submit prediction and get result
       const result = await submitPrediction(data);
+      // Store prediction_id in localStorage for appointment scheduling
+      if (result.id) {
+        localStorage.setItem('prediction_id', result.id);
+      }
 
       // Store result in sessionStorage for the results page
       sessionStorage.setItem('predictionResult', JSON.stringify(result));
@@ -79,7 +83,6 @@ const PredictPage = () => {
       // Navigate to results page
       router.push('/predict/result');
     } catch (error) {
-      console.error('Error submitting form:', error);
       toast.error('Có lỗi xảy ra khi xử lý dự đoán. Vui lòng thử lại.');
       setIsSubmitting(false);
     }
